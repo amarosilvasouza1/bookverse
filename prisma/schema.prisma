@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(cuid())
+  name              String?
+  username          String            @unique
+  email             String            @unique
+  password          String
+  image             String?           @db.LongText
+  role              Role              @default(USER)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  books             Book[]
+  comments          Comment[]
+  communities       Community[]       @relation("CreatedCommunities")
+  joinedCommunities CommunityMember[]
+  posts             Post[]
+  subscription      Subscription?
+  bio               String?           @db.Text
+  banner            String?           @db.LongText
+  socialLinks       String?           @db.Text // JSON string for social links
+  geminiApiKey      String?           @db.Text // User's Gemini API Key
+
+  purchases         Purchase[]
+  sales             Purchase[]         @relation("Seller")
+  bookCollaborators BookCollaborator[]
+  likes             Like[]
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id])
+  buyerId   String
+  buyer     User     @relation(fields: [buyerId], references: [id])
+  sellerId  String
+  seller    User     @relation("Seller", fields: [sellerId], references: [id])
+  amount    Float
+  createdAt DateTime @default(now())
+
+  @@index([bookId])
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+model Book {
+  id            String             @id @default(cuid())
+  title         String
+  description   String             @db.Text
+  coverImage    String?            @db.LongText
+  content       String             @db.LongText
+  price         Float              @default(0)
+  isPremium     Boolean            @default(false)
+  published     Boolean            @default(false)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  authorId      String
+  genre         String?
+  author        User               @relation(fields: [authorId], references: [id])
+  weeklyFree    WeeklyFree[]
+  purchases     Purchase[]
+  pages         BookPage[]
+  collaborators BookCollaborator[]
+  likes         Like[]
+
+  @@index([authorId], map: "Book_authorId_fkey")
+}
+
+model BookCollaborator {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  role      String   @default("EDITOR")
+  createdAt DateTime @default(now())
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([bookId, userId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model BookPage {
+  id         String   @id @default(cuid())
+  title      String?
+  content    String   @db.LongText
+  pageNumber Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  bookId     String
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, pageNumber])
+  @@index([bookId], map: "BookPage_bookId_fkey")
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  status    String
+  plan      String
+  startDate DateTime @default(now())
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  bookId    String
+  userId    String
+  createdAt DateTime @default(now())
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, userId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Community {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  privacy     String            @default("OPEN") // OPEN, CLOSED
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  creatorId   String
+  creator     User              @relation("CreatedCommunities", fields: [creatorId], references: [id])
+  members     CommunityMember[]
+  posts       Post[]
+
+  @@index([creatorId], map: "Community_creatorId_fkey")
+}
+
+model CommunityMember {
+  id          String    @id @default(cuid())
+  userId      String
+  communityId String
+  role        String    @default("MEMBER") // MEMBER, ADMIN
+  status      String    @default("APPROVED") // PENDING, APPROVED, REJECTED
+  joinedAt    DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, communityId])
+  @@index([communityId], map: "CommunityMember_communityId_fkey")
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  communityId String
+  authorId    String
+  comments    Comment[]
+  author      User      @relation(fields: [authorId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id])
+
+  @@index([authorId], map: "Post_authorId_fkey")
+  @@index([communityId], map: "Post_communityId_fkey")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  postId    String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@index([authorId], map: "Comment_authorId_fkey")
+  @@index([postId], map: "Comment_postId_fkey")
+}
+
+model WeeklyFree {
+  id        String   @id @default(cuid())
+  bookId    String
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  book      Book     @relation(fields: [bookId], references: [id])
+
+  @@index([bookId], map: "WeeklyFree_bookId_fkey")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
