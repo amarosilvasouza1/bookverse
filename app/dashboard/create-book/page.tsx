@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Save, Loader2, ArrowLeft, Eye, Plus, Trash, Trash2, ImageIcon, DollarSign, BookOpen, X, FileText } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ interface Page {
   pageNumber: number;
 }
 
-export default function CreateBookPage() {
+function CreateBookContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookId = searchParams.get('id');
@@ -746,5 +746,19 @@ export default function CreateBookPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateBookPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black/95 text-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    }>
+      <CreateBookContent />
+    </Suspense>
   );
 }
