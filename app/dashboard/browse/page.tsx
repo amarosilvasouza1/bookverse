@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Search, Filter, BookOpen, Star, DollarSign, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -21,7 +21,7 @@ interface Book {
   };
 }
 
-export default function BrowseBooksPage() {
+function BrowseBooksContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -206,5 +206,19 @@ export default function BrowseBooksPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BrowseBooksPage() {
+  return (
+    <Suspense fallback={
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div key={i} className="aspect-2/3 bg-white/5 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    }>
+      <BrowseBooksContent />
+    </Suspense>
   );
 }
