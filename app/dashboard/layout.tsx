@@ -35,10 +35,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <aside className="fixed h-screen w-64 border-r border-white/10 hidden md:flex flex-col bg-background z-50">
         <div className="p-6 border-b border-white/10">
           <Link href="/dashboard/browse" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform duration-300">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-linear-to-r from-white to-white/60 bg-clip-text text-transparent">
               BookVerse
             </span>
           </Link>
@@ -74,7 +74,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-white/10 bg-background space-y-2">
           <Link 
             href="/dashboard/create-book"
-            className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white bg-linear-to-r from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <PlusCircle className="w-5 h-5 mr-2" />
             {t('createBook')}

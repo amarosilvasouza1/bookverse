@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface ImageUploadProps {
   value: string;
@@ -88,7 +89,7 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
           </div>
         ) : value ? (
           <>
-            <img src={value} alt="Upload" className="w-full h-full object-cover" />
+            <Image src={value} alt="Upload" fill className="object-cover" />
             <button 
               onClick={clearImage}
               className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-red-500/80 rounded-full text-white transition-colors backdrop-blur-md opacity-0 group-hover:opacity-100"

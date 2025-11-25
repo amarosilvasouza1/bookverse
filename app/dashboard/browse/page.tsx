@@ -127,7 +127,7 @@ export default function BrowseBooksPage() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="aspect-[2/3] bg-white/5 rounded-xl animate-pulse" />
+            <div key={i} className="aspect-2/3 bg-white/5 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : books.length === 0 ? (
@@ -144,7 +144,7 @@ export default function BrowseBooksPage() {
               key={book.id}
               className="group relative bg-white/5 rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
             >
-              <div className="aspect-[2/3] relative overflow-hidden">
+              <div className="aspect-2/3 relative overflow-hidden">
                 {book.coverImage ? (
                   <div className="relative w-full h-full">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -153,7 +153,7 @@ export default function BrowseBooksPage() {
                       alt={book.title} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">

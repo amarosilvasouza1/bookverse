@@ -14,7 +14,7 @@ interface SettingsFormProps {
     bio: string | null;
     image: string | null;
     banner: string | null;
-    socialLinks: any;
+    socialLinks: Record<string, string> | string | null;
     geminiApiKey: string | null;
   };
 }

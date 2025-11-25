@@ -52,6 +52,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     // Client-side only initialization
     const savedLang = localStorage.getItem('language') as Language;
     if (savedLang && ['en', 'pt', 'jp'].includes(savedLang)) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setLanguage(savedLang);
     }
   }, []);
