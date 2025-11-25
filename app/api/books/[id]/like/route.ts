@@ -16,7 +16,7 @@ export async function GET(
         where: {
           bookId_userId: {
             bookId: id,
-            userId: session.id
+            userId: session.id as string
           }
         }
       }) : null

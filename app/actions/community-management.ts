@@ -21,7 +21,7 @@ export async function approveMember(communityId: string, memberId: string) {
     const session = await getSession();
     if (!session) return { error: 'Unauthorized' };
 
-    const isAdmin = await checkAdmin(communityId, session.id);
+    const isAdmin = await checkAdmin(communityId, session.id as string);
     if (!isAdmin) return { error: 'Forbidden' };
 
     await prisma.communityMember.update({
@@ -42,7 +42,7 @@ export async function rejectMember(communityId: string, memberId: string) {
     const session = await getSession();
     if (!session) return { error: 'Unauthorized' };
 
-    const isAdmin = await checkAdmin(communityId, session.id);
+    const isAdmin = await checkAdmin(communityId, session.id as string);
     if (!isAdmin) return { error: 'Forbidden' };
 
     await prisma.communityMember.delete({
@@ -62,7 +62,7 @@ export async function updateCommunity(communityId: string, data: { name: string,
     const session = await getSession();
     if (!session) return { error: 'Unauthorized' };
 
-    const isAdmin = await checkAdmin(communityId, session.id);
+    const isAdmin = await checkAdmin(communityId, session.id as string);
     if (!isAdmin) return { error: 'Forbidden' };
 
     await prisma.community.update({

@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.id },
+    where: { id: session.id as string },
     select: {
       name: true,
       username: true,
