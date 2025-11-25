@@ -27,7 +27,7 @@ export async function buyBook(bookId: string) {
     const existingPurchase = await prisma.purchase.findFirst({
       where: {
         bookId,
-        buyerId: session.id,
+        buyerId: session.id as string,
       },
     });
 
