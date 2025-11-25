@@ -47,7 +47,7 @@ export async function POST(
       where: {
         bookId_userId: {
           bookId: id,
-          userId: session.id
+          userId: session.id as string
         }
       }
     });
@@ -57,7 +57,7 @@ export async function POST(
         where: {
           bookId_userId: {
             bookId: id,
-            userId: session.id
+            userId: session.id as string
           }
         }
       });
@@ -66,7 +66,7 @@ export async function POST(
       await prisma.like.create({
         data: {
           bookId: id,
-          userId: session.id
+          userId: session.id as string
         }
       });
       return NextResponse.json({ liked: true });

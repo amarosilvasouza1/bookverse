@@ -39,12 +39,12 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   const hasPurchased = session ? await prisma.purchase.findFirst({
     where: {
       bookId: id,
-      buyerId: session.id,
+      buyerId: session.id as string,
     }
   }) : false;
 
   const subscription = session ? await prisma.subscription.findUnique({
-    where: { userId: session.id },
+    where: { userId: session.id as string },
   }) : null;
 
   const hasSubscription = subscription?.status === 'ACTIVE' && subscription?.endDate > new Date();

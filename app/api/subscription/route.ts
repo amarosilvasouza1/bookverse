@@ -10,11 +10,11 @@ export async function GET() {
     }
 
     const subscription = await prisma.subscription.findUnique({
-      where: { userId: session.id },
+      where: { userId: session.id as string },
     });
 
     return NextResponse.json(subscription || { status: 'INACTIVE' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     endDate.setMonth(endDate.getMonth() + 1); // 1 month subscription
 
     const subscription = await prisma.subscription.upsert({
-      where: { userId: session.id },
+      where: { userId: session.id as string },
       update: {
         status: 'ACTIVE',
         plan,
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         endDate,
       },
       create: {
-        userId: session.id,
+        userId: session.id as string,
         status: 'ACTIVE',
         plan,
         startDate,
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(subscription);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -71,7 +71,7 @@ export async function DELETE() {
     }
 
     const subscription = await prisma.subscription.update({
-      where: { userId: session.id },
+      where: { userId: session.id as string },
       data: {
         status: 'CANCELED',
         endDate: new Date(), // End immediately
@@ -79,7 +79,7 @@ export async function DELETE() {
     });
 
     return NextResponse.json(subscription);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

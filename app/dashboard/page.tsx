@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { BookOpen, Users, DollarSign, TrendingUp, Bell } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
@@ -38,7 +39,12 @@ async function getDashboardStats(userId: string) {
 
 export default async function DashboardPage() {
   const session = await getSession();
-  const stats = await getDashboardStats(session?.id as string);
+  
+  if (!session) {
+    redirect('/login');
+  }
+
+  const stats = await getDashboardStats(session.id as string);
 
   return (
     <div className="space-y-8">
@@ -48,9 +54,9 @@ export default async function DashboardPage() {
           <Bell className="w-24 h-24" />
         </div>
         <div className="relative z-10">
-          <h2 className="text-xl font-bold mb-2 text-white">Welcome back, {session?.name || 'Author'}! 👋</h2>
+          <h2 className="text-xl font-bold mb-2 text-white">Welcome back, {(session?.name as string) || 'Author'}! 👋</h2>
           <p className="text-purple-200 max-w-2xl">
-            Here's what's happening with your books and communities today. You have {stats.booksCount} published books and are part of {stats.communitiesCount} communities.
+            Here&apos;s what&apos;s happening with your books and communities today. You have {stats.booksCount} published books and are part of {stats.communitiesCount} communities.
           </p>
         </div>
       </div>
