@@ -49,6 +49,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
 
   useEffect(() => {
+    // Client-side only initialization
     const savedLang = localStorage.getItem('language') as Language;
     if (savedLang && ['en', 'pt', 'jp'].includes(savedLang)) {
       setLanguage(savedLang);

@@ -5,6 +5,7 @@ import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Ins
 import ImageUpload from '@/components/ImageUpload';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface SettingsFormProps {
   user: {
@@ -84,7 +85,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-white to-white/50 bg-clip-text text-transparent">
+      <h1 className="text-4xl font-bold mb-8 bg-linear-to-r from-white to-white/50 bg-clip-text text-transparent">
         Profile Settings
       </h1>
 
@@ -283,14 +284,14 @@ export default function SettingsForm({ user }: SettingsFormProps) {
         {/* Right Column: Live Preview */}
         <div className="hidden lg:block space-y-6">
           <div className="sticky top-8">
-            <h2 className="text-xl font-bold mb-6 text-muted-foreground uppercase tracking-wider text-sm">Live Preview</h2>
+            <h2 className="text-sm font-bold mb-6 text-muted-foreground uppercase tracking-wider">Live Preview</h2>
             
             {/* Profile Card Preview */}
             <div className="glass-card rounded-3xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl">
               {/* Banner Preview */}
-              <div className="h-48 w-full bg-gradient-to-r from-gray-800 to-gray-900 relative">
+              <div className="h-48 w-full bg-linear-to-r from-gray-800 to-gray-900 relative">
                 {formData.banner ? (
-                  <img src={formData.banner} alt="Banner" className="w-full h-full object-cover" />
+                  <Image src={formData.banner} alt="Banner" fill className="object-cover" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-white/10">
                     <ImageIcon className="w-12 h-12" />
@@ -300,9 +301,9 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 
               {/* Avatar & Info */}
               <div className="px-8 pb-8 -mt-16 relative">
-                <div className="w-32 h-32 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4">
+                <div className="w-32 h-32 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4 relative">
                   {formData.image ? (
-                    <img src={formData.image} alt="Avatar" className="w-full h-full object-cover" />
+                    <Image src={formData.image} alt="Avatar" fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white/20">
                       <User className="w-12 h-12" />

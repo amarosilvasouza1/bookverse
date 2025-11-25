@@ -26,7 +26,7 @@ export async function GET(
       likes: likesCount,
       isLiked: !!userLike
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
