@@ -228,7 +228,7 @@ function BrowseBooksContent() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">No books found</h3>
               <p className="text-zinc-400 text-center max-w-sm mb-6">
-                We couldn't find any books matching your criteria. Try adjusting your filters or search terms.
+                We couldn t find any books matching your criteria. Try adjusting your filters or search terms.
               </p>
               <button 
                 onClick={clearFilters}

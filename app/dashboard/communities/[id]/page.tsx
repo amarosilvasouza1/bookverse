@@ -5,6 +5,7 @@ import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe } from 'l
 import CreatePostForm from '@/components/CreatePostForm';
 import { joinCommunity } from '@/app/actions/join-community';
 import Link from 'next/link';
+import Image from 'next/image';
 
 async function getCommunity(id: string, userId: string) {
   const community = await prisma.community.findUnique({
@@ -153,12 +154,17 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           )}
 
           <div className="space-y-6">
-            {community.posts.map((post: any) => (
+            {community.posts.map((post) => (
               <div key={post.id} className="glass-card p-6 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden shrink-0 relative">
                     {post.author.image ? (
-                      <img src={post.author.image} alt={post.author.name || ''} className="w-full h-full object-cover" />
+                      <Image 
+                        src={post.author.image} 
+                        alt={post.author.name || ''} 
+                        fill
+                        className="object-cover" 
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-white font-bold">
                         {(post.author.name || '?')[0]}

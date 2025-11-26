@@ -1,8 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import CharacterChat from './CharacterChat';
+import ReadingRoomControl from './ReadingRoomControl';
+import { getRoomState, updateRoomPage } from '@/app/actions/reading-room';
+import { updateReadingProgress } from '@/app/actions/analytics';
+import { buyBook } from '@/app/actions/buy-book';
 
 interface BookReaderProps {
   book: {
@@ -32,6 +38,16 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
   // --- State: Content & Navigation ---
   const [currentPage, setCurrentPage] = useState(0);
   
+  // --- State: Reading Room ---
+  const searchParams = useSearchParams();
+  const roomId = searchParams.get('roomId');
+  const [roomState, setRoomState] = useState<{
+    isActive: boolean;
+    isHost: boolean;
+    participants: any[];
+    hostName?: string;
+  }>({ isActive: false, isHost: false, participants: [] });
+
   const pages = book.pages.length > 0 
     ? book.pages 
     : [{ title: 'Chapter 1', content: book.content, pageNumber: 1 }];
@@ -41,6 +57,7 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
   const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
   const [theme, setTheme] = useState<Theme>('dark');
   const [showSettings, setShowSettings] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // --- State: Actions ---
@@ -49,6 +66,84 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
   const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+
+  // --- Effects: Reading Room Sync ---
+  useEffect(() => {
+    if (!roomId) return;
+
+    const syncRoom = async () => {
+      try {
+        const result = await getRoomState(roomId);
+        
+        if (result.success && result.data) {
+          const { currentPage: roomPage, status, host, participants, isHost } = result.data;
+          
+          setRoomState({
+            isActive: status === 'ACTIVE',
+            isHost: !!isHost,
+            participants,
+            hostName: host.name || 'Host'
+          });
+
+          // If participant (not host), sync page
+          if (!isHost && status === 'ACTIVE') {
+            // Adjust for 0-index
+            const targetPage = roomPage - 1;
+            setCurrentPage(prev => {
+              if (prev !== targetPage) return targetPage;
+              return prev;
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Sync error:', error);
+      }
+    };
+
+    // Initial sync
+    syncRoom();
+
+    // Poll every 2 seconds
+    const interval = setInterval(syncRoom, 2000);
+    return () => clearInterval(interval);
+  }, [roomId]);
+
+  // --- Handlers ---
+  const handleNext = useCallback(() => {
+    if (currentPage < pages.length - 1) {
+      if (roomState.isActive && !roomState.isHost) return;
+
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      window.scrollTo(0, 0);
+      
+      // Update progress
+      updateReadingProgress(book.id, newPage + 1);
+
+      // Update room if host
+      if (roomState.isActive && roomState.isHost && roomId) {
+        updateRoomPage(roomId, newPage + 1);
+      }
+    }
+  }, [currentPage, pages.length, book.id, roomState.isActive, roomState.isHost, roomId]);
+
+  const handlePrev = useCallback(() => {
+    if (currentPage > 0) {
+      if (roomState.isActive && !roomState.isHost) return;
+
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      window.scrollTo(0, 0);
+
+      // Update progress
+      updateReadingProgress(book.id, newPage + 1);
+
+      // Update room if host
+      if (roomState.isActive && roomState.isHost && roomId) {
+        updateRoomPage(roomId, newPage + 1);
+      }
+    }
+  }, [currentPage, book.id, roomState.isActive, roomState.isHost, roomId]);
 
   // --- Effects: Persistence & Keyboard ---
   useEffect(() => {
@@ -70,20 +165,6 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
     localStorage.setItem('reader-settings', JSON.stringify({ fontSize, fontFamily, theme }));
   }, [fontSize, fontFamily, theme]);
 
-  const handleNext = useCallback(() => {
-    if (currentPage < pages.length - 1) {
-      setCurrentPage(p => p + 1);
-      window.scrollTo(0, 0);
-    }
-  }, [currentPage, pages.length]);
-
-  const handlePrev = useCallback(() => {
-    if (currentPage > 0) {
-      setCurrentPage(p => p - 1);
-      window.scrollTo(0, 0);
-    }
-  }, [currentPage]);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!canRead) return;
@@ -94,7 +175,7 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNext, handlePrev, canRead]);
 
-  // --- Handlers ---
+  // --- More Handlers ---
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -111,7 +192,6 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
     setBuying(true);
     setError('');
     try {
-      const { buyBook } = await import('@/app/actions/buy-book');
       const result = await buyBook(book.id);
       
       if (result.error) {
@@ -207,6 +287,13 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
           </button>
 
           <div className="h-4 w-px bg-current opacity-20 mx-1" />
+
+          <button
+            onClick={() => setShowChat(!showChat)}
+            className={`p-2 rounded-lg transition-colors ${showChat ? 'bg-black/10 dark:bg-white/10 text-primary' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+          >
+            <MessageCircle className="w-5 h-5" />
+          </button>
 
           <button
             onClick={() => setShowSettings(!showSettings)}
@@ -391,6 +478,23 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Character Chat */}
+      <CharacterChat 
+        bookId={book.id} 
+        isOpen={showChat} 
+        onClose={() => setShowChat(false)} 
+      />
+
+      {/* Reading Room Control */}
+      {roomState.isActive && roomId && (
+        <ReadingRoomControl
+          roomId={roomId}
+          isHost={roomState.isHost}
+          participantCount={roomState.participants.length}
+          hostName={roomState.hostName}
+        />
       )}
     </div>
   );

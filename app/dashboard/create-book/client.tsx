@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Save, Loader2, ArrowLeft, Eye, Plus, Trash2, ImageIcon, DollarSign, BookOpen, X, Wand2, GripVertical } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -9,12 +9,38 @@ import { CSS } from '@dnd-kit/utilities';
 import Link from 'next/link';
 import ImageUpload from '@/components/ImageUpload';
 import { createBook } from '@/app/actions/create-book';
+import CharacterSettings from '@/components/CharacterSettings';
 
 interface Page {
   title: string;
   content: string;
   pageNumber: number;
-  id: string; // Added for DnD
+  id: string;
+}
+
+interface User {
+  id: string;
+  username: string;
+  geminiApiKey?: string;
+}
+
+interface Collaborator {
+  id: string;
+  userId: string;
+  user: User;
+}
+
+interface Book {
+  id?: string;
+  title: string;
+  description?: string;
+  coverImage?: string;
+  genre?: string;
+  isPremium: boolean;
+  price?: number | string;
+  pages?: Page[];
+  content?: string;
+  collaborators?: Collaborator[];
 }
 
 // Sortable Item Component
@@ -69,8 +95,8 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete }: {
 }
 
 interface CreateBookClientProps {
-  initialBook?: any;
-  user?: any;
+  initialBook?: Book;
+  user?: User;
 }
 
 export default function CreateBookClient({ initialBook, user }: CreateBookClientProps) {
@@ -92,8 +118,8 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   // Pages State
   const [pages, setPages] = useState<Page[]>(() => {
     if (initialBook?.pages && initialBook.pages.length > 0) {
-       const sortedPages = [...initialBook.pages].sort((a: any, b: any) => a.pageNumber - b.pageNumber);
-       return sortedPages.map((p: any) => ({ ...p, id: p.id || `page-${p.pageNumber}-${Date.now()}` }));
+       const sortedPages = [...initialBook.pages].sort((a, b) => a.pageNumber - b.pageNumber);
+       return sortedPages.map((p) => ({ ...p, id: p.id || `page-${p.pageNumber}-${Date.now()}` }));
     } else if (initialBook?.content) {
        return [{ title: 'Chapter 1', content: initialBook.content, pageNumber: 1, id: `page-${Date.now()}` }];
     }
@@ -103,10 +129,10 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
   // Collaborators State
-  const [activeTab, setActiveTab] = useState<'pages' | 'collaborators' | 'ai'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'collaborators' | 'ai' | 'characters'>('pages');
   const [collaboratorSearch, setCollaboratorSearch] = useState('');
   // const [collaborators, setCollaborators] = useState<any[]>(initialBook?.collaborators || []);
-  const [collaborators] = useState<any[]>(initialBook?.collaborators || []);
+  const [collaborators] = useState<Collaborator[]>(initialBook?.collaborators || []);
 
   // UI State
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
@@ -350,7 +376,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
           
           if (result.data.pages) {
             // Add IDs to generated pages
-            const pagesWithIds = result.data.pages.map((p: any, i: number) => ({
+            const pagesWithIds = result.data.pages.map((p: Page, i: number) => ({
                ...p,
                id: `gen-page-${i}-${Date.now()}`
             }));
@@ -490,6 +516,14 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 }`}
               >
                 AI
+              </button>
+              <button
+                onClick={() => setActiveTab('characters')}
+                className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors ${
+                  activeTab === 'characters' ? 'bg-blue-500/20 text-blue-400' : 'hover:bg-white/5 text-muted-foreground'
+                }`}
+              >
+                Chars
               </button>
             </div>
 
@@ -690,6 +724,12 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 </div>
               </div>
             )}
+
+            {activeTab === 'characters' && (
+              <div className="flex-1 overflow-y-auto">
+                <CharacterSettings bookId={bookId || ''} />
+              </div>
+            )}
           </div>
 
           {/* Main Editor Area */}
@@ -773,7 +813,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
 
               {/* Refine Modal */}
               {showRefineModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                   <div className="w-full max-w-md bg-[#0f0f0f] border border-white/10 rounded-xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold text-white flex items-center gap-2">
