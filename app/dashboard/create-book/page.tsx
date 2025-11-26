@@ -14,7 +14,11 @@ async function CreateBook({ searchParams }: { searchParams: Promise<{ id?: strin
   // Fetch user data for API key
   const user = await prisma.user.findUnique({
     where: { id: session.id as string },
-    select: { geminiApiKey: true }
+    select: { 
+      id: true,
+      username: true,
+      geminiApiKey: true 
+    }
   });
 
   const { id } = await searchParams;
@@ -29,6 +33,7 @@ async function CreateBook({ searchParams }: { searchParams: Promise<{ id?: strin
           include: {
             user: {
               select: {
+                id: true,
                 username: true,
                 image: true
               }
@@ -52,7 +57,25 @@ async function CreateBook({ searchParams }: { searchParams: Promise<{ id?: strin
     }
   }
 
-  return <CreateBookClient initialBook={book} user={user} />;
+  const sanitizedBook = book ? {
+    ...book,
+    coverImage: book.coverImage || undefined,
+    description: book.description || undefined,
+    genre: book.genre || undefined,
+    price: book.price || undefined,
+    pages: book.pages.map(page => ({
+      ...page,
+      title: page.title || ''
+    })),
+    // Ensure pages and collaborators are compatible if needed, usually Prisma types match well enough except for nulls
+  } : undefined;
+
+  const sanitizedUser = user ? {
+    ...user,
+    geminiApiKey: user.geminiApiKey || undefined
+  } : undefined;
+
+  return <CreateBookClient initialBook={sanitizedBook} user={sanitizedUser} />;
 }
 
 export default function Page({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
