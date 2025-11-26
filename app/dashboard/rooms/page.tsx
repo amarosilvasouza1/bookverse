@@ -38,7 +38,7 @@ export default async function RoomsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {rooms.map((room) => (
             <div key={room.id} className="group relative bg-zinc-900 border border-white/10 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 z-10" />
+              <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/80 z-10" />
               
               <div className="h-32 bg-zinc-800 relative">
                 {room.book.coverImage ? (

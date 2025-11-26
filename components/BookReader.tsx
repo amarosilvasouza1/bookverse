@@ -34,7 +34,7 @@ interface BookReaderProps {
 type Theme = 'dark' | 'light' | 'sepia';
 type FontFamily = 'serif' | 'sans' | 'mono';
 
-export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
+export function BookReader({ book, canRead }: BookReaderProps) {
   // --- State: Content & Navigation ---
   const [currentPage, setCurrentPage] = useState(0);
   
@@ -44,7 +44,7 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
   const [roomState, setRoomState] = useState<{
     isActive: boolean;
     isHost: boolean;
-    participants: any[];
+    participants: { id: string; name: string | null; image: string | null }[];
     hostName?: string;
   }>({ isActive: false, isHost: false, participants: [] });
 
@@ -146,6 +146,19 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
   }, [currentPage, book.id, roomState.isActive, roomState.isHost, roomId]);
 
   // --- Effects: Persistence & Keyboard ---
+  const fetchLikes = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/books/${book.id}/like`);
+      if (res.ok) {
+        const data = await res.json();
+        setLikes(data.likes);
+        setIsLiked(data.isLiked);
+      }
+    } catch (error) {
+      console.error('Failed to fetch likes', error);
+    }
+  }, [book.id]);
+
   useEffect(() => {
     const saved = localStorage.getItem('reader-settings');
     if (saved) {
@@ -159,7 +172,7 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
       }
     }
     fetchLikes();
-  }, []);
+  }, [fetchLikes]);
 
   useEffect(() => {
     localStorage.setItem('reader-settings', JSON.stringify({ fontSize, fontFamily, theme }));
@@ -199,25 +212,14 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
       } else {
         window.location.reload();
       }
-    } catch (e) {
+    } catch {
       setError('Something went wrong');
     } finally {
       setBuying(false);
     }
   };
 
-  const fetchLikes = async () => {
-    try {
-      const res = await fetch(`/api/books/${book.id}/like`);
-      if (res.ok) {
-        const data = await res.json();
-        setLikes(data.likes);
-        setIsLiked(data.isLiked);
-      }
-    } catch (error) {
-      console.error('Failed to fetch likes', error);
-    }
-  };
+
 
   const handleLike = async () => {
     if (likeLoading) return;
@@ -232,7 +234,7 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
         setIsLiked(!newIsLiked);
         setLikes(prev => newIsLiked ? prev - 1 : prev + 1);
       }
-    } catch (error) {
+    } catch {
       setIsLiked(!newIsLiked);
       setLikes(prev => newIsLiked ? prev - 1 : prev + 1);
     } finally {
@@ -493,7 +495,7 @@ export function BookReader({ book, canRead, isAuthor }: BookReaderProps) {
           roomId={roomId}
           isHost={roomState.isHost}
           participantCount={roomState.participants.length}
-          hostName={roomState.hostName}
+          hostName={roomState.hostName || 'Host'}
         />
       )}
     </div>
