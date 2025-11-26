@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { BookReader } from '@/components/BookReader';
+import { ReviewSection } from '@/components/ReviewSection';
 
 async function getBook(id: string) {
   const book = await prisma.book.findUnique({
@@ -11,6 +12,7 @@ async function getBook(id: string) {
         select: {
           name: true,
           username: true,
+          image: true,
         }
       },
       pages: {
@@ -52,12 +54,43 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   const canRead = !book.isPremium || isAuthor || hasPurchased || hasSubscription;
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-20">
       <BookReader 
         book={book} 
         canRead={!!canRead} 
         isAuthor={isAuthor}
       />
+      
+      <div className="px-6 space-y-8">
+        {/* Author Section */}
+        <div className="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-zinc-800 overflow-hidden border-2 border-white/10 shrink-0">
+              {book.author.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={book.author.image} alt={book.author.name || book.author.username} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-indigo-500/20 text-indigo-500 text-xl font-bold">
+                  {(book.author.name || book.author.username)[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">{book.author.name || book.author.username}</h3>
+              <p className="text-zinc-400 text-sm">@{book.author.username}</p>
+            </div>
+          </div>
+          
+          <a 
+            href={`/dashboard/profile/${book.author.username}`}
+            className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors text-sm flex items-center justify-center"
+          >
+            View Profile
+          </a>
+        </div>
+
+        <ReviewSection bookId={book.id} />
+      </div>
     </div>
   );
 }

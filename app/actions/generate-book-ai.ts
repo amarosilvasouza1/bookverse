@@ -89,8 +89,9 @@ export async function generateBookAI(apiKey: string, prompt: string, pageCount: 
       try {
         result = await model.generateContent(fullPrompt);
         break; // Success
-      } catch (error: any) {
-        if (error.message?.includes('429') && retries > 1) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('429') && retries > 1) {
           console.log(`Rate limit hit, retrying... (${retries - 1} attempts left)`);
           await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
           retries--;

@@ -34,6 +34,12 @@ export async function GET(request: Request) {
       where.isPremium = false;
     }
 
+    // Genre filter
+    const genre = searchParams.get('genre');
+    if (genre && genre !== 'all') {
+      where.genre = genre;
+    }
+
     // Build order by
     let orderBy: any = { createdAt: 'desc' };
 

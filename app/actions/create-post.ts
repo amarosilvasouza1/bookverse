@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { checkAndAwardAchievements } from '@/lib/gamification';
 
 export async function createPost(formData: FormData) {
   const session = await getSession();
@@ -27,6 +28,15 @@ export async function createPost(formData: FormData) {
     });
 
     revalidatePath(`/dashboard/communities/${communityId}`);
+    revalidatePath(`/dashboard/communities/${communityId}`);
+
+    // Check for achievements
+    try {
+      await checkAndAwardAchievements(session.id as string, 'POST_COUNT');
+    } catch (e) {
+      console.error('Error checking achievements:', e);
+    }
+
     return { success: true };
   } catch (error) {
     console.error('Error creating post:', error);

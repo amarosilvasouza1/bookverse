@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { checkAndAwardAchievements } from '@/lib/gamification';
 
 export async function createBook(data: {
   id?: string;
@@ -108,6 +109,16 @@ export async function createBook(data: {
     revalidatePath('/dashboard/my-books');
     revalidatePath('/dashboard');
     
+    revalidatePath('/dashboard/my-books');
+    revalidatePath('/dashboard');
+    
+    // Check for achievements
+    try {
+      await checkAndAwardAchievements(session.id as string, 'BOOK_COUNT');
+    } catch (e) {
+      console.error('Error checking achievements:', e);
+    }
+
     return { success: true, bookId: book.id };
   } catch (error) {
     console.error('Error creating/updating book:', error);

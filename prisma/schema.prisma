@@ -32,6 +32,37 @@ model User {
   sales             Purchase[]         @relation("Seller")
   bookCollaborators BookCollaborator[]
   likes             Like[]
+  reviews           Review[]
+  followers         Follow[]           @relation("Following")
+  following         Follow[]           @relation("Follower")
+  sentTips          Tip[]              @relation("SentTips")
+  receivedTips      Tip[]              @relation("ReceivedTips")
+  userAchievements  UserAchievement[]
+}
+
+model Achievement {
+  id            String            @id @default(cuid())
+  name          String
+  description   String
+  icon          String // Lucide icon name or emoji
+  criteriaType  String // BOOK_COUNT, POST_COUNT, READ_COUNT
+  criteriaValue Int
+  xpReward      Int
+  createdAt     DateTime          @default(now())
+  users         UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
 }
 
 model Purchase {
@@ -69,6 +100,7 @@ model Book {
   pages         BookPage[]
   collaborators BookCollaborator[]
   likes         Like[]
+  reviews       Review[]
 
   @@index([authorId], map: "Book_authorId_fkey")
 }
@@ -125,6 +157,48 @@ model Like {
   @@unique([bookId, userId])
   @@index([bookId])
   @@index([userId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
+  bookId    String
+  userId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, userId])
+  @@index([bookId])
+  @@index([userId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Tip {
+  id         String   @id @default(cuid())
+  amount     Float
+  message    String?  @db.Text
+  createdAt  DateTime @default(now())
+  senderId   String
+  receiverId String
+  sender     User     @relation("SentTips", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedTips", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
 }
 
 model Community {

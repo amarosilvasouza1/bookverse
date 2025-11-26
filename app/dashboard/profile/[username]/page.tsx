@@ -1,13 +1,19 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { BookOpen, Link as LinkIcon, Calendar, Twitter, Github, Instagram } from 'lucide-react';
+import { BookOpen, Link as LinkIcon, Calendar, Twitter, Github, Instagram, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AchievementCard from '@/components/AchievementCard';
+import { getSession } from '@/lib/auth';
+import { ProfileActions } from '@/components/ProfileActions';
 
-async function getUserProfile(username: string) {
+async function getUserProfile(username: string, currentUserId?: string) {
   const user = await prisma.user.findUnique({
     where: { username },
     include: {
+      followers: currentUserId ? {
+        where: { followerId: currentUserId }
+      } : false,
       books: {
         where: { published: true },
         orderBy: { createdAt: 'desc' },
@@ -17,11 +23,21 @@ async function getUserProfile(username: string) {
           }
         }
       },
+      userAchievements: {
+        include: {
+          achievement: true
+        },
+        orderBy: {
+          unlockedAt: 'desc'
+        }
+      },
       _count: {
         select: {
           books: { where: { published: true } },
           joinedCommunities: true,
           communities: true,
+          userAchievements: true,
+          followers: true,
         }
       }
     }
@@ -32,18 +48,21 @@ async function getUserProfile(username: string) {
 
 export default async function UserProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
-  const user = await getUserProfile(username);
+  const session = await getSession();
+  const user = await getUserProfile(username, session?.id as string | undefined);
 
   if (!user) {
     notFound();
   }
 
-  const socialLinks = user.socialLinks as any || {};
+  const isFollowing = user.followers?.length > 0;
+  const isOwnProfile = session?.id === user.id;
+  const socialLinks = user.socialLinks ? JSON.parse(user.socialLinks) : {};
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pb-20">
       {/* Banner */}
-      <div className="h-64 md:h-80 w-full relative bg-linear-to-r from-purple-900/20 to-pink-900/20">
+      <div className="h-48 md:h-80 w-full relative bg-linear-to-r from-purple-900/20 to-pink-900/20">
         {user.banner ? (
           <div className="relative w-full h-full">
             <Image 
@@ -60,12 +79,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
         <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-transparent to-transparent" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-32 relative z-10">
-        <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-6 -mt-20 md:-mt-32 relative z-10">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start text-center md:text-left">
           {/* Profile Info Sidebar */}
-          <div className="w-full md:w-80 shrink-0 space-y-6">
+          <div className="w-full md:w-80 shrink-0 space-y-6 flex flex-col items-center md:items-stretch">
             {/* Avatar */}
-            <div className="relative w-40 h-40 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-zinc-800 shadow-2xl">
+            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-zinc-800 shadow-2xl">
               {user.image ? (
                 <div className="relative w-full h-full">
                   <Image 
@@ -82,19 +101,28 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 w-full">
               <div>
-                <h1 className="text-3xl font-bold text-white">{user.name || username}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name || username}</h1>
                 <p className="text-muted-foreground">@{user.username}</p>
               </div>
 
+              {/* Profile Actions */}
+              <div className="flex justify-center md:justify-start w-full">
+                <ProfileActions 
+                  username={username} 
+                  isFollowing={isFollowing} 
+                  isOwnProfile={isOwnProfile} 
+                />
+              </div>
+
               {user.bio && (
-                <p className="text-gray-300 leading-relaxed text-sm">
+                <p className="text-gray-300 leading-relaxed text-sm max-w-md mx-auto md:mx-0">
                   {user.bio}
                 </p>
               )}
 
-              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-col gap-2 text-sm text-muted-foreground items-center md:items-start">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
@@ -108,7 +136,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
               </div>
 
               {/* Social Links */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 justify-center md:justify-start">
                 {socialLinks.twitter && (
                   <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 rounded-full hover:bg-white/10 hover:text-[#1DA1F2] transition-colors">
                     <Twitter className="w-5 h-5" />
@@ -128,7 +156,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-4 py-6 border-y border-white/10">
+            <div className="grid grid-cols-3 gap-4 py-6 border-y border-white/10 w-full">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{user._count.books}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Books</div>
@@ -137,19 +165,45 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
                 <div className="text-2xl font-bold text-white">{user._count.communities}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Communities</div>
               </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{user._count.userAchievements}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">Trophies</div>
+              </div>
             </div>
           </div>
 
-          {/* Main Content - Books */}
-          <div className="flex-1 w-full pt-8 md:pt-32">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-primary" />
-              Published Books
-            </h2>
+          {/* Main Content */}
+          <div className="flex-1 w-full pt-8 md:pt-32 space-y-12">
+            
+            {/* Achievements Section */}
+            {user.userAchievements.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-yellow-500" />
+                  Achievements
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {user.userAchievements.map((ua) => (
+                    <AchievementCard 
+                      key={ua.id} 
+                      achievement={ua.achievement} 
+                      unlockedAt={ua.unlockedAt} 
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Books Section */}
+            <section>
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-primary" />
+                Published Books
+              </h2>
 
             {user.books.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {user.books.map((book: any) => (
+                {user.books.map((book) => (
                   <Link 
                     href={`/dashboard/books/${book.id}`} 
                     key={book.id}
@@ -201,6 +255,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
                 <p className="text-muted-foreground">This author hasn&apos;t published any books yet.</p>
               </div>
             )}
+            </section>
           </div>
         </div>
       </div>
