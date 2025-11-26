@@ -44,21 +44,13 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 
     try {
       // Create timeout for large uploads
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout
 
-      const res = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-        signal: controller.signal,
-      });
 
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to update profile');
+      const { updateProfile } = await import('@/app/actions/user');
+      const result = await updateProfile(formData);
+      
+      if (result.error) {
+        throw new Error(result.error);
       }
 
       setNotification({ type: 'success', message: 'Profile updated successfully!' });
