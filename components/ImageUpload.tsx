@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { compressImage } from '@/lib/utils';
 
 interface ImageUploadProps {
   value: string;
@@ -15,7 +16,7 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -36,16 +37,16 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
     }
 
     setLoading(true);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      onChange(reader.result as string);
+    setLoading(true);
+    try {
+      const compressed = await compressImage(file);
+      onChange(compressed);
+    } catch (error) {
+      console.error('Compression error:', error);
+      alert('Failed to process image');
+    } finally {
       setLoading(false);
-    };
-    reader.onerror = () => {
-      alert('Failed to read file');
-      setLoading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const clearImage = (e: React.MouseEvent) => {
