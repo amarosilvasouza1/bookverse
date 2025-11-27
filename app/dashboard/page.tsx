@@ -57,24 +57,24 @@ export default async function DashboardPage() {
           <Sparkles className="w-64 h-64 text-white blur-3xl" />
         </div>
         
-        <div className="relative z-10 p-8 md:p-10 text-white">
+        <div className="relative z-10 p-6 md:p-10 text-white">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 border border-white/20 text-sm font-medium backdrop-blur-md mb-3">
-                <Star className="w-4 h-4 mr-2 text-yellow-300 fill-yellow-300" />
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 border border-white/20 text-xs md:text-sm font-medium backdrop-blur-md mb-3">
+                <Star className="w-3 h-3 md:w-4 md:h-4 mr-2 text-yellow-300 fill-yellow-300" />
                 Premium Author Dashboard
               </div>
-              <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">
+              <h1 className="text-2xl md:text-5xl font-bold mb-2 tracking-tight">
                 Welcome back, {userName}!
               </h1>
-              <p className="text-purple-100 text-lg max-w-xl">
+              <p className="text-purple-100 text-sm md:text-lg max-w-xl">
                 Ready to create your next masterpiece? You have <span className="font-bold text-white">{stats.booksCount} books</span> published and <span className="font-bold text-white">{stats.communitiesCount} communities</span> active.
               </p>
             </div>
             
             <Link 
               href="/dashboard/create-book"
-              className="group flex items-center bg-white text-purple-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 active:scale-95"
+              className="w-full md:w-auto group flex items-center justify-center bg-white text-purple-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 active:scale-95"
             >
               <PenTool className="w-5 h-5 mr-2" />
               Write New Book

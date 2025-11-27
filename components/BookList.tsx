@@ -84,7 +84,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
         </div>
 
         {filteredBooks.length === 0 ? (
-          <div className="glass-card rounded-2xl p-12 text-center border border-dashed border-white/10">
+          <div className="glass-card rounded-2xl p-8 md:p-12 text-center border border-dashed border-white/10">
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
               <BookOpen className="w-8 h-8 text-muted-foreground/50" />
             </div>

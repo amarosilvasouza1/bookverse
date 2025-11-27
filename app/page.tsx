@@ -1,7 +1,12 @@
+'use client';
+
 import Link from 'next/link';
-import { PenTool, Users, Sparkles, ArrowRight } from 'lucide-react';
+import { PenTool, Users, Sparkles, ArrowRight, Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
@@ -13,6 +18,8 @@ export default function Home() {
                 BookVerse
               </Link>
             </div>
+            
+            {/* Desktop Menu */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 <Link href="/books" className="hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">
@@ -26,12 +33,51 @@ export default function Home() {
                 </Link>
               </div>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-300 hover:text-white p-2"
+              >
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden glass-card border-t border-white/10 absolute w-full animate-in slide-in-from-top-5 duration-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              <Link 
+                href="/books" 
+                className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Browse
+              </Link>
+              <Link 
+                href="/pricing" 
+                className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link 
+                href="/login" 
+                className="bg-primary text-white block px-3 py-2 rounded-md text-base font-medium mt-4 text-center"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-grow">
+      <main className="grow">
         <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8">
@@ -42,12 +88,12 @@ export default function Home() {
               The premier platform for digital book creators and readers. 
               Write your story, build your community, and earn from your passion.
             </p>
-            <div className="flex justify-center gap-4">
-              <Link href="/register" className="group bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-200 transition-all flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/register" className="group bg-white text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
                 Start Reading Free
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/auth/register?role=author" className="glass-card px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+              <Link href="/auth/register?role=author" className="glass-card px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center">
                 Become an Author
               </Link>
             </div>
