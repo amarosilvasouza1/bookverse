@@ -14,8 +14,8 @@ export async function compressImage(file: File): Promise<string> {
       img.src = event.target?.result as string;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 600;
-        const MAX_HEIGHT = 600;
+        const MAX_WIDTH = 500;
+        const MAX_HEIGHT = 500;
         let width = img.width;
         let height = img.height;
 
@@ -36,8 +36,8 @@ export async function compressImage(file: File): Promise<string> {
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, width, height);
         
-        // Compress to JPEG with 0.6 quality
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        // Compress to JPEG with 0.5 quality
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
         console.log('Original size:', file.size);
         console.log('Compressed size:', dataUrl.length);
         resolve(dataUrl);

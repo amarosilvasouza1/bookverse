@@ -53,18 +53,27 @@ export default function SettingsForm({ user }: SettingsFormProps) {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('bio', formData.bio);
+      let imageSize = 0;
       if (formData.image && formData.image.startsWith('data:')) {
         const imageBlob = await fetch(formData.image).then(r => r.blob());
+        imageSize = imageBlob.size;
         data.append('image', imageBlob, 'profile-image.jpg');
       } else {
         data.append('image', formData.image);
       }
 
+      let bannerSize = 0;
       if (formData.banner && formData.banner.startsWith('data:')) {
         const bannerBlob = await fetch(formData.banner).then(r => r.blob());
+        bannerSize = bannerBlob.size;
         data.append('banner', bannerBlob, 'profile-banner.jpg');
       } else {
         data.append('banner', formData.banner);
+      }
+
+      // Alert for debugging Vercel 413
+      if (imageSize > 0 || bannerSize > 0) {
+        alert(`Debug: Uploading Image (${(imageSize/1024).toFixed(2)}KB) + Banner (${(bannerSize/1024).toFixed(2)}KB). Total: ${((imageSize+bannerSize)/1024).toFixed(2)}KB`);
       }
       data.append('socialLinks', JSON.stringify(formData.socialLinks));
       data.append('geminiApiKey', formData.geminiApiKey);
