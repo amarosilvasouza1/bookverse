@@ -26,21 +26,41 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     });
 
+    // Fetch tips where the user is the receiver
+    const tips = await prisma.tip.findMany({
+      where: { receiverId: session.id as string },
+      include: {
+        sender: {
+          select: { name: true, username: true, image: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
     // Calculate total earnings
-    const totalEarnings = sales.reduce((acc, sale) => acc + sale.amount, 0);
+    const salesTotal = sales.reduce((acc, sale) => acc + sale.amount, 0);
+    const tipsTotal = tips.reduce((acc, tip) => acc + tip.amount, 0);
+    const totalEarnings = salesTotal + tipsTotal;
 
     // Get monthly earnings (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    const monthlyEarnings = sales
+    const monthlySales = sales
       .filter(sale => new Date(sale.createdAt) >= thirtyDaysAgo)
       .reduce((acc, sale) => acc + sale.amount, 0);
+
+    const monthlyTips = tips
+      .filter(tip => new Date(tip.createdAt) >= thirtyDaysAgo)
+      .reduce((acc, tip) => acc + tip.amount, 0);
+
+    const monthlyEarnings = monthlySales + monthlyTips;
 
     return NextResponse.json({
       totalEarnings,
       monthlyEarnings,
-      sales
+      sales,
+      tips
     });
 
   } catch (error) {

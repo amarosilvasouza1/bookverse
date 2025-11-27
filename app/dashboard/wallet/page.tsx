@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, Calendar, Loader2, ShoppingBag } from 'lucide-react';
+import Image from 'next/image';
 
 interface Sale {
   id: string;
@@ -18,12 +19,25 @@ interface Sale {
   };
 }
 
+interface Tip {
+  id: string;
+  amount: number;
+  message: string | null;
+  createdAt: string;
+  sender: {
+    name: string | null;
+    username: string;
+    image: string | null;
+  };
+}
+
 export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
     totalEarnings: number;
     monthlyEarnings: number;
     sales: Sale[];
+    tips: Tip[];
   } | null>(null);
 
   useEffect(() => {
@@ -81,49 +95,101 @@ export default function WalletPage() {
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="p-6 border-b border-white/10">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-primary" />
-            Recent Sales
-          </h2>
-        </div>
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Recent Transactions */}
+        <div className="glass-card rounded-2xl overflow-hidden h-fit">
+          <div className="p-6 border-b border-white/10">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-primary" />
+              Recent Sales
+            </h2>
+          </div>
 
-        <div className="divide-y divide-white/10">
-          {data?.sales.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">
-              <p>No sales yet. Keep writing great books!</p>
-            </div>
-          ) : (
-            data?.sales.map((sale) => (
-              <div key={sale.id} className="p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-16 bg-gray-800 rounded-md overflow-hidden flex-shrink-0">
-                    {sale.book.coverImage ? (
-                      <img src={sale.book.coverImage} alt={sale.book.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">Cover</div>
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-lg">{sale.book.title}</h4>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>Purchased by {sale.buyer.name || sale.buyer.username}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(sale.createdAt).toLocaleDateString()}
-                      </span>
+          <div className="divide-y divide-white/10">
+            {data?.sales.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground">
+                <p>No sales yet. Keep writing great books!</p>
+              </div>
+            ) : (
+              data?.sales.map((sale) => (
+                <div key={sale.id} className="p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-16 bg-gray-800 rounded-md overflow-hidden shrink-0 relative">
+                      {sale.book.coverImage ? (
+                        <Image 
+                          src={sale.book.coverImage} 
+                          alt={sale.book.title} 
+                          fill
+                          className="object-cover" 
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">Cover</div>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg">{sale.book.title}</h4>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>Purchased by {sale.buyer.name || sale.buyer.username}</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(sale.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <div className="text-xl font-bold text-green-400">
+                    +${sale.amount.toFixed(2)}
+                  </div>
                 </div>
-                <div className="text-xl font-bold text-green-400">
-                  +${sale.amount.toFixed(2)}
-                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recent Tips */}
+        <div className="glass-card rounded-2xl overflow-hidden h-fit">
+          <div className="p-6 border-b border-white/10">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-500" />
+              Recent Tips
+            </h2>
+          </div>
+
+          <div className="divide-y divide-white/10">
+            {data?.tips?.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground">
+                <p>No tips yet. Share your work to get support!</p>
               </div>
-            ))
-          )}
+            ) : (
+              data?.tips?.map((tip) => (
+                <div key={tip.id} className="p-6 hover:bg-white/5 transition-colors">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold">
+                        {tip.sender.username[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold">{tip.sender.name || tip.sender.username}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(tip.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-emerald-400">
+                      +${tip.amount.toFixed(2)}
+                    </div>
+                  </div>
+                  {tip.message && (
+                    <div className="mt-3 p-3 bg-white/5 rounded-xl text-sm text-zinc-300 italic">
+                      &quot;{tip.message}&quot;
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
