@@ -53,12 +53,10 @@ export default function SettingsForm({ user }: SettingsFormProps) {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('bio', formData.bio);
-      let imageSize = 0;
       // Only append image if it has changed
       if (formData.image !== user.image) {
         if (formData.image && formData.image.startsWith('data:')) {
           const imageBlob = await fetch(formData.image).then(r => r.blob());
-          imageSize = imageBlob.size;
           data.append('image', imageBlob, 'profile-image.jpg');
         } else if (formData.image) {
            // It's a URL but different from user.image? (e.g. user cleared it then pasted a URL? Unlikely for this UI)
@@ -67,22 +65,17 @@ export default function SettingsForm({ user }: SettingsFormProps) {
         }
       }
 
-      let bannerSize = 0;
       // Only append banner if it has changed
       if (formData.banner !== user.banner) {
         if (formData.banner && formData.banner.startsWith('data:')) {
           const bannerBlob = await fetch(formData.banner).then(r => r.blob());
-          bannerSize = bannerBlob.size;
           data.append('banner', bannerBlob, 'profile-banner.jpg');
         } else if (formData.banner) {
           data.append('banner', formData.banner);
         }
       }
 
-      // Alert for debugging Vercel 413
-      if (imageSize > 0 || bannerSize > 0) {
-        alert(`Debug: Uploading Image (${(imageSize/1024).toFixed(2)}KB) + Banner (${(bannerSize/1024).toFixed(2)}KB). Total: ${((imageSize+bannerSize)/1024).toFixed(2)}KB`);
-      }
+      // Alert for debugging Vercel 413 - REMOVED
       data.append('socialLinks', JSON.stringify(formData.socialLinks));
       data.append('geminiApiKey', formData.geminiApiKey);
 
