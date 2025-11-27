@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, BookOpen, Users, Settings, LogOut, PlusCircle, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { t } = useLanguage();
   const { t } = useLanguage();
 
   const navigation = [

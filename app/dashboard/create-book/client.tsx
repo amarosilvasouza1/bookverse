@@ -898,20 +898,49 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-white">Genre</label>
-                  <select 
-                    value={genre}
-                    onChange={(e) => setGenre(e.target.value)}
-                    className="w-full bg-black/20 border border-white/5 rounded-lg p-3 text-sm focus:outline-none focus:border-primary/50 transition-colors [&>option]:bg-zinc-900 appearance-none cursor-pointer hover:bg-black/30"
-                  >
-                    <option value="">Select Genre</option>
-                    <option value="fantasy">Fantasy</option>
-                    <option value="scifi">Sci-Fi</option>
-                    <option value="romance">Romance</option>
-                    <option value="mystery">Mystery</option>
-                    <option value="thriller">Thriller</option>
-                    <option value="nonfiction">Non-Fiction</option>
-                  </select>
+                  <label className="text-sm font-medium text-white">Genres</label>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      {genre.split(',').filter(Boolean).map((g) => (
+                        <span key={g} className="px-3 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full flex items-center gap-1">
+                          {g}
+                          <button
+                            onClick={() => {
+                              const newGenres = genre.split(',').filter(i => i !== g).join(',');
+                              setGenre(newGenres);
+                            }}
+                            className="hover:text-white transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <select 
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value && !genre.includes(e.target.value)) {
+                          setGenre(genre ? `${genre},${e.target.value}` : e.target.value);
+                        }
+                      }}
+                      className="w-full bg-black/20 border border-white/5 rounded-lg p-3 text-sm focus:outline-none focus:border-primary/50 transition-colors [&>option]:bg-zinc-900 appearance-none cursor-pointer hover:bg-black/30"
+                    >
+                      <option value="">Add a Genre...</option>
+                      <option value="Fantasy">Fantasy</option>
+                      <option value="Sci-Fi">Sci-Fi</option>
+                      <option value="Romance">Romance</option>
+                      <option value="Mystery">Mystery</option>
+                      <option value="Thriller">Thriller</option>
+                      <option value="Horror">Horror</option>
+                      <option value="Adventure">Adventure</option>
+                      <option value="Historical">Historical</option>
+                      <option value="Biography">Biography</option>
+                      <option value="Non-Fiction">Non-Fiction</option>
+                      <option value="Poetry">Poetry</option>
+                      <option value="Young Adult">Young Adult</option>
+                      <option value="Children">Children</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
