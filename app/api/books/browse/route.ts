@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+import { Prisma } from '@prisma/client';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -9,7 +11,7 @@ export async function GET(request: Request) {
     const sort = searchParams.get('sort'); // newest, popular, price_asc, price_desc
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.BookWhereInput = {
       published: true,
     };
 
@@ -41,7 +43,7 @@ export async function GET(request: Request) {
     }
 
     // Build order by
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Prisma.BookOrderByWithRelationInput = { createdAt: 'desc' };
 
     if (sort === 'popular') {
       orderBy = { purchases: { _count: 'desc' } };
