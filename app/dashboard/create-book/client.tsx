@@ -135,9 +135,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
     }
   };
 
-  const handleTextSelect = () => {
-    // Placeholder for future text selection features
-  };
+
 
   const updateCurrentPage = (field: 'title' | 'content', value: string) => {
     const newPages = [...pages];
@@ -307,9 +305,18 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
         `}>
           <div className="h-full flex flex-col">
             <div className="p-4 border-b border-white/5 flex items-center gap-3">
-              <Link href="/dashboard" className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-white">
+              <button 
+                onClick={() => {
+                  if (mobileMenuOpen) {
+                    setMobileMenuOpen(false);
+                  } else {
+                    router.push('/dashboard');
+                  }
+                }}
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-white"
+              >
                 <ArrowLeft className="w-4 h-4" />
-              </Link>
+              </button>
               <div>
                 <h1 className="text-sm font-bold text-white leading-none">Book Editor</h1>
                 <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider">
@@ -376,7 +383,6 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
               pages={pages}
               currentPageIndex={currentPageIndex}
               updateCurrentPage={updateCurrentPage}
-              handleTextSelect={handleTextSelect}
               showPreview={showPreview}
               setShowPreview={setShowPreview}
               handleSave={handleSave}

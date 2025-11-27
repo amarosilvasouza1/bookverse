@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, BookOpen, Star, DollarSign, TrendingUp, X, ChevronDown } from 'lucide-react';
+import { Search, Filter, BookOpen, Star, TrendingUp, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
@@ -96,14 +96,14 @@ function BrowseBooksContent() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20" suppressHydrationWarning>
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Browse Books</h1>
           <p className="text-zinc-400">Discover your next favorite story</p>
         </div>
         
-        <div className="relative w-full md:w-96">
+        <div className="relative w-full md:w-96" suppressHydrationWarning>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
@@ -218,7 +218,7 @@ function BrowseBooksContent() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="aspect-[2/3] bg-white/5 rounded-2xl animate-pulse" />
+                <div key={i} className="aspect-2/3 bg-white/5 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : books.length === 0 ? (
@@ -245,7 +245,7 @@ function BrowseBooksContent() {
                   key={book.id}
                   className="group relative bg-[#0f0f11] rounded-2xl overflow-hidden border border-white/5 hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 flex flex-col"
                 >
-                  <div className="aspect-[2/3] relative overflow-hidden bg-zinc-900">
+                  <div className="aspect-2/3 relative overflow-hidden bg-zinc-900">
                     {book.coverImage ? (
                       <div className="relative w-full h-full">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -254,7 +254,7 @@ function BrowseBooksContent() {
                           alt={book.title} 
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                       </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-zinc-800 group-hover:bg-zinc-700 transition-colors">

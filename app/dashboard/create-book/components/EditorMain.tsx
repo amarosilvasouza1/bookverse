@@ -1,5 +1,6 @@
 import { Eye, EyeOff, Save, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import RichEditor from './RichEditor';
 
 interface Page {
   id: string;
@@ -14,7 +15,6 @@ interface EditorMainProps {
   pages: Page[];
   currentPageIndex: number;
   updateCurrentPage: (field: 'title' | 'content', value: string) => void;
-  handleTextSelect: () => void;
   showPreview: boolean;
   setShowPreview: (show: boolean) => void;
   handleSave: (published: boolean) => void;
@@ -30,7 +30,6 @@ export default function EditorMain({
   pages,
   currentPageIndex,
   updateCurrentPage,
-  handleTextSelect,
   showPreview,
   setShowPreview,
   handleSave,
@@ -159,13 +158,10 @@ export default function EditorMain({
                 )}
               </div>
             ) : (
-              <textarea
+              <RichEditor
+                content={currentPage.content}
+                onChange={(content) => updateCurrentPage('content', content)}
                 placeholder="Once upon a time..."
-                value={currentPage.content}
-                onChange={(e) => updateCurrentPage('content', e.target.value)}
-                className="w-full h-[60vh] bg-transparent resize-none focus:outline-none text-lg md:text-xl leading-loose placeholder:text-white/5 font-serif text-zinc-300 selection:bg-indigo-500/30"
-                onSelect={handleTextSelect}
-                spellCheck={false}
               />
             )}
           </motion.div>
