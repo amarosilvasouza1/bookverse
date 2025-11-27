@@ -36,6 +36,7 @@ interface Book {
   coverImage?: string;
   genre?: string;
   isPremium: boolean;
+  allowDownload?: boolean;
   price?: number | string;
   pages?: Page[];
   content?: string;
@@ -62,6 +63,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   const [coverImage, setCoverImage] = useState(initialBook?.coverImage || '');
   const [genre, setGenre] = useState(initialBook?.genre || '');
   const [isPremium, setIsPremium] = useState(initialBook?.isPremium || false);
+  const [allowDownload, setAllowDownload] = useState(initialBook?.allowDownload || false);
   const [price, setPrice] = useState(initialBook?.price?.toString() || '');
   
   // Pages State
@@ -89,7 +91,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   const [apiKey, setApiKey] = useState(user?.geminiApiKey || '');
   const [aiPrompt, setAiPrompt] = useState('');
   const [pageCount, setPageCount] = useState(3);
-  const [aiMode, setAiMode] = useState<'complete' | 'structure' | 'page'>('complete');
+  const [aiMode, setAiMode] = useState<'complete' | 'structure' | 'page' | 'analyze'>('complete');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleAddPage = () => {
@@ -193,6 +195,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
         coverImage,
         genre,
         isPremium,
+        allowDownload,
         price: isPremium ? parseFloat(price) : 0,
         published
       });
@@ -221,8 +224,13 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   };
 
   const handleGenerateAI = async () => {
-    if (!apiKey || !aiPrompt) {
-      setNotification({ type: 'error', message: 'API Key and Prompt are required' });
+    if (!apiKey) {
+      setNotification({ type: 'error', message: 'API Key is required' });
+      return;
+    }
+
+    if (aiMode !== 'analyze' && !aiPrompt) {
+      setNotification({ type: 'error', message: 'Prompt is required' });
       return;
     }
 
@@ -231,12 +239,23 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
 
     try {
       const { generateBookAI } = await import('@/app/actions/generate-book-ai');
-      const result = await generateBookAI(apiKey, aiPrompt, pageCount, aiMode);
+      
+      // For analysis, we send the current page content as the prompt
+      const promptToSend = aiMode === 'analyze' 
+        ? `Analyze this text and provide 3 specific improvements for pacing, tone, and clarity:\n\n${pages[currentPageIndex].content}`
+        : aiPrompt;
+
+      const result = await generateBookAI(apiKey, promptToSend, pageCount, aiMode);
 
       if (result.error) throw new Error(result.error);
 
       if (result.data) {
-        if (aiMode === 'page') {
+        if (aiMode === 'analyze') {
+           // Show analysis result in a modal or notification (for now, using notification)
+           // ideally we would show this in a dedicated UI panel
+           setNotification({ type: 'success', message: 'Analysis complete! Check the AI panel for results.' });
+           setAiPrompt(result.data.analysis || ''); // Store analysis in prompt area for now
+        } else if (aiMode === 'page') {
           if (result.data.content) {
              updateCurrentPage('content', result.data.content);
              setNotification({ type: 'success', message: 'Page content generated!' });
@@ -361,6 +380,8 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 setIsPremium={setIsPremium}
                 price={price}
                 setPrice={setPrice}
+                allowDownload={allowDownload}
+                setAllowDownload={setAllowDownload}
               />
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getSession } from '@/lib/auth';
 
-export async function generateBookAI(apiKey: string, prompt: string, pageCount: number = 3, mode: 'complete' | 'structure' | 'page' = 'complete') {
+export async function generateBookAI(apiKey: string, prompt: string, pageCount: number = 3, mode: 'complete' | 'structure' | 'page' | 'analyze' = 'complete') {
   try {
     const session = await getSession();
     if (!session) {
@@ -50,6 +50,14 @@ export async function generateBookAI(apiKey: string, prompt: string, pageCount: 
       Return ONLY valid JSON with the following structure:
       {
         "content": "The full chapter content..."
+      }`;
+    } else if (mode === 'analyze') {
+      systemPrompt = `You are a professional book editor and writing coach.
+      Analyze the provided text for pacing, tone, clarity, and plot holes.
+      Provide 3 specific, actionable improvements.
+      Return ONLY valid JSON with the following structure:
+      {
+        "analysis": "Your detailed analysis and 3 bullet points for improvement..."
       }`;
     } else {
       // Complete mode

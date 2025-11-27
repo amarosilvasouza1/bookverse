@@ -17,6 +17,7 @@ interface BookReaderProps {
     title: string;
     content: string;
     isPremium: boolean;
+    allowDownload: boolean;
     price: number;
     pages: {
       title: string | null;
@@ -36,7 +37,7 @@ interface BookReaderProps {
 type Theme = 'dark' | 'light' | 'sepia';
 type FontFamily = 'serif' | 'sans' | 'mono';
 
-export function BookReader({ book, canRead, isSubscriber }: BookReaderProps) {
+export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReaderProps) {
   // --- State: Content & Navigation ---
   const [currentPage, setCurrentPage] = useState(0);
 // ... existing code ...
@@ -294,6 +295,59 @@ export function BookReader({ book, canRead, isSubscriber }: BookReaderProps) {
     mono: 'font-mono',
   };
 
+  // --- PDF Export ---
+  const handleDownloadPDF = async () => {
+    try {
+      const jsPDF = (await import('jspdf')).default;
+      const doc = new jsPDF();
+      
+      // Title Page
+      doc.setFont('times', 'bold');
+      doc.setFontSize(24);
+      doc.text(book.title, 105, 100, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.setFont('times', 'normal');
+      doc.text(`By ${book.author.name || book.author.username}`, 105, 115, { align: 'center' });
+      
+      // Content
+      let pageNum = 1;
+      
+      pages.forEach((page) => {
+        doc.addPage();
+        pageNum++;
+        
+        // Chapter Title
+        if (page.title) {
+          doc.setFont('times', 'bold');
+          doc.setFontSize(18);
+          doc.text(page.title, 20, 30);
+          doc.setFont('times', 'normal');
+          doc.setFontSize(12);
+        }
+        
+        // Content splitting
+        const splitText = doc.splitTextToSize(page.content, 170);
+        const y = page.title ? 45 : 30;
+        
+        // Simple pagination for content
+        // Note: This is a basic implementation. For production, better text wrapping/pagination is needed.
+        if (splitText.length > 0) {
+           doc.text(splitText, 20, y);
+        }
+        
+        // Page Number
+        doc.setFontSize(10);
+        doc.text(`Page ${pageNum}`, 105, 285, { align: 'center' });
+      });
+      
+      doc.save(`${book.title.replace(/\s+/g, '_')}.pdf`);
+    } catch (error) {
+      console.error('PDF Generation Error:', error);
+      alert('Failed to generate PDF');
+    }
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${themeStyles[theme]}`}>
       {/* Top Bar */}
@@ -314,6 +368,18 @@ export function BookReader({ book, canRead, isSubscriber }: BookReaderProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          {canRead && (isAuthor || book.allowDownload) && (
+            <button 
+              onClick={handleDownloadPDF}
+              className={`items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hidden sm:flex
+                ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10 text-zinc-300' : 'bg-black/5 hover:bg-black/10 text-zinc-700'}`}
+              title="Download PDF"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>PDF</span>
+            </button>
+          )}
+
           <button 
             onClick={handleLike}
             disabled={likeLoading}

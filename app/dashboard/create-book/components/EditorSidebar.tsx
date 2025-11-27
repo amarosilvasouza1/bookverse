@@ -44,8 +44,8 @@ interface EditorSidebarProps {
   setAiPrompt: (prompt: string) => void;
   pageCount: number;
   setPageCount: (count: number) => void;
-  aiMode: 'complete' | 'structure' | 'page';
-  setAiMode: (mode: 'complete' | 'structure' | 'page') => void;
+  aiMode: 'complete' | 'structure' | 'page' | 'analyze';
+  setAiMode: (mode: 'complete' | 'structure' | 'page' | 'analyze') => void;
   isGenerating: boolean;
   handleGenerateAI: () => void;
   // Settings Props
@@ -59,6 +59,8 @@ interface EditorSidebarProps {
   setIsPremium: (isPremium: boolean) => void;
   price: string;
   setPrice: (price: string) => void;
+  allowDownload: boolean;
+  setAllowDownload: (allow: boolean) => void;
 }
 
 function SortablePageItem({ page, index, isActive, onClick, onDelete }: { 
@@ -158,6 +160,8 @@ export default function EditorSidebar({
   setIsPremium,
   price,
   setPrice,
+  allowDownload,
+  setAllowDownload,
 }: EditorSidebarProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -355,6 +359,25 @@ export default function EditorSidebar({
                     />
                   </div>
                 )}
+              </div>
+
+              {/* Download Settings */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                      <Book className="w-3 h-3" />
+                      Allow PDF Download
+                    </label>
+                    <p className="text-[10px] text-zinc-600">Let readers download your book</p>
+                  </div>
+                  <button 
+                    onClick={() => setAllowDownload(!allowDownload)}
+                    className={`w-10 h-5 rounded-full transition-colors relative ${allowDownload ? 'bg-indigo-600' : 'bg-white/10'}`}
+                  >
+                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${allowDownload ? 'left-6' : 'left-1'}`} />
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

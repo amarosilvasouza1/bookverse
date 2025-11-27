@@ -7,8 +7,8 @@ interface AIPanelProps {
   setAiPrompt: (prompt: string) => void;
   pageCount: number;
   setPageCount: (count: number) => void;
-  aiMode: 'complete' | 'structure' | 'page';
-  setAiMode: (mode: 'complete' | 'structure' | 'page') => void;
+  aiMode: 'complete' | 'structure' | 'page' | 'analyze';
+  setAiMode: (mode: 'complete' | 'structure' | 'page' | 'analyze') => void;
   isGenerating: boolean;
   handleGenerateAI: () => void;
 }
@@ -52,7 +52,7 @@ export default function AIPanel({
 
         <div className="space-y-2 relative z-10">
           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Generation Mode</label>
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5">
             <button
               onClick={() => setAiMode('complete')}
               className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl border transition-all duration-200 ${
@@ -62,7 +62,7 @@ export default function AIPanel({
               }`}
             >
               <BookOpen className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Complete</span>
+              <span className="text-[9px] font-medium">Complete Book</span>
             </button>
             <button
               onClick={() => setAiMode('structure')}
@@ -73,7 +73,7 @@ export default function AIPanel({
               }`}
             >
               <AlignLeft className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Structure</span>
+              <span className="text-[9px] font-medium">Structure Only</span>
             </button>
             <button
               onClick={() => setAiMode('page')}
@@ -84,27 +84,40 @@ export default function AIPanel({
               }`}
             >
               <FileText className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Page</span>
+              <span className="text-[9px] font-medium">Single Page</span>
+            </button>
+            <button
+              onClick={() => setAiMode('analyze')}
+              className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl border transition-all duration-200 ${
+                aiMode === 'analyze' 
+                  ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-sm' 
+                  : 'bg-black/20 border-white/5 text-zinc-500 hover:bg-white/5 hover:text-zinc-300'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 mb-1" />
+              <span className="text-[9px] font-medium">Beta Reader</span>
             </button>
           </div>
         </div>
 
-        <div className="space-y-2 relative z-10">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Prompt</label>
-          <textarea
-            placeholder={
-              aiMode === 'page' 
-                ? "Describe the scene..." 
-                : "Describe your book idea..."
-            }
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            rows={3}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 resize-none placeholder:text-zinc-600 leading-relaxed custom-scrollbar min-h-[80px] sm:min-h-[120px]"
-          />
-        </div>
+        {aiMode !== 'analyze' && (
+          <div className="space-y-2 relative z-10">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Prompt</label>
+            <textarea
+              placeholder={
+                aiMode === 'page' 
+                  ? "Describe the scene..." 
+                  : "Describe your book idea..."
+              }
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              rows={3}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 resize-none placeholder:text-zinc-600 leading-relaxed custom-scrollbar min-h-[80px] sm:min-h-[120px]"
+            />
+          </div>
+        )}
 
-        {aiMode !== 'page' && (
+        {aiMode !== 'page' && aiMode !== 'analyze' && (
           <div className="space-y-3 relative z-10">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Length</label>
@@ -128,18 +141,18 @@ export default function AIPanel({
 
         <button
           onClick={handleGenerateAI}
-          disabled={isGenerating || !apiKey || !aiPrompt}
+          disabled={isGenerating || !apiKey || (aiMode !== 'analyze' && !aiPrompt)}
           className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg shadow-purple-500/20 relative z-10 group"
         >
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              Magic in progress...
+              Thinking...
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-              {aiMode === 'page' ? 'Generate Page' : 'Generate Book'}
+              {aiMode === 'page' ? 'Generate Page' : aiMode === 'analyze' ? 'Analyze Draft' : 'Generate Book'}
             </>
           )}
         </button>
@@ -147,6 +160,8 @@ export default function AIPanel({
         <p className="text-[9px] text-zinc-500 text-center relative z-10">
           {aiMode === 'page' 
             ? '⚠️ Overwrites current page content'
+            : aiMode === 'analyze'
+            ? 'ℹ️ Analyzes current page content'
             : '⚠️ Overwrites title, description & pages'}
         </p>
       </div>
