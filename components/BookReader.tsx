@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import CharacterChat from './CharacterChat';
 import ReadingRoomControl from './ReadingRoomControl';
+import ShareQuoteModal from './ShareQuoteModal';
 import { getRoomState, updateRoomPage } from '@/app/actions/reading-room';
 import { updateReadingProgress } from '@/app/actions/analytics';
 import { buyBook } from '@/app/actions/buy-book';
@@ -29,14 +30,17 @@ interface BookReaderProps {
   };
   canRead: boolean;
   isAuthor: boolean;
+  isSubscriber: boolean;
 }
 
 type Theme = 'dark' | 'light' | 'sepia';
 type FontFamily = 'serif' | 'sans' | 'mono';
 
-export function BookReader({ book, canRead }: BookReaderProps) {
+export function BookReader({ book, canRead, isSubscriber }: BookReaderProps) {
   // --- State: Content & Navigation ---
   const [currentPage, setCurrentPage] = useState(0);
+// ... existing code ...
+
   
   // --- State: Reading Room ---
   const searchParams = useSearchParams();
@@ -66,6 +70,38 @@ export function BookReader({ book, canRead }: BookReaderProps) {
   const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+
+  // --- State: Sharing ---
+  const [selectedQuote, setSelectedQuote] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        setSelectionPosition(null);
+        return;
+      }
+
+      const text = selection.toString().trim();
+      if (text.length > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        setSelectedQuote(text);
+        setSelectionPosition({
+          x: rect.left + (rect.width / 2),
+          y: rect.top - 10 // Position above selection
+        });
+      } else {
+        setSelectionPosition(null);
+      }
+    };
+
+    document.addEventListener('selectionchange', handleSelection);
+    return () => document.removeEventListener('selectionchange', handleSelection);
+  }, []);
 
   // --- Effects: Reading Room Sync ---
   useEffect(() => {
@@ -498,6 +534,34 @@ export function BookReader({ book, canRead }: BookReaderProps) {
           hostName={roomState.hostName || 'Host'}
         />
       )}
+
+      {/* Floating Share Button */}
+      {selectionPosition && !showShareModal && (
+        <button
+          style={{
+            position: 'fixed',
+            top: `${selectionPosition.y}px`,
+            left: `${selectionPosition.x}px`,
+            transform: 'translate(-50%, -100%)',
+          }}
+          className="z-50 mb-2 bg-zinc-900 text-white px-3 py-1.5 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium animate-in zoom-in-95 hover:scale-105 transition-transform"
+          onMouseDown={(e) => {
+            e.preventDefault(); // Prevent losing selection
+            setShowShareModal(true);
+          }}
+        >
+          <Share2 className="w-3 h-3" /> Share Quote
+        </button>
+      )}
+
+      <ShareQuoteModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        quote={selectedQuote}
+        bookTitle={book.title}
+        authorName={book.author.name || book.author.username}
+        isPremiumUser={isSubscriber}
+      />
     </div>
   );
 }

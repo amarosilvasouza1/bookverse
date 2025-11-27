@@ -59,13 +59,14 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         book={book} 
         canRead={!!canRead} 
         isAuthor={isAuthor}
+        isSubscriber={!!hasSubscription}
       />
       
       <div className="px-6 space-y-8">
         {/* Author Section */}
         <div className="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-zinc-800 overflow-hidden border-2 border-white/10 shrink-0">
+            <div className="w-16 h-16 rounded-full bg-zinc-800 overflow-hidden border-2 border-white/10 shrink-0" suppressHydrationWarning>
               {book.author.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={book.author.image} alt={book.author.name || book.author.username} className="w-full h-full object-cover" />
