@@ -100,22 +100,25 @@ export default function AIPanel({
           </div>
         </div>
 
-        {aiMode !== 'analyze' && (
-          <div className="space-y-2 relative z-10">
-            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Prompt</label>
-            <textarea
-              placeholder={
-                aiMode === 'page' 
-                  ? "Describe the scene..." 
-                  : "Describe your book idea..."
-              }
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              rows={3}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 resize-none placeholder:text-zinc-600 leading-relaxed custom-scrollbar min-h-[80px] sm:min-h-[120px]"
-            />
-          </div>
-        )}
+        <div className="space-y-2 relative z-10">
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+            {aiMode === 'analyze' ? 'Analysis Result' : 'Prompt'}
+          </label>
+          <textarea
+            placeholder={
+              aiMode === 'page' 
+                ? "Describe the scene..." 
+                : aiMode === 'analyze'
+                ? "Analysis results will appear here..."
+                : "Describe your book idea..."
+            }
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            readOnly={aiMode === 'analyze'}
+            rows={aiMode === 'analyze' ? 8 : 3}
+            className={`w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 resize-none placeholder:text-zinc-600 leading-relaxed custom-scrollbar min-h-[80px] sm:min-h-[120px] ${aiMode === 'analyze' ? 'text-purple-300' : ''}`}
+          />
+        </div>
 
         {aiMode !== 'page' && aiMode !== 'analyze' && (
           <div className="space-y-3 relative z-10">
