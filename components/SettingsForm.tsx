@@ -6,6 +6,7 @@ import ImageUpload from '@/components/ImageUpload';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { updateProfile } from '@/app/actions/user';
 
 interface SettingsFormProps {
   user: {
@@ -46,8 +47,33 @@ export default function SettingsForm({ user }: SettingsFormProps) {
       // Create timeout for large uploads
 
 
-      const { updateProfile } = await import('@/app/actions/user');
-      const result = await updateProfile(formData);
+
+      // const { updateProfile } = await import('@/app/actions/user');
+      
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('bio', formData.bio);
+      if (formData.image && formData.image.startsWith('data:')) {
+        const imageBlob = await fetch(formData.image).then(r => r.blob());
+        data.append('image', imageBlob, 'profile-image.jpg');
+      } else {
+        data.append('image', formData.image);
+      }
+
+      if (formData.banner && formData.banner.startsWith('data:')) {
+        const bannerBlob = await fetch(formData.banner).then(r => r.blob());
+        data.append('banner', bannerBlob, 'profile-banner.jpg');
+      } else {
+        data.append('banner', formData.banner);
+      }
+      data.append('socialLinks', JSON.stringify(formData.socialLinks));
+      data.append('geminiApiKey', formData.geminiApiKey);
+
+      console.log('Sending profile update...');
+      console.log('Image length:', formData.image?.length);
+      console.log('Banner length:', formData.banner?.length);
+
+      const result = await updateProfile(data);
       
       if (result.error) {
         throw new Error(result.error);
@@ -62,7 +88,12 @@ export default function SettingsForm({ user }: SettingsFormProps) {
       if (error instanceof Error && error.name === 'AbortError') {
         setNotification({ 
           type: 'error', 
-          message: 'Upload timed out. Please try with a smaller image or compress it first.' 
+          message: 'Upload timed out. Please try with a smaller image.' 
+        });
+      } else if (error instanceof Error && error.message.includes('Unexpected end of form')) {
+        setNotification({
+          type: 'error',
+          message: 'Upload failed (Server Error). The image might be too large or the connection was interrupted. Please try a smaller image.'
         });
       } else {
         setNotification({ 
@@ -109,6 +140,11 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                 onChange={(value) => setFormData({...formData, image: value})}
                 aspectRatio="square"
               />
+              <p className="text-xs text-muted-foreground">
+                Current payload size: {((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024 > 1024 
+                  ? `${(((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024 / 1024).toFixed(2)} MB`
+                  : `${(((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024).toFixed(2)} KB`}
+              </p>
               
               <ImageUpload
                 label="Profile Banner"
