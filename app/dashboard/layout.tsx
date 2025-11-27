@@ -9,7 +9,7 @@ import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useLanguage();
-  const router = useRouter();
+  const { t } = useLanguage();
 
   const navigation = [
     { name: t('overview'), href: '/dashboard', icon: LayoutDashboard },
@@ -30,7 +30,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
+    <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30" suppressHydrationWarning>
       {/* Desktop Sidebar */}
       <aside className="fixed h-screen w-64 border-r border-white/10 hidden md:flex flex-col bg-background z-50">
         <div className="p-6 border-b border-white/10">

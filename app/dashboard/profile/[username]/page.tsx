@@ -156,7 +156,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 py-6 border-y border-white/10 w-full">
+            <div className="grid grid-cols-4 gap-4 py-6 border-y border-white/10 w-full">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{user._count.books}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Books</div>
@@ -168,6 +168,10 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{user._count.userAchievements}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Trophies</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">{user._count.followers}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">Followers</div>
               </div>
             </div>
           </div>
