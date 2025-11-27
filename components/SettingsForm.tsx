@@ -54,21 +54,29 @@ export default function SettingsForm({ user }: SettingsFormProps) {
       data.append('name', formData.name);
       data.append('bio', formData.bio);
       let imageSize = 0;
-      if (formData.image && formData.image.startsWith('data:')) {
-        const imageBlob = await fetch(formData.image).then(r => r.blob());
-        imageSize = imageBlob.size;
-        data.append('image', imageBlob, 'profile-image.jpg');
-      } else {
-        data.append('image', formData.image);
+      // Only append image if it has changed
+      if (formData.image !== user.image) {
+        if (formData.image && formData.image.startsWith('data:')) {
+          const imageBlob = await fetch(formData.image).then(r => r.blob());
+          imageSize = imageBlob.size;
+          data.append('image', imageBlob, 'profile-image.jpg');
+        } else if (formData.image) {
+           // It's a URL but different from user.image? (e.g. user cleared it then pasted a URL? Unlikely for this UI)
+           // Or maybe user cleared it (empty string)
+           data.append('image', formData.image);
+        }
       }
 
       let bannerSize = 0;
-      if (formData.banner && formData.banner.startsWith('data:')) {
-        const bannerBlob = await fetch(formData.banner).then(r => r.blob());
-        bannerSize = bannerBlob.size;
-        data.append('banner', bannerBlob, 'profile-banner.jpg');
-      } else {
-        data.append('banner', formData.banner);
+      // Only append banner if it has changed
+      if (formData.banner !== user.banner) {
+        if (formData.banner && formData.banner.startsWith('data:')) {
+          const bannerBlob = await fetch(formData.banner).then(r => r.blob());
+          bannerSize = bannerBlob.size;
+          data.append('banner', bannerBlob, 'profile-banner.jpg');
+        } else if (formData.banner) {
+          data.append('banner', formData.banner);
+        }
       }
 
       // Alert for debugging Vercel 413
