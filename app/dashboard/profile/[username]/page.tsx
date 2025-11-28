@@ -59,7 +59,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
   const socialLinks = user.socialLinks ? JSON.parse(user.socialLinks) : {};
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-20">
+    <div className="min-h-screen bg-[#0a0a0a] pb-20 -mx-4 -mt-4 md:-mx-8 md:-mt-8">
       {/* Banner */}
       <div className="h-48 md:h-80 w-full relative bg-linear-to-r from-purple-900/20 to-pink-900/20">
         {user.banner ? (
@@ -155,7 +155,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 py-6 border-y border-white/10 w-full">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-white/10 w-full">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{user._count.books}</div>
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Books</div>

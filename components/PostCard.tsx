@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import Image from 'next/image';
 import { MoreHorizontal, Heart, MessageSquare, Share2 } from 'lucide-react';
@@ -55,25 +56,31 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   return (
     <div className="glass-card p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all bg-black/20">
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-full bg-gray-800 overflow-hidden shrink-0 relative border border-white/10">
-          {post.author.image ? (
-            <Image 
-              src={post.author.image} 
-              alt={post.author.name || ''} 
-              fill
-              className="object-cover" 
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg bg-linear-to-br from-gray-700 to-gray-800">
-              {(post.author.name || '?')[0]}
-            </div>
-          )}
-        </div>
+        <Link href={`/dashboard/profile/${post.author.username}`} className="shrink-0">
+          <div className="w-12 h-12 rounded-full bg-gray-800 overflow-hidden relative border border-white/10 hover:border-primary/50 transition-colors">
+            {post.author.image ? (
+              <Image 
+                src={post.author.image} 
+                alt={post.author.name || ''} 
+                fill
+                className="object-cover" 
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg bg-linear-to-br from-gray-700 to-gray-800">
+                {(post.author.name || '?')[0]}
+              </div>
+            )}
+          </div>
+        </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-white hover:underline cursor-pointer">{post.author.name}</span>
-              <span className="text-sm text-muted-foreground">@{post.author.username}</span>
+              <Link href={`/dashboard/profile/${post.author.username}`} className="font-bold text-white hover:text-primary hover:underline cursor-pointer transition-colors">
+                {post.author.name}
+              </Link>
+              <Link href={`/dashboard/profile/${post.author.username}`} className="text-sm text-muted-foreground hover:text-white transition-colors">
+                @{post.author.username}
+              </Link>
               <span className="text-xs text-muted-foreground">• {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
             </div>
             <button className="text-muted-foreground hover:text-white transition-colors">

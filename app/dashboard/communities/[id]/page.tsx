@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { notFound } from 'next/navigation';
-import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe, Sparkles, MoreHorizontal, Heart, Share2 } from 'lucide-react';
+import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe, Sparkles } from 'lucide-react';
 import CreatePostForm from '@/components/CreatePostForm';
 import { joinCommunity } from '@/app/actions/join-community';
 import Link from 'next/link';
@@ -98,7 +98,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   const gradient = getGradient(community.name);
 
   return (
-    <div className="-mt-6 -mx-6 md:-mt-8 md:-mx-8">
+    <div className="-mt-4 -mx-4 md:-mt-8 md:-mx-8">
       {/* Immersive Header */}
       <div className={`relative h-48 md:h-80 bg-linear-to-r ${gradient}`}>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40"></div>
@@ -127,7 +127,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   {community.isMember ? (
                     <div className="flex items-center gap-3">
                       <div className="inline-flex items-center px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full font-bold border border-emerald-500/30 backdrop-blur-md">
@@ -169,7 +169,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-6 md:px-10 pt-20 md:pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-10 pt-20 md:pt-24 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column: Feed (8 cols) */}
@@ -216,12 +216,12 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
               </p>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground flex items-center gap-2">
+                <Link href={`/dashboard/communities/${community.id}/members`} className="flex items-center justify-between text-sm group cursor-pointer hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+                  <span className="text-muted-foreground flex items-center gap-2 group-hover:text-white transition-colors">
                     <Users className="w-4 h-4" /> Members
                   </span>
                   <span className="font-bold text-white">{community._count.members}</span>
-                </div>
+                </Link>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" /> Posts
@@ -239,7 +239,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
               <div className="mt-6 pt-6 border-t border-white/10">
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Created By</h4>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden relative">
+                  <Link href={`/dashboard/profile/${community.creator.username}`} className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden relative hover:ring-2 hover:ring-primary transition-all">
                     {community.creator.image ? (
                       <Image src={community.creator.image} alt={community.creator.name || ''} fill className="object-cover" />
                     ) : (
@@ -247,9 +247,11 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                         {(community.creator.name || '?')[0]}
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <div>
-                    <div className="text-sm font-bold text-white">{community.creator.name}</div>
+                    <Link href={`/dashboard/profile/${community.creator.username}`} className="text-sm font-bold text-white hover:text-primary hover:underline transition-colors">
+                      {community.creator.name}
+                    </Link>
                     <div className="text-xs text-muted-foreground">@{community.creator.username}</div>
                   </div>
                 </div>

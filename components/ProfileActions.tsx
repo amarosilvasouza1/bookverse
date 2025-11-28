@@ -25,7 +25,7 @@ export function ProfileActions({ username, isFollowing: initialIsFollowing, isOw
         const data = await res.json();
         setIsFollowing(data.isFollowing);
       }
-    } catch (error) {
+    } catch {
       console.error('Follow action failed');
     } finally {
       setLoading(false);
@@ -35,7 +35,7 @@ export function ProfileActions({ username, isFollowing: initialIsFollowing, isOw
   if (isOwnProfile) return null;
 
   return (
-    <div className="flex gap-3 mt-6 w-full">
+    <div className="flex flex-wrap gap-3 mt-6 w-full">
       <button
         onClick={handleFollow}
         disabled={loading}

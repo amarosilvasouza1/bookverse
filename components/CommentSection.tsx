@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createComment, deleteComment, getComments } from '@/app/actions/community-interactions';
@@ -105,19 +106,23 @@ export default function CommentSection({ postId }: { postId: string }) {
       <div className="space-y-4">
         {comments.map((comment) => (
           <div key={comment.id} className="flex gap-3 group">
-            <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden shrink-0 relative border border-white/10">
-              {comment.author.image ? (
-                <Image src={comment.author.image} alt={comment.author.name || ''} fill className="object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white bg-gray-700">
-                  {(comment.author.name || '?')[0]}
-                </div>
-              )}
-            </div>
+            <Link href={`/dashboard/profile/${comment.author.username}`} className="shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gray-700 overflow-hidden relative border border-white/10 hover:border-primary/50 transition-colors">
+                {comment.author.image ? (
+                  <Image src={comment.author.image} alt={comment.author.name || ''} fill className="object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white bg-gray-700">
+                    {(comment.author.name || '?')[0]}
+                  </div>
+                )}
+              </div>
+            </Link>
             <div className="flex-1">
               <div className="bg-white/5 rounded-2xl rounded-tl-none px-4 py-2 inline-block max-w-full">
                 <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className="text-sm font-bold text-white">{comment.author.name}</span>
+                  <Link href={`/dashboard/profile/${comment.author.username}`} className="text-sm font-bold text-white hover:text-primary hover:underline transition-colors">
+                    {comment.author.name}
+                  </Link>
                   <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
                 </div>
                 <p className="text-sm text-zinc-300">{comment.content}</p>
