@@ -1,6 +1,7 @@
 import { Eye, EyeOff, Save, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import RichEditor from './RichEditor';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Page {
   id: string;
@@ -37,6 +38,7 @@ export default function EditorMain({
   isFocusMode,
   setIsFocusMode
 }: EditorMainProps) {
+  const { t } = useLanguage();
   const currentPage = pages[currentPageIndex];
 
   return (
@@ -46,19 +48,19 @@ export default function EditorMain({
         <div className="flex items-center gap-4 text-xs text-zinc-500 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
           <span className="flex items-center gap-2 shrink-0">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-            <span className="hidden sm:inline">Auto-saving</span>
+            <span className="hidden sm:inline">{t('autoSaving')}</span>
           </span>
           <span className="w-px h-3 bg-white/10 shrink-0" />
-          <span className="shrink-0">{currentPage.content.length} chars</span>
+          <span className="shrink-0">{currentPage.content.length} {t('charsCount')}</span>
           <span className="w-px h-3 bg-white/10 shrink-0" />
-          <span className="shrink-0">Page {currentPageIndex + 1} of {pages.length}</span>
+          <span className="shrink-0">{t('pageOf')} {currentPageIndex + 1} {t('of')} {pages.length}</span>
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <button 
             onClick={() => setIsFocusMode(!isFocusMode)}
             className="p-2 text-zinc-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            title="Toggle Focus Mode"
+            title={t('toggleFocusMode')}
           >
             {isFocusMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
@@ -74,7 +76,7 @@ export default function EditorMain({
             }`}
           >
             {showPreview ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{showPreview ? 'Preview' : 'Edit'}</span>
+            <span className="hidden sm:inline">{showPreview ? t('preview') : t('edit')}</span>
           </button>
           
           <button 
@@ -82,8 +84,8 @@ export default function EditorMain({
             disabled={loading}
             className="px-3 sm:px-4 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors whitespace-nowrap"
           >
-            <span className="hidden sm:inline">Save Draft</span>
-            <span className="sm:hidden">Save</span>
+            <span className="hidden sm:inline">{t('saveDraft')}</span>
+            <span className="sm:hidden">{t('save')}</span>
           </button>
           
           <button 
@@ -92,7 +94,7 @@ export default function EditorMain({
             className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-white text-black font-bold text-xs rounded-lg hover:bg-zinc-200 transition-all disabled:opacity-50 shadow-lg shadow-white/5 whitespace-nowrap"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            <span>Publish</span>
+            <span>{t('publish')}</span>
           </button>
         </div>
       </div>
@@ -104,7 +106,7 @@ export default function EditorMain({
           <div className="group relative">
             <input
               type="text"
-              placeholder="Untitled Book"
+              placeholder={t('untitledBook')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-transparent text-4xl md:text-5xl font-bold placeholder:text-white/10 focus:outline-none border-none p-0 font-serif leading-tight text-white/90"
@@ -116,10 +118,10 @@ export default function EditorMain({
 
           {/* Page Title */}
           <div className="space-y-2">
-             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">Current Chapter</label>
+             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest pl-1">{t('currentChapter')}</label>
              <input
               type="text"
-              placeholder={`Chapter ${currentPageIndex + 1}`}
+              placeholder={`${t('chapter')} ${currentPageIndex + 1}`}
               value={currentPage.title}
               onChange={(e) => updateCurrentPage('title', e.target.value)}
               className="w-full bg-transparent text-2xl md:text-3xl font-medium placeholder:text-white/10 focus:outline-none border-none p-0 font-serif leading-tight text-white/80"
@@ -154,14 +156,14 @@ export default function EditorMain({
                   );
                 })}
                 {currentPage.content.length === 0 && (
-                  <p className="text-zinc-600 italic">Nothing written yet...</p>
+                  <p className="text-zinc-600 italic">{t('nothingWritten')}</p>
                 )}
               </div>
             ) : (
               <RichEditor
                 content={currentPage.content}
                 onChange={(content) => updateCurrentPage('content', content)}
-                placeholder="Once upon a time..."
+                placeholder={t('editorPlaceholder')}
               />
             )}
           </motion.div>

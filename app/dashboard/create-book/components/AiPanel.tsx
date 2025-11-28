@@ -1,4 +1,7 @@
-import { Loader2, Sparkles, Key, FileText, BookOpen, AlignLeft } from 'lucide-react';
+import { Loader2, Sparkles, Key, FileText, BookOpen, AlignLeft, HelpCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
+import ApiKeyTutorialModal from './ApiKeyTutorialModal';
 
 interface AIPanelProps {
   apiKey: string;
@@ -25,8 +28,12 @@ export default function AIPanel({
   isGenerating,
   handleGenerateAI,
 }: AIPanelProps) {
+  const [showTutorial, setShowTutorial] = useState(false);
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6">
+      <ApiKeyTutorialModal isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
       <div className="p-4 bg-linear-to-br from-purple-500/10 to-indigo-500/10 border border-purple-500/20 rounded-2xl space-y-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-3 opacity-10">
           <Sparkles className="w-20 h-20 text-purple-500" />
@@ -34,16 +41,23 @@ export default function AIPanel({
         
         <div className="flex items-center gap-2 text-purple-400 font-bold text-sm relative z-10">
           <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-          AI Assistant
+          {t('aiAssistant')}
         </div>
         
         <div className="space-y-2 relative z-10">
           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1">
-            <Key className="w-3 h-3" /> API Key
+            <Key className="w-3 h-3" /> {t('apiKey')}
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="ml-auto flex items-center gap-1 text-[9px] text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20"
+            >
+              <HelpCircle className="w-3 h-3" />
+              {t('howToGetKey')}
+            </button>
           </label>
           <input
             type="password"
-            placeholder="Paste your Gemini API Key..."
+            placeholder={t('pasteApiKey')}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all placeholder:text-zinc-600"
@@ -51,7 +65,7 @@ export default function AIPanel({
         </div>
 
         <div className="space-y-2 relative z-10">
-          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Generation Mode</label>
+          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('generationMode')}</label>
           <div className="grid grid-cols-2 gap-1.5">
             <button
               onClick={() => setAiMode('complete')}
@@ -62,7 +76,7 @@ export default function AIPanel({
               }`}
             >
               <BookOpen className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Complete Book</span>
+              <span className="text-[9px] font-medium">{t('completeBook')}</span>
             </button>
             <button
               onClick={() => setAiMode('structure')}
@@ -73,7 +87,7 @@ export default function AIPanel({
               }`}
             >
               <AlignLeft className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Structure Only</span>
+              <span className="text-[9px] font-medium">{t('structureOnly')}</span>
             </button>
             <button
               onClick={() => setAiMode('page')}
@@ -84,7 +98,7 @@ export default function AIPanel({
               }`}
             >
               <FileText className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Single Page</span>
+              <span className="text-[9px] font-medium">{t('singlePage')}</span>
             </button>
             <button
               onClick={() => setAiMode('analyze')}
@@ -95,22 +109,22 @@ export default function AIPanel({
               }`}
             >
               <Sparkles className="w-4 h-4 mb-1" />
-              <span className="text-[9px] font-medium">Beta Reader</span>
+              <span className="text-[9px] font-medium">{t('betaReader')}</span>
             </button>
           </div>
         </div>
 
         <div className="space-y-2 relative z-10">
           <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
-            {aiMode === 'analyze' ? 'Analysis Result' : 'Prompt'}
+            {aiMode === 'analyze' ? t('analysisResult') : t('prompt')}
           </label>
           <textarea
             placeholder={
               aiMode === 'page' 
-                ? "Describe the scene..." 
+                ? t('describeScene')
                 : aiMode === 'analyze'
-                ? "Analysis results will appear here..."
-                : "Describe your book idea..."
+                ? t('analysisPlaceholder')
+                : t('describeBook')
             }
             value={aiPrompt}
             onChange={(e) => setAiPrompt(e.target.value)}
@@ -123,8 +137,8 @@ export default function AIPanel({
         {aiMode !== 'page' && aiMode !== 'analyze' && (
           <div className="space-y-3 relative z-10">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Length</label>
-              <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">{pageCount} Pages</span>
+              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('length')}</label>
+              <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">{pageCount} {t('pagesCount')}</span>
             </div>
             <input
               type="range"
@@ -135,9 +149,9 @@ export default function AIPanel({
               className="w-full h-1.5 bg-black/40 rounded-lg appearance-none cursor-pointer accent-purple-500"
             />
             <div className="flex justify-between text-[9px] text-zinc-600 font-medium px-1">
-              <span>Short</span>
-              <span>Medium</span>
-              <span>Long</span>
+              <span>{t('short')}</span>
+              <span>{t('medium')}</span>
+              <span>{t('long')}</span>
             </div>
           </div>
         )}
@@ -150,12 +164,12 @@ export default function AIPanel({
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              Thinking...
+              {t('generating')}
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-              {aiMode === 'page' ? 'Generate Page' : aiMode === 'analyze' ? 'Analyze Draft' : 'Generate Book'}
+              {t('generate')}
             </>
           )}
         </button>

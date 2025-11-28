@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CharacterSettings from '@/components/CharacterSettings';
 import AiPanel from './AiPanel';
 import ImageUpload from '@/components/ImageUpload';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Page {
   id: string;
@@ -82,6 +83,8 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule
     transform,
     transition,
   } = useSortable({ id: page.id });
+  
+  const { t } = useLanguage();
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -100,7 +103,7 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule
       >
         <div className="flex items-center justify-between mb-1">
           <span className={`font-medium text-xs uppercase tracking-wider ${isActive ? 'text-indigo-400' : ''}`}>
-            Page {index + 1}
+            {t('pageIndex')} {index + 1}
           </span>
           <div className="flex items-center gap-2">
             {/* Schedule Button */}
@@ -137,7 +140,7 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule
           </div>
         </div>
         <p className="text-sm font-serif truncate opacity-80 pl-1 border-l-2 border-white/5 group-hover:border-white/10">
-          {page.title || 'Untitled Page'}
+          {page.title || t('untitledPage')}
         </p>
       </button>
     </div>
@@ -194,12 +197,14 @@ export default function EditorSidebar({
     })
   );
 
+  const { t } = useLanguage();
+
   const tabs = [
-    { id: 'pages', icon: Book, label: 'Pages' },
-    { id: 'settings', icon: Settings, label: 'Settings' },
-    { id: 'collaborators', icon: Users, label: 'Team' },
-    { id: 'ai', icon: Wand2, label: 'AI' },
-    { id: 'characters', icon: User, label: 'Chars' },
+    { id: 'pages', icon: Book, label: t('pagesTab') },
+    { id: 'settings', icon: Settings, label: t('settingsTab') },
+    { id: 'collaborators', icon: Users, label: t('teamTab') },
+    { id: 'ai', icon: Wand2, label: t('aiTab') },
+    { id: 'characters', icon: User, label: t('charsTab') },
   ] as const;
 
   return (
@@ -234,8 +239,8 @@ export default function EditorSidebar({
               className="space-y-4"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Structure</h3>
-                <span className="text-xs text-zinc-600">{pages.length} Pages</span>
+                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{t('structure')}</h3>
+                <span className="text-xs text-zinc-600">{pages.length} {t('pagesCountLabel')}</span>
               </div>
               
               <DndContext 
@@ -266,7 +271,7 @@ export default function EditorSidebar({
                 className="w-full py-3 border border-dashed border-white/10 rounded-xl text-zinc-500 hover:border-indigo-500/50 hover:text-indigo-400 hover:bg-indigo-500/5 transition-all flex items-center justify-center gap-2 text-sm font-medium group"
               >
                 <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                Add New Page
+                {t('addNewPage')}
               </button>
             </motion.div>
           )}
@@ -283,11 +288,11 @@ export default function EditorSidebar({
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                   <ImageIcon className="w-3 h-3" />
-                  Cover Image
+                  {t('coverImage')}
                 </label>
                 <div className="bg-black/20 rounded-xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors">
                   <ImageUpload
-                    label="Upload Cover"
+                    label={t('uploadCover')}
                     value={coverImage}
                     onChange={setCoverImage}
                     aspectRatio="portrait"
@@ -298,17 +303,17 @@ export default function EditorSidebar({
               {/* Details */}
               <div className="space-y-4 pt-4 border-t border-white/5">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Description</label>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('description')}</label>
                   <textarea 
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="w-full bg-black/20 border border-white/5 rounded-xl p-3 text-xs focus:outline-none focus:border-white/20 transition-colors resize-none h-24 placeholder:text-zinc-700 text-zinc-300"
-                    placeholder="Write a catchy blurb..."
+                    placeholder={t('descriptionPlaceholder')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Genres</label>
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{t('genres')}</label>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
                       {genre.split(',').filter(Boolean).map((g) => (
@@ -335,7 +340,7 @@ export default function EditorSidebar({
                       }}
                       className="w-full bg-black/20 border border-white/5 rounded-xl p-2 text-xs focus:outline-none focus:border-white/20 transition-colors [&>option]:bg-zinc-900 appearance-none cursor-pointer hover:bg-black/30 text-zinc-400"
                     >
-                      <option value="">Add a Genre...</option>
+                      <option value="">{t('addGenre')}</option>
                       <option value="Fantasy">Fantasy</option>
                       <option value="Sci-Fi">Sci-Fi</option>
                       <option value="Romance">Romance</option>
@@ -360,9 +365,9 @@ export default function EditorSidebar({
                   <div className="space-y-0.5">
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                       <DollarSign className="w-3 h-3" />
-                      Premium Content
+                      {t('premiumContent')}
                     </label>
-                    <p className="text-[10px] text-zinc-600">Monetize your book</p>
+                    <p className="text-[10px] text-zinc-600">{t('monetizeBook')}</p>
                   </div>
                   <button 
                     onClick={() => setIsPremium(!isPremium)}
@@ -374,7 +379,7 @@ export default function EditorSidebar({
 
                 {isPremium && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-200 pt-2">
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 block">Price ($)</label>
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 block">{t('priceLabel')}</label>
                     <input 
                       type="number" 
                       value={price}
@@ -392,9 +397,9 @@ export default function EditorSidebar({
                   <div className="space-y-0.5">
                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                       <Book className="w-3 h-3" />
-                      Allow PDF Download
+                      {t('allowPdfDownload')}
                     </label>
-                    <p className="text-[10px] text-zinc-600">Let readers download your book</p>
+                    <p className="text-[10px] text-zinc-600">{t('allowPdfDownloadDesc')}</p>
                   </div>
                   <button 
                     onClick={() => setAllowDownload(!allowDownload)}
@@ -410,20 +415,20 @@ export default function EditorSidebar({
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                     <Music className="w-3 h-3" />
-                    Ambience
+                    {t('ambience')}
                   </label>
                   <select 
                     value={ambience}
                     onChange={(e) => setAmbience(e.target.value)}
                     className="w-full bg-black/20 border border-white/5 rounded-xl p-2 text-xs focus:outline-none focus:border-white/20 transition-colors [&>option]:bg-zinc-900 appearance-none cursor-pointer hover:bg-black/30 text-zinc-400"
                   >
-                    <option value="">None</option>
-                    <option value="rain">Rainy Day</option>
-                    <option value="fireplace">Cozy Fireplace</option>
-                    <option value="forest">Forest Sounds</option>
-                    <option value="cafe">Coffee Shop</option>
-                    <option value="space">Deep Space</option>
-                    <option value="ocean">Ocean Waves</option>
+                    <option value="">{t('ambienceNone')}</option>
+                    <option value="rain">{t('ambienceRain')}</option>
+                    <option value="fireplace">{t('ambienceFireplace')}</option>
+                    <option value="forest">{t('ambienceForest')}</option>
+                    <option value="cafe">{t('ambienceCafe')}</option>
+                    <option value="space">{t('ambienceSpace')}</option>
+                    <option value="ocean">{t('ambienceOcean')}</option>
                   </select>
                 </div>
               </div>
@@ -439,11 +444,11 @@ export default function EditorSidebar({
               className="space-y-6"
             >
               <div className="space-y-3">
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Invite Team</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{t('inviteTeam')}</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Username"
+                    placeholder={t('usernamePlaceholder')}
                     value={collaboratorSearch}
                     onChange={(e) => setCollaboratorSearch(e.target.value)}
                     className="flex-1 bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all placeholder:text-zinc-600"
@@ -456,13 +461,13 @@ export default function EditorSidebar({
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                {!bookId && <p className="text-[10px] text-amber-500/80 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">Save the book first to add collaborators.</p>}
+                {!bookId && <p className="text-[10px] text-amber-500/80 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">{t('saveBookFirst')}</p>}
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Members</label>
-                  <span className="text-xs text-zinc-600">{collaborators.length} Active</span>
+                  <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{t('members')}</label>
+                  <span className="text-xs text-zinc-600">{collaborators.length} {t('activeMembers')}</span>
                 </div>
                 
                 <div className="space-y-2">
@@ -485,7 +490,7 @@ export default function EditorSidebar({
                   {collaborators.length === 0 && (
                     <div className="text-center py-8 border border-dashed border-white/5 rounded-xl">
                       <Users className="w-8 h-8 text-zinc-700 mx-auto mb-2" />
-                      <p className="text-xs text-zinc-500">No collaborators yet</p>
+                      <p className="text-xs text-zinc-500">{t('noCollaborators')}</p>
                     </div>
                   )}
                 </div>

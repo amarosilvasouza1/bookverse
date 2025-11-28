@@ -1,13 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'en' | 'pt' | 'jp';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
 const translations = {
@@ -43,6 +43,122 @@ const translations = {
     livePreview: 'Live Preview',
     yourName: 'Your Name',
     bioPreview: 'Your biography will appear here...',
+    // Create Book
+    bookEditor: 'Book Editor',
+    editingMode: 'Editing Mode',
+    draftMode: 'Draft Mode',
+    untitled: 'Untitled',
+    chapter: 'Chapter',
+    saveDraft: 'Save Draft',
+    save: 'Save',
+    publish: 'Publish',
+    publishBook: 'Publish Book',
+    aiAssistant: 'AI Assistant',
+    apiKey: 'API Key',
+    pasteApiKey: 'Paste your Gemini API Key...',
+    generationMode: 'Generation Mode',
+    completeBook: 'Complete Book',
+    structureOnly: 'Structure Only',
+    singlePage: 'Single Page',
+    betaReader: 'Beta Reader',
+    prompt: 'Prompt',
+    describeScene: 'Describe the scene...',
+    describeBook: 'Describe your book idea...',
+    analysisResult: 'Analysis Result',
+    analysisPlaceholder: 'Analysis results will appear here...',
+    length: 'Length',
+    pagesCount: 'Pages',
+    short: 'Short',
+    medium: 'Medium',
+    long: 'Long',
+    generate: 'Generate',
+    generating: 'Thinking...',
+    howToGetKey: 'How to get key?',
+    tutorialTitle: 'Get your Gemini API Key',
+    step1Title: 'Go to Google AI Studio',
+    step1Desc: 'Visit the Google AI Studio to generate your free API key.',
+    openStudio: 'Open Google AI Studio',
+    step2Title: 'Create API Key',
+    step2Desc: 'Click on "Create API key" and select a project (or create a new one).',
+    step3Title: 'Copy & Paste',
+    step3Desc: 'Copy the generated key starting with AIza... and paste it into the input field here.',
+    gotIt: 'Got it',
+    freeApiNote: '✨ The Gemini API is currently free to use for personal projects!',
+    // Editor Sidebar
+    pagesTab: 'Pages',
+    settingsTab: 'Settings',
+    teamTab: 'Team',
+    aiTab: 'AI',
+    charsTab: 'Chars',
+    structure: 'Structure',
+    pagesCountLabel: 'Pages',
+    addNewPage: 'Add New Page',
+    untitledPage: 'Untitled Page',
+    pageIndex: 'Page',
+    // Editor Settings
+    coverImage: 'Cover Image',
+    uploadCover: 'Upload Cover',
+    description: 'Description',
+    descriptionPlaceholder: 'Write a catchy blurb...',
+    genres: 'Genres',
+    addGenre: 'Add a Genre...',
+    premiumContent: 'Premium Content',
+    monetizeBook: 'Monetize your book',
+    priceLabel: 'Price ($)',
+    allowPdfDownload: 'Allow PDF Download',
+    allowPdfDownloadDesc: 'Let readers download your book',
+    ambience: 'Ambience',
+    ambienceNone: 'None',
+    ambienceRain: 'Rainy Day',
+    ambienceFireplace: 'Cozy Fireplace',
+    ambienceForest: 'Forest Sounds',
+    ambienceCafe: 'Coffee Shop',
+    ambienceSpace: 'Deep Space',
+    ambienceOcean: 'Ocean Waves',
+    // Editor Team
+    inviteTeam: 'Invite Team',
+    usernamePlaceholder: 'Username',
+    saveBookFirst: 'Save the book first to add collaborators.',
+    members: 'Members',
+    activeMembers: 'Active',
+    noCollaborators: 'No collaborators yet',
+    // Editor Main
+    autoSaving: 'Auto-saving',
+    charsCount: 'chars',
+    pageOf: 'Page',
+    of: 'of',
+    toggleFocusMode: 'Toggle Focus Mode',
+    preview: 'Preview',
+    edit: 'Edit',
+    untitledBook: 'Untitled Book',
+    currentChapter: 'Current Chapter',
+    nothingWritten: 'Nothing written yet...',
+    editorPlaceholder: 'Once upon a time...',
+    // Rich Editor
+    bold: 'Bold',
+    italic: 'Italic',
+    strikethrough: 'Strikethrough',
+    heading1: 'Heading 1',
+    heading2: 'Heading 2',
+    bulletList: 'Bullet List',
+    orderedList: 'Ordered List',
+    quote: 'Quote',
+    startWriting: 'Start writing...',
+    // Image Upload
+    uploadImage: 'Upload Image',
+    uploading: 'Uploading...',
+    imageUploadError: 'Error uploading image',
+    imageUploadSuccess: 'Image uploaded successfully',
+    selectImage: 'Select Image',
+    changeImage: 'Change Image',
+    removeImage: 'Remove Image',
+    fileTooLarge: 'File is too large. Maximum size is 25MB.',
+    largeImageWarning: 'This image is {{size}}MB.\n\nLarge images may take a long time to upload (30-60 seconds).\n\nConsider compressing it first for better performance.\n\nContinue anyway?',
+    compressionError: 'Compression error:',
+    failedToProcessImage: 'Failed to process image',
+    processingImage: 'Processing...',
+    clickToUploadImage: 'Click to upload image',
+    maxFileSize: 'Max 25MB',
   },
   pt: {
     overview: 'Visão Geral',
@@ -76,6 +192,122 @@ const translations = {
     livePreview: 'Pré-visualização',
     yourName: 'Seu Nome',
     bioPreview: 'Sua biografia aparecerá aqui...',
+    // Create Book
+    bookEditor: 'Editor de Livros',
+    editingMode: 'Modo de Edição',
+    draftMode: 'Modo Rascunho',
+    untitled: 'Sem Título',
+    chapter: 'Capítulo',
+    saveDraft: 'Salvar Rascunho',
+    save: 'Salvar',
+    publish: 'Publicar',
+    publishBook: 'Publicar Livro',
+    aiAssistant: 'Assistente de IA',
+    apiKey: 'Chave da API',
+    pasteApiKey: 'Cole sua chave da API Gemini...',
+    generationMode: 'Modo de Geração',
+    completeBook: 'Livro Completo',
+    structureOnly: 'Apenas Estrutura',
+    singlePage: 'Página Única',
+    betaReader: 'Leitor Beta',
+    prompt: 'Prompt',
+    describeScene: 'Descreva a cena...',
+    describeBook: 'Descreva sua ideia de livro...',
+    analysisResult: 'Resultado da Análise',
+    analysisPlaceholder: 'Os resultados da análise aparecerão aqui...',
+    length: 'Comprimento',
+    pagesCount: 'Páginas',
+    short: 'Curto',
+    medium: 'Médio',
+    long: 'Longo',
+    generate: 'Gerar',
+    generating: 'Pensando...',
+    howToGetKey: 'Como obter a chave?',
+    tutorialTitle: 'Obtenha sua chave da API Gemini',
+    step1Title: 'Vá para o Google AI Studio',
+    step1Desc: 'Visite o Google AI Studio para gerar sua chave de API gratuita.',
+    openStudio: 'Abrir Google AI Studio',
+    step2Title: 'Criar Chave de API',
+    step2Desc: 'Clique em "Create API key" e selecione um projeto (ou crie um novo).',
+    step3Title: 'Copiar e Colar',
+    step3Desc: 'Copie a chave gerada começando com AIza... e cole-a no campo de entrada aqui.',
+    gotIt: 'Entendi',
+    freeApiNote: '✨ A API Gemini é atualmente gratuita para projetos pessoais!',
+    // Editor Sidebar
+    pagesTab: 'Páginas',
+    settingsTab: 'Configurações',
+    teamTab: 'Equipe',
+    aiTab: 'IA',
+    charsTab: 'Personagens',
+    structure: 'Estrutura',
+    pagesCountLabel: 'Páginas',
+    addNewPage: 'Adicionar Página',
+    untitledPage: 'Página Sem Título',
+    pageIndex: 'Página',
+    // Editor Settings
+    coverImage: 'Imagem da Capa',
+    uploadCover: 'Enviar Capa',
+    description: 'Descrição',
+    descriptionPlaceholder: 'Escreva uma sinopse cativante...',
+    genres: 'Gêneros',
+    addGenre: 'Adicionar Gênero...',
+    premiumContent: 'Conteúdo Premium',
+    monetizeBook: 'Monetize seu livro',
+    priceLabel: 'Preço ($)',
+    allowPdfDownload: 'Permitir Download de PDF',
+    allowPdfDownloadDesc: 'Permitir que leitores baixem seu livro',
+    ambience: 'Ambiente',
+    ambienceNone: 'Nenhum',
+    ambienceRain: 'Dia Chuvoso',
+    ambienceFireplace: 'Lareira Aconchegante',
+    ambienceForest: 'Sons da Floresta',
+    ambienceCafe: 'Cafeteria',
+    ambienceSpace: 'Espaço Profundo',
+    ambienceOcean: 'Ondas do Oceano',
+    // Editor Team
+    inviteTeam: 'Convidar Equipe',
+    usernamePlaceholder: 'Nome de usuário',
+    saveBookFirst: 'Salve o livro primeiro para adicionar colaboradores.',
+    members: 'Membros',
+    activeMembers: 'Ativos',
+    noCollaborators: 'Sem colaboradores ainda',
+    // Editor Main
+    autoSaving: 'Salvando auto.',
+    charsCount: 'caracteres',
+    pageOf: 'Página',
+    of: 'de',
+    toggleFocusMode: 'Alternar Modo Foco',
+    preview: 'Visualizar',
+    edit: 'Editar',
+    untitledBook: 'Livro Sem Título',
+    currentChapter: 'Capítulo Atual',
+    nothingWritten: 'Nada escrito ainda...',
+    editorPlaceholder: 'Era uma vez...',
+    // Rich Editor
+    bold: 'Negrito',
+    italic: 'Itálico',
+    strikethrough: 'Tachado',
+    heading1: 'Título 1',
+    heading2: 'Título 2',
+    bulletList: 'Lista com Marcadores',
+    orderedList: 'Lista Numerada',
+    quote: 'Citação',
+    startWriting: 'Comece a escrever...',
+    // Image Upload
+    uploadImage: 'Enviar Imagem',
+    uploading: 'Enviando...',
+    imageUploadError: 'Erro ao enviar imagem',
+    imageUploadSuccess: 'Imagem enviada com sucesso',
+    selectImage: 'Selecionar Imagem',
+    changeImage: 'Alterar Imagem',
+    removeImage: 'Remover Imagem',
+    fileTooLarge: 'O arquivo é muito grande. O tamanho máximo é 25MB.',
+    largeImageWarning: 'Esta imagem tem {{size}}MB.\n\nImagens grandes podem demorar para carregar (30-60 segundos).\n\nConsidere comprimi-la primeiro para melhor desempenho.\n\nContinuar mesmo assim?',
+    compressionError: 'Erro de compressão:',
+    failedToProcessImage: 'Falha ao processar imagem',
+    processingImage: 'Processando...',
+    clickToUploadImage: 'Clique para enviar imagem',
+    maxFileSize: 'Máx 25MB',
   },
   jp: {
     overview: '概要',
@@ -109,30 +341,153 @@ const translations = {
     livePreview: 'ライブプレビュー',
     yourName: 'あなたの名前',
     bioPreview: 'あなたの自己紹介がここに表示されます...',
+    // Create Book
+    bookEditor: 'ブックエディター',
+    editingMode: '編集モード',
+    draftMode: '下書きモード',
+    untitled: '無題',
+    chapter: '章',
+    saveDraft: '下書きを保存',
+    save: '保存',
+    publish: '公開',
+    publishBook: '本を出版',
+    aiAssistant: 'AIアシスタント',
+    apiKey: 'APIキー',
+    pasteApiKey: 'Gemini APIキーを貼り付けてください...',
+    generationMode: '生成モード',
+    completeBook: '本全体',
+    structureOnly: '構成のみ',
+    singlePage: '単一ページ',
+    betaReader: 'ベータリーダー',
+    prompt: 'プロンプト',
+    describeScene: 'シーンを説明してください...',
+    describeBook: '本のアイデアを説明してください...',
+    analysisResult: '分析結果',
+    analysisPlaceholder: '分析結果がここに表示されます...',
+    length: '長さ',
+    pagesCount: 'ページ数',
+    short: '短い',
+    medium: '中くらい',
+    long: '長い',
+    generate: '生成',
+    generating: '考え中...',
+    howToGetKey: 'キーの取得方法',
+    tutorialTitle: 'Gemini APIキーを取得する',
+    step1Title: 'Google AI Studioへ移動',
+    step1Desc: 'Google AI Studioにアクセスして、無料のAPIキーを生成します。',
+    openStudio: 'Google AI Studioを開く',
+    step2Title: 'APIキーを作成',
+    step2Desc: '「Create API key」をクリックし、プロジェクトを選択（または新規作成）します。',
+    step3Title: 'コピー＆ペースト',
+    step3Desc: 'AIza...で始まる生成されたキーをコピーして、ここの入力フィールドに貼り付けます。',
+    gotIt: '了解',
+    freeApiNote: '✨ Gemini APIは現在、個人プロジェクトで無料で使用できます！',
+    // Editor Sidebar
+    pagesTab: 'ページ',
+    settingsTab: '設定',
+    teamTab: 'チーム',
+    aiTab: 'AI',
+    charsTab: 'キャラ',
+    structure: '構成',
+    pagesCountLabel: 'ページ',
+    addNewPage: '新しいページを追加',
+    untitledPage: '無題のページ',
+    pageIndex: 'ページ',
+    // Editor Settings
+    coverImage: '表紙画像',
+    uploadCover: '表紙をアップロード',
+    description: '説明',
+    descriptionPlaceholder: '魅力的な宣伝文句を書いてください...',
+    genres: 'ジャンル',
+    addGenre: 'ジャンルを追加...',
+    premiumContent: 'プレミアムコンテンツ',
+    monetizeBook: '本を収益化',
+    priceLabel: '価格 ($)',
+    allowPdfDownload: 'PDFダウンロードを許可',
+    allowPdfDownloadDesc: '読者が本をダウンロードできるようにする',
+    ambience: '環境音',
+    ambienceNone: 'なし',
+    ambienceRain: '雨の日',
+    ambienceFireplace: '居心地の良い暖炉',
+    ambienceForest: '森の音',
+    ambienceCafe: 'コーヒーショップ',
+    ambienceSpace: '深宇宙',
+    ambienceOcean: '海の波',
+    // Editor Team
+    inviteTeam: 'チームを招待',
+    usernamePlaceholder: 'ユーザー名',
+    saveBookFirst: 'コラボレーターを追加するには、まず本を保存してください。',
+    members: 'メンバー',
+    activeMembers: 'アクティブ',
+    noCollaborators: 'コラボレーターはまだいません',
+    // Editor Main
+    autoSaving: '自動保存中',
+    charsCount: '文字',
+    pageOf: 'ページ',
+    of: '/',
+    toggleFocusMode: 'フォーカスモード切替',
+    preview: 'プレビュー',
+    edit: '編集',
+    untitledBook: '無題の本',
+    currentChapter: '現在の章',
+    nothingWritten: 'まだ何も書かれていません...',
+    editorPlaceholder: '昔々あるところに...',
+    // Rich Editor
+    bold: '太字',
+    italic: '斜体',
+    strikethrough: '取り消し線',
+    heading1: '見出し 1',
+    heading2: '見出し 2',
+    bulletList: '箇条書き',
+    orderedList: '番号付きリスト',
+    quote: '引用',
+    startWriting: '書き始める...',
+    // Image Upload
+    uploadImage: '画像をアップロード',
+    uploading: 'アップロード中...',
+    imageUploadError: '画像のアップロードエラー',
+    imageUploadSuccess: '画像が正常にアップロードされました',
+    selectImage: '画像を選択',
+    changeImage: '画像を変更',
+    removeImage: '画像を削除',
+    fileTooLarge: 'ファイルが大きすぎます。最大サイズは25MBです。',
+    largeImageWarning: 'この画像は{{size}}MBです。\n\n大きな画像はアップロードに時間がかかる場合があります（30〜60秒）。\n\nパフォーマンス向上のため、圧縮してからアップロードすることをお勧めします。\n\nそれでも続けますか？',
+    compressionError: '圧縮エラー:',
+    failedToProcessImage: '画像の処理に失敗しました',
+    processingImage: '処理中...',
+    clickToUploadImage: 'クリックして画像をアップロード',
+    maxFileSize: '最大 25MB',
   },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
-
-  useEffect(() => {
-    // Client-side only initialization
-    const savedLang = localStorage.getItem('language') as Language;
-    if (savedLang && ['en', 'pt', 'jp'].includes(savedLang)) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      setLanguage(savedLang);
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('language') as Language;
+      if (savedLang && ['en', 'pt', 'jp'].includes(savedLang)) {
+        return savedLang;
+      }
     }
-  }, []);
+    return 'en';
+  });
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
   };
 
-  const t = (key: string) => {
-    return translations[language][key as keyof typeof translations['en']] || key;
+  const t = (key: string, params?: Record<string, string | number>) => {
+    let text = translations[language][key as keyof typeof translations['en']] || key;
+    
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        text = text.replace(`{{${key}}}`, String(value));
+      });
+    }
+    
+    return text;
   };
 
   return (

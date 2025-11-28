@@ -7,6 +7,7 @@ import { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import Link from 'next/link';
 import { createBook } from '@/app/actions/create-book';
+import { useLanguage } from '@/context/LanguageContext';
 import EditorSidebar from './components/EditorSidebar';
 import EditorMain from './components/EditorMain';
 
@@ -52,6 +53,7 @@ interface CreateBookClientProps {
 
 export default function CreateBookClient({ initialBook, user }: CreateBookClientProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const bookId = initialBook?.id;
 
   const [loading, setLoading] = useState(false);
@@ -319,7 +321,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
         <Link href="/dashboard" className="text-zinc-400 hover:text-white">
           <ArrowLeft className="w-5 h-5" />
         </Link>
-        <span className="font-bold text-sm truncate max-w-[150px]">{title || 'Untitled'}</span>
+        <span className="font-bold text-sm truncate max-w-[150px]">{title || t('untitled')}</span>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-zinc-400">
           <Menu className="w-5 h-5" />
         </button>
@@ -347,9 +349,9 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 <ArrowLeft className="w-4 h-4" />
               </button>
               <div>
-                <h1 className="text-sm font-bold text-white leading-none">Book Editor</h1>
+                <h1 className="text-sm font-bold text-white leading-none">{t('bookEditor')}</h1>
                 <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider">
-                  {bookId ? 'Editing Mode' : 'Draft Mode'}
+                  {bookId ? t('editingMode') : t('draftMode')}
                 </p>
               </div>
             </div>

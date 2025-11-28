@@ -7,6 +7,7 @@ import BubbleMenuExtension from '@tiptap/extension-bubble-menu';
 import FloatingMenuExtension from '@tiptap/extension-floating-menu';
 import { Bold, Italic, Heading1, Heading2, List, ListOrdered, Quote, Strikethrough, LucideIcon } from 'lucide-react';
 import { useEffect } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface RichEditorProps {
   content: string;
@@ -35,12 +36,15 @@ const MenuButton = ({ onClick, isActive = false, icon: Icon, title }: MenuButton
   </button>
 );
 
-export default function RichEditor({ content, onChange, placeholder = 'Start writing...' }: RichEditorProps) {
+export default function RichEditor({ content, onChange, placeholder }: RichEditorProps) {
+  const { t } = useLanguage();
+  const editorPlaceholder = placeholder || t('startWriting');
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder,
+        placeholder: editorPlaceholder,
         emptyEditorClass: 'is-editor-empty',
       }),
       BubbleMenuExtension,
@@ -78,19 +82,19 @@ export default function RichEditor({ content, onChange, placeholder = 'Start wri
             onClick={() => editor.chain().focus().toggleBold().run()}
             isActive={editor.isActive('bold')}
             icon={Bold}
-            title="Bold"
+            title={t('bold')}
           />
           <MenuButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
             isActive={editor.isActive('italic')}
             icon={Italic}
-            title="Italic"
+            title={t('italic')}
           />
           <MenuButton
             onClick={() => editor.chain().focus().toggleStrike().run()}
             isActive={editor.isActive('strike')}
             icon={Strikethrough}
-            title="Strikethrough"
+            title={t('strikethrough')}
           />
         </BubbleMenu>
       )}
@@ -102,32 +106,32 @@ export default function RichEditor({ content, onChange, placeholder = 'Start wri
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
             isActive={editor.isActive('heading', { level: 1 })}
             icon={Heading1}
-            title="Heading 1"
+            title={t('heading1')}
           />
           <MenuButton
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             isActive={editor.isActive('heading', { level: 2 })}
             icon={Heading2}
-            title="Heading 2"
+            title={t('heading2')}
           />
           <div className="w-px h-4 bg-white/10 mx-1" />
           <MenuButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             isActive={editor.isActive('bulletList')}
             icon={List}
-            title="Bullet List"
+            title={t('bulletList')}
           />
           <MenuButton
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             isActive={editor.isActive('orderedList')}
             icon={ListOrdered}
-            title="Ordered List"
+            title={t('orderedList')}
           />
           <MenuButton
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             isActive={editor.isActive('blockquote')}
             icon={Quote}
-            title="Quote"
+            title={t('quote')}
           />
         </FloatingMenu>
       )}
