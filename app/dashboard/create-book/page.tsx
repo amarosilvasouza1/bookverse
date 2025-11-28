@@ -66,7 +66,8 @@ async function CreateBook({ searchParams }: { searchParams: Promise<{ id?: strin
     ambience: book.ambience || undefined,
     pages: book.pages.map(page => ({
       ...page,
-      title: page.title || ''
+      title: page.title || '',
+      scheduledAt: page.scheduledAt ? page.scheduledAt.toISOString() : undefined
     })),
     // Ensure pages and collaborators are compatible if needed, usually Prisma types match well enough except for nulls
   } : undefined;
