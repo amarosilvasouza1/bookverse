@@ -39,13 +39,26 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
     setLoading(true);
     setLoading(true);
     try {
+      // Skip compression for GIFs to preserve animation
+      if (file.type === 'image/gif') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          onChange(e.target?.result as string);
+          setLoading(false);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
       const compressed = await compressImage(file);
       onChange(compressed);
     } catch (error) {
       console.error('Compression error:', error);
       alert('Failed to process image');
     } finally {
-      setLoading(false);
+      if (file.type !== 'image/gif') {
+        setLoading(false);
+      }
     }
   };
 
