@@ -8,7 +8,7 @@ import MemberManagement from '@/components/MemberManagement';
 
 export default async function CommunityMembersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await getSession();
+  const session = (await getSession()) as { id: string } | null;
 
   const community = await prisma.community.findUnique({
     where: { id },
