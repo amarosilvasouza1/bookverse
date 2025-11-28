@@ -45,6 +45,7 @@ model User {
   hostedRooms     ReadingRoom[]
   joinedRooms     ReadingRoomParticipant[]
   activities      Activity[]
+  notifications   Notification[]
 }
 
 model Achievement {
@@ -385,6 +386,19 @@ model Activity {
   type      String // PUBLISH_BOOK, REVIEW_BOOK, LIKE_BOOK, FOLLOW_USER
   entityId  String // ID of the book, user, etc.
   metadata  Json? // Store extra data like book title, rating, etc.
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // LIKE, COMMENT, FOLLOW, SYSTEM
+  message   String
+  read      Boolean  @default(false)
+  link      String?
   createdAt DateTime @default(now())
 
   @@index([userId])
