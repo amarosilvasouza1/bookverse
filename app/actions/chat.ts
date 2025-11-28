@@ -35,14 +35,49 @@ export async function getConversations() {
   });
 
   // Format for UI
-  return conversations.map(conv => {
+  const conversationsWithUnread = await Promise.all(conversations.map(async conv => {
     const otherParticipant = conv.participants.find(p => p.userId !== userId)?.user;
+    
+    // Count unread messages from the other user
+    const unreadCount = await prisma.directMessage.count({
+      where: {
+        conversationId: conv.id,
+        senderId: { not: userId },
+        read: false
+      }
+    });
+
     return {
       id: conv.id,
       otherUser: otherParticipant,
-      lastMessage: conv.messages[0]
+      lastMessage: conv.messages[0],
+      unreadCount
     };
+  }));
+
+  return conversationsWithUnread;
+}
+
+// Mark messages as read in a conversation
+export async function markMessagesAsRead(conversationId: string) {
+  const session = await getSession();
+  if (!session) return { error: 'Unauthorized' };
+
+  const userId = session.id as string;
+
+  await prisma.directMessage.updateMany({
+    where: {
+      conversationId,
+      senderId: { not: userId },
+      read: false
+    },
+    data: {
+      read: true
+    }
   });
+
+  revalidatePath('/dashboard/social');
+  return { success: true };
 }
 
 // Get list of mutual followers who don't have a conversation yet

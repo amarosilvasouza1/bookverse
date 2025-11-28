@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack } from '@/app/actions/chat';
+import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead } from '@/app/actions/chat';
 import { toast } from 'sonner';
 import MiniProfile from './MiniProfile';
 
@@ -27,6 +27,7 @@ interface Conversation {
   id: string;
   otherUser: User | undefined;
   lastMessage: Message | null;
+  unreadCount: number;
 }
 
 export default function ChatInterface() {
@@ -48,6 +49,27 @@ export default function ChatInterface() {
     loadConversations();
   }, []);
 
+  const loadMessages = useCallback(async (convId: string) => {
+    try {
+      const data = await getMessages(convId);
+      setMessages(data);
+      
+      // Mark as read if this is the active conversation
+      if (activeConversation === convId) {
+        const conv = conversations.find(c => c.id === convId);
+        if (conv && conv.unreadCount > 0) {
+          await markMessagesAsRead(convId);
+          // Update local state to clear badge
+          setConversations(prev => prev.map(c => 
+            c.id === convId ? { ...c, unreadCount: 0 } : c
+          ));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load messages", error);
+    }
+  }, [activeConversation, conversations]);
+
   // Poll for messages if active conversation
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -56,7 +78,7 @@ export default function ChatInterface() {
       interval = setInterval(() => loadMessages(activeConversation), 3000);
     }
     return () => clearInterval(interval);
-  }, [activeConversation]);
+  }, [activeConversation, loadMessages]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -74,13 +96,15 @@ export default function ChatInterface() {
     }
   }
 
-  async function loadMessages(convId: string) {
-    try {
-      const data = await getMessages(convId);
-      setMessages(data);
-    } catch (error) {
-      console.error("Failed to load messages", error);
-    }
+  async function handleConversationClick(convId: string) {
+    setActiveConversation(convId);
+    
+    // Optimistically clear unread count
+    setConversations(prev => prev.map(c => 
+      c.id === convId ? { ...c, unreadCount: 0 } : c
+    ));
+    
+    await markMessagesAsRead(convId);
   }
 
   async function handleSendMessage(e: React.FormEvent) {
@@ -136,7 +160,8 @@ export default function ChatInterface() {
     const tempConv: Conversation = {
       id: 'temp-' + userId,
       otherUser: user,
-      lastMessage: null
+      lastMessage: null,
+      unreadCount: 0
     };
     
     setConversations(prev => [tempConv, ...prev]);
@@ -189,7 +214,7 @@ export default function ChatInterface() {
             conversations.map((conv) => (
               <button
                 key={conv.id}
-                onClick={() => setActiveConversation(conv.id)}
+                onClick={() => handleConversationClick(conv.id)}
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left",
                   activeConversation === conv.id ? "bg-white/10 shadow-lg" : "hover:bg-white/5"
@@ -214,9 +239,16 @@ export default function ChatInterface() {
                       {conv.lastMessage ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {conv.lastMessage?.content || 'Start a conversation'}
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className={cn("text-sm truncate max-w-[140px]", conv.unreadCount > 0 ? "text-white font-medium" : "text-muted-foreground")}>
+                      {conv.lastMessage?.content || 'Start a conversation'}
+                    </p>
+                    {conv.unreadCount > 0 && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                        {conv.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </button>
             ))
