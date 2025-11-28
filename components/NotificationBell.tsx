@@ -15,7 +15,7 @@ interface Notification {
   createdAt: Date;
 }
 
-export default function NotificationBell({ userId }: { userId: string }) {
+export default function NotificationBell({ userId, placement = 'bottom-right' }: { userId: string; placement?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-center' }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -69,6 +69,20 @@ export default function NotificationBell({ userId }: { userId: string }) {
     await markAllAsRead(userId);
   };
 
+  const getPlacementClasses = () => {
+    switch (placement) {
+      case 'top-right':
+        return 'bottom-full right-0 mb-2 origin-bottom-right';
+      case 'top-center':
+        return 'bottom-full left-1/2 -translate-x-1/2 mb-2 origin-bottom';
+      case 'bottom-left':
+        return 'top-full left-0 mt-2 origin-top-left';
+      case 'bottom-right':
+      default:
+        return 'top-full right-0 mt-2 origin-top-right';
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -82,7 +96,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 md:w-96 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95">
+        <div className={`absolute ${getPlacementClasses()} w-80 md:w-96 max-w-[90vw] bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95`}>
           <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
             <h3 className="font-semibold text-white">Notifications</h3>
             {unreadCount > 0 && (
@@ -95,7 +109,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
             )}
           </div>
 
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="max-h-[60vh] overflow-y-auto">
             {loading ? (
               <div className="p-8 text-center text-zinc-500 text-sm">Loading...</div>
             ) : notifications.length === 0 ? (

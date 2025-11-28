@@ -46,6 +46,20 @@ model User {
   joinedRooms     ReadingRoomParticipant[]
   activities      Activity[]
   notifications   Notification[]
+  postLikes       PostLike[]
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model Achievement {
@@ -247,15 +261,16 @@ model CommunityMember {
 }
 
 model Post {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          String     @id @default(cuid())
+  content     String     @db.Text
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   communityId String
   authorId    String
   comments    Comment[]
-  author      User      @relation(fields: [authorId], references: [id])
-  community   Community @relation(fields: [communityId], references: [id])
+  likes       PostLike[]
+  author      User       @relation(fields: [authorId], references: [id])
+  community   Community  @relation(fields: [communityId], references: [id])
 
   @@index([authorId], map: "Post_authorId_fkey")
   @@index([communityId], map: "Post_communityId_fkey")

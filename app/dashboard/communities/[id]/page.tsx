@@ -6,6 +6,7 @@ import CreatePostForm from '@/components/CreatePostForm';
 import { joinCommunity } from '@/app/actions/join-community';
 import Link from 'next/link';
 import Image from 'next/image';
+import PostCard from '@/components/PostCard';
 
 async function getCommunity(id: string, userId: string) {
   const community = await prisma.community.findUnique({
@@ -32,7 +33,12 @@ async function getCommunity(id: string, userId: string) {
           _count: {
             select: {
               comments: true,
+              likes: true,
             },
+          },
+          likes: {
+            where: { userId },
+            select: { userId: true },
           },
         },
         orderBy: {
@@ -178,60 +184,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
 
             <div className="space-y-6">
               {community.posts.map((post) => (
-                <div key={post.id} className="glass-card p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all bg-black/20">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-800 overflow-hidden shrink-0 relative border border-white/10">
-                      {post.author.image ? (
-                        <Image 
-                          src={post.author.image} 
-                          alt={post.author.name || ''} 
-                          fill
-                          className="object-cover" 
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg bg-linear-to-br from-gray-700 to-gray-800">
-                          {(post.author.name || '?')[0]}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-white hover:underline cursor-pointer">{post.author.name}</span>
-                          <span className="text-sm text-muted-foreground">@{post.author.username}</span>
-                          <span className="text-xs text-muted-foreground">• {new Date(post.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <button className="text-muted-foreground hover:text-white transition-colors">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
-                      
-                      <p className="text-gray-200 whitespace-pre-wrap mb-4 text-base leading-relaxed">
-                        {post.content}
-                      </p>
-
-                      <div className="flex items-center gap-6 pt-2">
-                        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-pink-400 transition-colors group">
-                          <div className="p-2 rounded-full group-hover:bg-pink-500/10 transition-colors">
-                            <Heart className="w-4 h-4" />
-                          </div>
-                          <span>Like</span>
-                        </button>
-                        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-blue-400 transition-colors group">
-                          <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors">
-                            <MessageSquare className="w-4 h-4" />
-                          </div>
-                          <span>{post._count.comments} Comments</span>
-                        </button>
-                        <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-green-400 transition-colors group ml-auto">
-                          <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
-                            <Share2 className="w-4 h-4" />
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <PostCard key={post.id} post={post} currentUserId={session?.id as string} />
               ))}
 
               {community.posts.length === 0 && (

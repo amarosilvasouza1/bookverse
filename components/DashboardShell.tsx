@@ -53,7 +53,7 @@ export default function DashboardShell({
         <div className="px-4 py-2">
            <div className="flex items-center justify-between px-4 py-2 bg-white/5 rounded-lg mb-2">
              <span className="text-xs font-medium text-zinc-400">Notifications</span>
-             <NotificationBell userId={userId} />
+             <NotificationBell userId={userId} placement="bottom-left" />
            </div>
         </div>
 
@@ -124,7 +124,7 @@ export default function DashboardShell({
           
           {/* Mobile Notification Bell */}
           <div className="flex flex-col items-center justify-center p-2 min-w-[60px]">
-             <NotificationBell userId={userId} />
+             <NotificationBell userId={userId} placement="top-center" />
              <span className="text-[10px] font-medium text-muted-foreground mt-1">Alerts</span>
           </div>
 
