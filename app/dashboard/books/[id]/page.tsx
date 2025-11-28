@@ -56,7 +56,13 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="max-w-4xl mx-auto pb-20">
       <BookReader 
-        book={book} 
+        book={{
+          ...book,
+          pages: book.pages.map(page => ({
+            ...page,
+            scheduledAt: page.scheduledAt ? page.scheduledAt.toISOString() : null
+          }))
+        }} 
         canRead={!!canRead} 
         isAuthor={isAuthor}
         isSubscriber={!!hasSubscription}

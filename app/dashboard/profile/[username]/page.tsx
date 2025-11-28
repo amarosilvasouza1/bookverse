@@ -1,11 +1,10 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { BookOpen, Link as LinkIcon, Calendar, Twitter, Github, Instagram, Trophy } from 'lucide-react';
-import Link from 'next/link';
+import { Link as LinkIcon, Calendar, Twitter, Github, Instagram } from 'lucide-react';
 import Image from 'next/image';
-import AchievementCard from '@/components/AchievementCard';
 import { getSession } from '@/lib/auth';
 import { ProfileActions } from '@/components/ProfileActions';
+import ProfileContent from './components/ProfileContent';
 
 async function getUserProfile(username: string, currentUserId?: string) {
   const user = await prisma.user.findUnique({
@@ -177,89 +176,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 w-full pt-8 md:pt-32 space-y-12">
-            
-            {/* Achievements Section */}
-            {user.userAchievements.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Trophy className="w-6 h-6 text-yellow-500" />
-                  Achievements
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {user.userAchievements.map((ua) => (
-                    <AchievementCard 
-                      key={ua.id} 
-                      achievement={ua.achievement} 
-                      unlockedAt={ua.unlockedAt} 
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Books Section */}
-            <section>
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-primary" />
-                Published Books
-              </h2>
-
-            {user.books.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {user.books.map((book) => (
-                  <Link 
-                    href={`/dashboard/books/${book.id}`} 
-                    key={book.id}
-                    className="group relative bg-white/5 rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
-                  >
-                    <div className="aspect-2/3 relative overflow-hidden">
-                      {book.coverImage ? (
-                        <div className="relative w-full h-full">
-                          <Image 
-                            src={book.coverImage} 
-                            alt={book.title} 
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors">
-                          <BookOpen className="w-12 h-12 text-white/20" />
-                        </div>
-                      )}
-                      
-                      {book.isPremium && (
-                        <div className="absolute top-3 right-3">
-                          <span className="bg-amber-500/90 text-black text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm shadow-lg">
-                            PREMIUM
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4">
-                      <h3 className="font-bold text-lg text-white truncate mb-1 group-hover:text-primary transition-colors">
-                        {book.title}
-                      </h3>
-                      <div className="flex items-center justify-between text-sm mt-3">
-                        <span className="text-muted-foreground">{book.genre || 'Fiction'}</span>
-                        <span className="font-bold text-white">
-                          {book.isPremium ? `$${book.price}` : 'Free'}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-white/5 rounded-xl border border-white/5">
-                <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-white mb-2">No books published yet</h3>
-                <p className="text-muted-foreground">This author hasn&apos;t published any books yet.</p>
-              </div>
-            )}
-            </section>
+          <div className="flex-1 w-full pt-8 md:pt-32">
+            <ProfileContent user={user} isOwnProfile={isOwnProfile} />
           </div>
         </div>
       </div>

@@ -48,28 +48,28 @@ export default async function CommunitiesPage() {
           <Globe className="w-64 h-64 text-white blur-3xl" />
         </div>
         
-        <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="relative z-10 p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="max-w-2xl space-y-4 text-center md:text-left">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-purple-200 backdrop-blur-md mb-2">
               <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
               Connect & Collaborate
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
               Discover Your <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-400 to-purple-400">Community</span>
             </h1>
-            <p className="text-lg text-purple-100/80 max-w-lg">
+            <p className="text-base md:text-lg text-purple-100/80 max-w-lg mx-auto md:mx-0">
               Join discussions, share your stories, and connect with fellow readers and authors in specialized communities.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
               <Link 
                 href="/dashboard/communities/create"
-                className="inline-flex items-center justify-center px-6 py-3 bg-white text-purple-900 font-bold rounded-xl hover:bg-purple-50 transition-all shadow-lg shadow-white/10 hover:scale-105 active:scale-95"
+                className="inline-flex items-center justify-center px-6 py-3 bg-white text-purple-900 font-bold rounded-xl hover:bg-purple-50 transition-all shadow-lg shadow-white/10 hover:scale-105 active:scale-95 w-full sm:w-auto"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Create Community
               </Link>
-              <div className="relative group">
+              <div className="relative group w-full sm:w-auto">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300 group-focus-within:text-white transition-colors" />
                 <input 
                   type="text" 

@@ -2,7 +2,6 @@
 
 import { prisma } from '@/lib/prisma';
 
-
 export type ActivityType = 'PUBLISH_BOOK' | 'REVIEW_BOOK' | 'LIKE_BOOK' | 'FOLLOW_USER';
 
 export async function logActivity(
@@ -27,14 +26,12 @@ export async function logActivity(
   }
 }
 
-export async function getActivityFeed() {
-
-  
-  // For now, fetch global activity or just activity from followed users if we had that logic ready.
-  // Let's fetch global recent activity to make the feed lively.
-  
+export async function getActivityFeed(userId?: string) {
   try {
+    const where = userId ? { userId } : {};
+
     const activities = await prisma.activity.findMany({
+      where,
       take: 20,
       orderBy: {
         createdAt: 'desc',

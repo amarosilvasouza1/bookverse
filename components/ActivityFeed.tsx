@@ -25,14 +25,18 @@ interface Activity {
   };
 }
 
-export default function ActivityFeed() {
+interface ActivityFeedProps {
+  userId?: string;
+}
+
+export default function ActivityFeed({ userId }: ActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const result = await getActivityFeed();
+        const result = await getActivityFeed(userId);
         if (result.success && result.data) {
           // Cast the result to match our frontend interface
           setActivities(result.data as unknown as Activity[]);
@@ -45,7 +49,7 @@ export default function ActivityFeed() {
     };
 
     fetchFeed();
-  }, []);
+  }, [userId]);
 
   if (loading) {
     return (
