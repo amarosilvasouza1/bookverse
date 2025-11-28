@@ -14,6 +14,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (username.includes(' ')) {
+      return NextResponse.json(
+        { error: 'Username cannot contain spaces' },
+        { status: 400 }
+      );
+    }
+
     // Check if user exists
     // Note: This will fail if DB is not connected, so we wrap in try/catch
     try {

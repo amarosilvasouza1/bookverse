@@ -26,11 +26,10 @@ export async function updateProfile(formData: FormData) {
       const base64 = Buffer.from(buffer).toString('base64');
       dataToUpdate.image = `data:${imageEntry.type};base64,${base64}`;
     } else if (typeof imageEntry === 'string' && imageEntry.length > 0) {
-      // Only update if string is not empty (meaning it's a new value or explicit set)
-      // If client sends empty string to clear, we handle it. 
-      // But here we want to avoid re-sending the huge base64 if it's just the same.
-      // Actually, client should just NOT send it if it's same.
-      dataToUpdate.image = imageEntry;
+      // Validate that it's a valid URL or data URI
+      if (imageEntry.startsWith('http') || imageEntry.startsWith('/') || imageEntry.startsWith('data:')) {
+        dataToUpdate.image = imageEntry;
+      }
     }
 
     const bannerEntry = formData.get('banner');

@@ -54,7 +54,7 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
         {/* Header */}
         <div className="absolute top-4 left-4 right-4 flex items-center gap-3 z-20">
           <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden relative">
-             {status.user.image ? (
+             {status.user.image && (status.user.image.startsWith('http') || status.user.image.startsWith('/')) ? (
                 <Image src={status.user.image} alt={status.user.name} fill className="object-cover" />
              ) : (
                 <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-white">

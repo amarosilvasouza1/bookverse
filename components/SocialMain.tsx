@@ -96,7 +96,7 @@ export default function SocialMain({ communities, statuses }: SocialMainProps) {
                     >
                       <div className="w-20 h-20 rounded-full p-[3px] bg-linear-to-tr from-yellow-400 via-orange-500 to-purple-600 animate-gradient-xy shadow-xl shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300 group-hover:scale-105">
                         <div className="w-full h-full rounded-full border-4 border-black overflow-hidden relative">
-                          {status.user.image ? (
+                          {status.user.image && (status.user.image.startsWith('http') || status.user.image.startsWith('/')) ? (
                             <Image src={status.user.image} alt={status.user.name || ''} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
                           ) : (
                             <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-sm font-bold text-white">
