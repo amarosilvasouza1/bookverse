@@ -253,7 +253,7 @@ model CommunityMember {
   role        String    @default("MEMBER") // MEMBER, ADMIN
   status      String    @default("APPROVED") // PENDING, APPROVED, REJECTED
   joinedAt    DateTime  @default(now())
-  community   Community @relation(fields: [communityId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, communityId])
@@ -283,7 +283,7 @@ model Comment {
   postId    String
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([authorId], map: "Comment_authorId_fkey")
   @@index([postId], map: "Comment_postId_fkey")
