@@ -105,7 +105,7 @@ export default function DashboardShell({
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-white/10 md:hidden z-50 pb-safe">
         <div className="flex items-center justify-around p-2">
-          {navigation.filter(item => !['Settings', 'Subscription'].includes(item.name)).map((item) => {
+          {navigation.filter(item => !['Subscription'].includes(item.name)).map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -122,11 +122,12 @@ export default function DashboardShell({
             );
           })}
           
-          {/* Mobile Notification Bell */}
+          {/* Mobile Notification Bell - Removed to make space for Settings
           <div className="flex flex-col items-center justify-center p-2 min-w-[60px]">
              <NotificationBell userId={userId} placement="top-center" />
              <span className="text-[10px] font-medium text-muted-foreground mt-1">Alerts</span>
           </div>
+          */}
 
           <Link
             href="/dashboard/create-book"
