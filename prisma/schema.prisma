@@ -44,6 +44,7 @@ model User {
   readingProgress ReadingProgress[]
   hostedRooms     ReadingRoom[]
   joinedRooms     ReadingRoomParticipant[]
+  activities      Activity[]
 }
 
 model Achievement {
@@ -96,6 +97,7 @@ model Book {
   price         Float              @default(0)
   isPremium     Boolean            @default(false)
   allowDownload Boolean            @default(false)
+  ambience      String? // New field for immersive reading sound
   published     Boolean            @default(false)
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
@@ -133,14 +135,15 @@ model BookCollaborator {
 }
 
 model BookPage {
-  id         String   @id @default(cuid())
-  title      String?
-  content    String   @db.LongText
-  pageNumber Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  bookId     String
-  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  title       String?
+  content     String    @db.LongText
+  pageNumber  Int
+  scheduledAt DateTime? // For scheduled release
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookId      String
+  book        Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([bookId, pageNumber])
   @@index([bookId], map: "BookPage_bookId_fkey")
@@ -372,5 +375,17 @@ model ReadingRoomParticipant {
   user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // PUBLISH_BOOK, REVIEW_BOOK, LIKE_BOOK, FOLLOW_USER
+  entityId  String // ID of the book, user, etc.
+  metadata  Json? // Store extra data like book title, rating, etc.
+  createdAt DateTime @default(now())
+
   @@index([userId])
 }

@@ -14,7 +14,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@google/generative-ai": "^0.24.1",
-    "@prisma/client": "^5.10.2",
+    "@prisma/client": "^5.22.0",
     "@tiptap/extension-bubble-menu": "^2.10.3",
     "@tiptap/extension-floating-menu": "^2.10.3",
     "@tiptap/extension-placeholder": "^2.10.3",
@@ -28,7 +28,7 @@
     "jspdf": "^3.0.4",
     "lucide-react": "^0.554.0",
     "next": "^16.0.4",
-    "prisma": "^5.10.2",
+    "prisma": "^5.22.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "tailwind-merge": "^3.4.0"

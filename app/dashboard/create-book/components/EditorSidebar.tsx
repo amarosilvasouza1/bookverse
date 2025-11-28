@@ -1,4 +1,4 @@
-import { Plus, Trash2, Users, Wand2, Book, User, Settings, ImageIcon, DollarSign, X } from 'lucide-react';
+import { Plus, Trash2, Users, Wand2, Book, User, Settings, ImageIcon, DollarSign, X, Music, Calendar } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -12,6 +12,7 @@ interface Page {
   title: string;
   content: string;
   pageNumber: number;
+  scheduledAt?: string;
 }
 
 interface Collaborator {
@@ -30,6 +31,7 @@ interface EditorSidebarProps {
   setCurrentPageIndex: (index: number) => void;
   handleAddPage: () => void;
   handleDeletePage: (index: number, e: React.MouseEvent) => void;
+  handleSchedulePage: (index: number, date: string) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   collaborators: Collaborator[];
   collaboratorSearch: string;
@@ -61,14 +63,17 @@ interface EditorSidebarProps {
   setPrice: (price: string) => void;
   allowDownload: boolean;
   setAllowDownload: (allow: boolean) => void;
+  ambience: string;
+  setAmbience: (ambience: string) => void;
 }
 
-function SortablePageItem({ page, index, isActive, onClick, onDelete }: { 
+function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule }: { 
   page: Page, 
   index: number, 
   isActive: boolean, 
   onClick: () => void, 
-  onDelete: (e: React.MouseEvent) => void 
+  onDelete: (e: React.MouseEvent) => void,
+  onSchedule: (date: string) => void
 }) {
   const {
     attributes,
@@ -98,6 +103,22 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete }: {
             Page {index + 1}
           </span>
           <div className="flex items-center gap-2">
+            {/* Schedule Button */}
+            <div className="relative group/schedule" onClick={(e) => e.stopPropagation()}>
+              <Calendar className={`w-3.5 h-3.5 cursor-pointer transition-colors ${page.scheduledAt ? 'text-indigo-400' : 'text-zinc-500 hover:text-indigo-400 opacity-0 group-hover:opacity-100'}`} />
+              <input
+                type="datetime-local"
+                value={page.scheduledAt || ''}
+                onChange={(e) => onSchedule(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              {page.scheduledAt && (
+                <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-black/90 border border-white/10 rounded text-[10px] whitespace-nowrap text-white pointer-events-none opacity-0 group-hover/schedule:opacity-100 transition-opacity z-50">
+                  {new Date(page.scheduledAt).toLocaleString()}
+                </div>
+              )}
+            </div>
+
             <div 
               {...attributes} 
               {...listeners}
@@ -131,6 +152,7 @@ export default function EditorSidebar({
   setCurrentPageIndex,
   handleAddPage,
   handleDeletePage,
+  handleSchedulePage,
   handleDragEnd,
   collaborators,
   collaboratorSearch,
@@ -162,6 +184,8 @@ export default function EditorSidebar({
   setPrice,
   allowDownload,
   setAllowDownload,
+  ambience,
+  setAmbience,
 }: EditorSidebarProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -231,6 +255,7 @@ export default function EditorSidebar({
                       isActive={currentPageIndex === index}
                       onClick={() => setCurrentPageIndex(index)}
                       onDelete={(e) => handleDeletePage(index, e)}
+                      onSchedule={(date) => handleSchedulePage(index, date)}
                     />
                   ))}
                 </SortableContext>
@@ -377,6 +402,29 @@ export default function EditorSidebar({
                   >
                     <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${allowDownload ? 'left-6' : 'left-1'}`} />
                   </button>
+                </div>
+              </div>
+
+              {/* Ambience Settings */}
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                    <Music className="w-3 h-3" />
+                    Ambience
+                  </label>
+                  <select 
+                    value={ambience}
+                    onChange={(e) => setAmbience(e.target.value)}
+                    className="w-full bg-black/20 border border-white/5 rounded-xl p-2 text-xs focus:outline-none focus:border-white/20 transition-colors [&>option]:bg-zinc-900 appearance-none cursor-pointer hover:bg-black/30 text-zinc-400"
+                  >
+                    <option value="">None</option>
+                    <option value="rain">Rainy Day</option>
+                    <option value="fireplace">Cozy Fireplace</option>
+                    <option value="forest">Forest Sounds</option>
+                    <option value="cafe">Coffee Shop</option>
+                    <option value="space">Deep Space</option>
+                    <option value="ocean">Ocean Waves</option>
+                  </select>
                 </div>
               </div>
             </motion.div>

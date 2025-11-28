@@ -4,16 +4,18 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { checkAndAwardAchievements } from '@/lib/gamification';
+import { logActivity } from '@/app/actions/activity';
 
 export async function createBook(data: {
   id?: string;
   title: string;
-  pages: { title: string; content: string; pageNumber: number }[];
+  pages: { title: string; content: string; pageNumber: number; scheduledAt?: string }[];
   description?: string;
   coverImage?: string;
   genre?: string;
   isPremium?: boolean;
   allowDownload?: boolean;
+  ambience?: string;
   price?: number;
   published?: boolean;
 }) {
@@ -23,7 +25,7 @@ export async function createBook(data: {
       return { error: 'Unauthorized' };
     }
 
-    const { id, title, pages, description, coverImage, genre, isPremium, allowDownload, price, published } = data;
+    const { id, title, pages, description, coverImage, genre, isPremium, allowDownload, ambience, price, published } = data;
 
     if (!title || pages.length === 0) {
       return { error: 'Title and at least one page are required' };
@@ -60,6 +62,7 @@ export async function createBook(data: {
             genre,
             isPremium: isPremium || false,
             allowDownload: allowDownload || false,
+            ambience: ambience || null,
             price: price || 0,
             published: published !== undefined ? published : existingBook.published,
             // Update main content with first page content for backward compatibility/preview
@@ -78,6 +81,7 @@ export async function createBook(data: {
             title: page.title,
             content: page.content,
             pageNumber: page.pageNumber,
+            scheduledAt: page.scheduledAt ? new Date(page.scheduledAt) : null,
           })),
         });
 
@@ -95,6 +99,7 @@ export async function createBook(data: {
           genre,
           isPremium: isPremium || false,
           allowDownload: allowDownload || false,
+          ambience: ambience || null,
           price: price || 0,
           published: published !== undefined ? published : false,
           authorId: session.id as string,
@@ -103,6 +108,7 @@ export async function createBook(data: {
               title: page.title,
               content: page.content,
               pageNumber: page.pageNumber,
+              scheduledAt: page.scheduledAt ? new Date(page.scheduledAt) : null,
             })),
           },
         },
@@ -118,8 +124,17 @@ export async function createBook(data: {
     // Check for achievements
     try {
       await checkAndAwardAchievements(session.id as string, 'BOOK_COUNT');
+      
+      // Log activity if published
+      if (published) {
+        await logActivity(session.id as string, 'PUBLISH_BOOK', book.id, {
+          title: book.title,
+          coverImage: book.coverImage,
+          authorName: session.name || session.username
+        });
+      }
     } catch (e) {
-      console.error('Error checking achievements:', e);
+      console.error('Error checking achievements/activity:', e);
     }
 
     return { success: true, bookId: book.id };

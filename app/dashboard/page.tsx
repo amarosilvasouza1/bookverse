@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import Link from 'next/link';
 import Image from 'next/image';
+import ActivityFeed from '@/components/ActivityFeed';
 
 async function getDashboardStats(userId: string) {
   const [
@@ -250,6 +251,15 @@ export default async function DashboardPage() {
                 <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
+          </div>
+
+          {/* Activity Feed */}
+          <div className="glass-card p-6 rounded-2xl border border-white/5 bg-white/5">
+            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-indigo-400" />
+              Community Activity
+            </h3>
+            <ActivityFeed />
           </div>
 
           {/* Mini Ad / Tip */}

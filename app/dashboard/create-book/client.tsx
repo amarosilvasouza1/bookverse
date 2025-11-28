@@ -15,6 +15,7 @@ interface Page {
   content: string;
   pageNumber: number;
   id: string;
+  scheduledAt?: string;
 }
 
 interface User {
@@ -37,6 +38,7 @@ interface Book {
   genre?: string;
   isPremium: boolean;
   allowDownload?: boolean;
+  ambience?: string;
   price?: number | string;
   pages?: Page[];
   content?: string;
@@ -64,6 +66,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   const [genre, setGenre] = useState(initialBook?.genre || '');
   const [isPremium, setIsPremium] = useState(initialBook?.isPremium || false);
   const [allowDownload, setAllowDownload] = useState(initialBook?.allowDownload || false);
+  const [ambience, setAmbience] = useState(initialBook?.ambience || '');
   const [price, setPrice] = useState(initialBook?.price?.toString() || '');
   
   // Pages State
@@ -145,6 +148,12 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
     setPages(newPages);
   };
 
+  const handleSchedulePage = (index: number, date: string) => {
+    const newPages = [...pages];
+    newPages[index] = { ...newPages[index], scheduledAt: date };
+    setPages(newPages);
+  };
+
   const handleAddCollaborator = async () => {
     if (!bookId || !collaboratorSearch) return;
     try {
@@ -196,6 +205,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
         genre,
         isPremium,
         allowDownload,
+        ambience,
         price: isPremium ? parseFloat(price) : 0,
         published
       });
@@ -353,6 +363,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 setCurrentPageIndex={setCurrentPageIndex}
                 handleAddPage={handleAddPage}
                 handleDeletePage={handleDeletePage}
+                handleSchedulePage={handleSchedulePage}
                 handleDragEnd={handleDragEnd}
                 collaborators={collaborators}
                 collaboratorSearch={collaboratorSearch}
@@ -382,6 +393,8 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 setPrice={setPrice}
                 allowDownload={allowDownload}
                 setAllowDownload={setAllowDownload}
+                ambience={ambience}
+                setAmbience={setAmbience}
               />
             </div>
           </div>

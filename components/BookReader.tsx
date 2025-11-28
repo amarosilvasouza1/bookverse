@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle, Share2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle, Share2, Volume2, VolumeX, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import CharacterChat from './CharacterChat';
@@ -18,11 +18,13 @@ interface BookReaderProps {
     content: string;
     isPremium: boolean;
     allowDownload: boolean;
+    ambience: string | null;
     price: number;
     pages: {
       title: string | null;
       content: string;
       pageNumber: number;
+      scheduledAt?: string | null;
     }[];
     author: {
       name: string | null;
@@ -281,7 +283,10 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
 
   // --- Render Helpers ---
   const activePage = canRead ? pages[currentPage] : pages[0];
-  const showOverlay = !canRead;
+  
+  const isScheduled = activePage.scheduledAt && new Date(activePage.scheduledAt) > new Date();
+  const isLockedSchedule = isScheduled && !isAuthor;
+  const showOverlay = !canRead || isLockedSchedule;
 
   const themeStyles = {
     dark: 'bg-[#0a0a0a] text-zinc-300',
@@ -295,7 +300,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
     mono: 'font-mono',
   };
 
-  // --- PDF Export ---
+  // ... (PDF Export logic remains same) ...
   const handleDownloadPDF = async () => {
     try {
       const jsPDF = (await import('jspdf')).default;
@@ -515,31 +520,49 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
         {showOverlay && (
           <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl animate-in zoom-in-95">
-              <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/20">
-                <Lock className="w-8 h-8 text-amber-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Premium Content</h3>
-              <p className="text-zinc-400 mb-8">
-                Purchase this book to unlock all chapters and support the author.
-              </p>
-              
-              {error && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                  {error}
-                </div>
-              )}
+              {isLockedSchedule ? (
+                <>
+                  <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/20">
+                    <Calendar className="w-8 h-8 text-indigo-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Coming Soon</h3>
+                  <p className="text-zinc-400 mb-8">
+                    This chapter is scheduled to be released on:
+                    <br />
+                    <span className="text-white font-bold mt-2 block">
+                      {new Date(activePage.scheduledAt!).toLocaleString()}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/20">
+                    <Lock className="w-8 h-8 text-amber-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Premium Content</h3>
+                  <p className="text-zinc-400 mb-8">
+                    Purchase this book to unlock all chapters and support the author.
+                  </p>
+                  
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                      {error}
+                    </div>
+                  )}
 
-              <button 
-                onClick={handleBuy}
-                disabled={buying}
-                className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {buying ? 'Processing...' : (
-                  <>
-                    Unlock for ${book.price} <BookOpen className="w-4 h-4" />
-                  </>
-                )}
-              </button>
+                  <button 
+                    onClick={handleBuy}
+                    disabled={buying}
+                    className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {buying ? 'Processing...' : (
+                      <>
+                        Unlock for ${book.price} <BookOpen className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -628,6 +651,65 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
         authorName={book.author.name || book.author.username}
         isPremiumUser={isSubscriber}
       />
+
+      {/* Ambience Player */}
+      {book.ambience && (
+        <AmbiencePlayer type={book.ambience} />
+      )}
+    </div>
+  );
+}
+
+function AmbiencePlayer({ type }: { type: string }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Sound mapping (using placeholder URLs for now - replace with real assets)
+  const sounds: Record<string, string> = {
+    rain: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', // Rain
+    fireplace: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', // Fire
+    forest: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_822ca886b2.mp3', // Forest
+    cafe: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_596f6d8424.mp3', // Cafe
+    space: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3', // Space (reuse rain for now as placeholder)
+    ocean: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', // Ocean (reuse rain for now)
+  };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+      if (isPlaying) {
+        audioRef.current.play().catch(e => console.log('Autoplay prevented:', e));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, volume]);
+
+  if (!sounds[type]) return null;
+
+  return (
+    <div className="fixed bottom-20 right-4 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-white/10 p-2 rounded-full animate-in slide-in-from-bottom-5">
+      <audio ref={audioRef} src={sounds[type]} loop />
+      
+      <button
+        onClick={() => setIsPlaying(!isPlaying)}
+        className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-indigo-500 text-white' : 'bg-white/10 text-zinc-400 hover:text-white'}`}
+      >
+        {isPlaying ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+      </button>
+
+      {isPlaying && (
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          className="w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+        />
+      )}
     </div>
   );
 }
