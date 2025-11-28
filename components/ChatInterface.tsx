@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, MoreVertical, Send, Plus, UserPlus } from 'lucide-react';
+import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { getConversations, getMessages, sendMessage, getMutualFollowersForChat } from '@/app/actions/chat';
+import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack } from '@/app/actions/chat';
 import { toast } from 'sonner';
+import MiniProfile from './MiniProfile';
 
 interface User {
   id: string;
@@ -36,6 +37,9 @@ export default function ChatInterface() {
   const [loading, setLoading] = useState(true);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [mutualFollowers, setMutualFollowers] = useState<User[]>([]);
+  const [nonMutualFollowings, setNonMutualFollowings] = useState<User[]>([]);
+  const [modalTab, setModalTab] = useState<'mutual' | 'request'>('mutual');
+  const [miniProfileId, setMiniProfileId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -109,8 +113,10 @@ export default function ChatInterface() {
   }
 
   async function openNewChatModal() {
-    const followers = await getMutualFollowersForChat();
-    setMutualFollowers(followers);
+    const mutuals = await getMutualFollowersForChat();
+    const nonMutuals = await getNonMutualFollowings();
+    setMutualFollowers(mutuals);
+    setNonMutualFollowings(nonMutuals);
     setShowNewChatModal(true);
   }
 
@@ -136,6 +142,16 @@ export default function ChatInterface() {
     setConversations(prev => [tempConv, ...prev]);
     setActiveConversation(tempConv.id);
     setShowNewChatModal(false);
+  }
+
+  async function handleRequestFollowBack(userId: string) {
+    const result = await requestFollowBack(userId);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Request sent!");
+      // Optionally remove from list or show sent state
+    }
   }
 
   const activeConvData = conversations.find(c => c.id === activeConversation);
@@ -218,7 +234,10 @@ export default function ChatInterface() {
                 <button onClick={() => setActiveConversation(null)} className="md:hidden text-white">
                   ←
                 </button>
-                <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10">
+                <button 
+                  onClick={() => setMiniProfileId(activeConvData?.otherUser?.id || null)}
+                  className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10 hover:border-primary/50 transition-colors"
+                >
                    {activeConvData?.otherUser?.image ? (
                       <Image src={activeConvData.otherUser.image} alt="" fill className="object-cover" />
                    ) : (
@@ -226,14 +245,14 @@ export default function ChatInterface() {
                         {(activeConvData?.otherUser?.name || '?')[0]}
                       </div>
                    )}
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">{activeConvData?.otherUser?.name}</h3>
+                </button>
+                <button onClick={() => setMiniProfileId(activeConvData?.otherUser?.id || null)} className="text-left">
+                  <h3 className="font-bold text-white hover:underline">{activeConvData?.otherUser?.name}</h3>
                   <span className="text-xs text-green-400 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
                     Online
                   </span>
-                </div>
+                </button>
               </div>
               {/* No Call Buttons - Just Options */}
               <button className="p-2 hover:bg-white/10 rounded-full text-muted-foreground hover:text-white transition-colors">
@@ -242,19 +261,22 @@ export default function ChatInterface() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {messages.map((msg) => {
                 const isMe = msg.senderId === 'me' || (msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
                 return (
-                  <div key={msg.id} className={cn("flex", isMe ? "justify-end" : "justify-start")}>
+                  <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
                     <div className={cn(
-                      "max-w-[75%] p-3 rounded-2xl text-sm shadow-md",
+                      "max-w-[75%] p-4 text-sm shadow-lg relative group transition-all duration-300 hover:scale-[1.01]",
                       isMe 
-                        ? "bg-linear-to-br from-primary to-purple-600 text-white rounded-tr-none" 
-                        : "bg-white/10 text-white border border-white/10 rounded-tl-none backdrop-blur-md"
+                        ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white rounded-2xl rounded-tr-sm" 
+                        : "bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-2xl rounded-tl-sm"
                     )}>
-                      <p>{msg.content}</p>
-                      <span className={cn("text-[10px] block mt-1", isMe ? "text-white/70" : "text-gray-400")}>
+                      <p className="leading-relaxed">{msg.content}</p>
+                      <span className={cn(
+                        "text-[10px] absolute -bottom-5 min-w-[60px]",
+                        isMe ? "right-0 text-right text-white/50" : "left-0 text-white/50"
+                      )}>
                         {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </span>
                     </div>
@@ -266,7 +288,7 @@ export default function ChatInterface() {
 
             {/* Input Area */}
             <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-white/5 backdrop-blur-md">
-              <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-4 py-2 focus-within:border-primary/50 transition-colors">
+              <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-4 py-2 focus-within:border-primary/50 transition-colors shadow-inner">
                 <input 
                   type="text" 
                   value={newMessage}
@@ -277,7 +299,7 @@ export default function ChatInterface() {
                 <button 
                   type="submit"
                   disabled={!newMessage.trim()}
-                  className="p-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -286,14 +308,14 @@ export default function ChatInterface() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
-              <UserPlus className="w-10 h-10 opacity-50" />
+            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6 animate-pulse">
+              <UserPlus className="w-12 h-12 opacity-50" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">Start a Conversation</h3>
-            <p className="max-w-xs">Select a mutual follower to start chatting. You can only chat with people who follow you back.</p>
+            <h3 className="text-2xl font-bold text-white mb-3">Start a Conversation</h3>
+            <p className="max-w-xs text-lg">Connect with your mutual friends or request to chat with others.</p>
             <button 
               onClick={openNewChatModal}
-              className="mt-6 px-6 py-2 bg-white text-black rounded-full font-bold hover:bg-gray-200 transition-colors"
+              className="mt-8 px-8 py-3 bg-white text-black rounded-full font-bold hover:bg-gray-200 transition-all transform hover:scale-105 shadow-xl"
             >
               Find Friends
             </button>
@@ -303,45 +325,112 @@ export default function ChatInterface() {
 
       {/* New Chat Modal */}
       {showNewChatModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
-            <div className="p-4 border-b border-white/10 flex justify-between items-center">
-              <h3 className="font-bold text-white">New Message</h3>
-              <button onClick={() => setShowNewChatModal(false)} className="text-muted-foreground hover:text-white">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+              <h3 className="font-bold text-white text-lg">New Message</h3>
+              <button onClick={() => setShowNewChatModal(false)} className="p-2 hover:bg-white/10 rounded-full text-muted-foreground hover:text-white transition-colors">✕</button>
             </div>
-            <div className="p-2 max-h-[400px] overflow-y-auto">
-              {mutualFollowers.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  <p>No mutual followers found.</p>
-                  <p className="text-xs mt-2">Ask people to follow you back!</p>
-                </div>
+            
+            {/* Modal Tabs */}
+            <div className="flex p-2 gap-2 bg-black/20">
+              <button 
+                onClick={() => setModalTab('mutual')}
+                className={cn(
+                  "flex-1 py-2 rounded-xl text-sm font-bold transition-all",
+                  modalTab === 'mutual' ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white"
+                )}
+              >
+                Mutual Friends
+              </button>
+              <button 
+                onClick={() => setModalTab('request')}
+                className={cn(
+                  "flex-1 py-2 rounded-xl text-sm font-bold transition-all",
+                  modalTab === 'request' ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white"
+                )}
+              >
+                Request Chat
+              </button>
+            </div>
+
+            <div className="p-2 overflow-y-auto flex-1">
+              {modalTab === 'mutual' ? (
+                mutualFollowers.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <p>No mutual followers found.</p>
+                    <p className="text-xs mt-2">You need to follow each other to chat!</p>
+                  </div>
+                ) : (
+                  mutualFollowers.map(user => (
+                    <button
+                      key={user.id}
+                      onClick={() => startChat(user.id)}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl transition-colors text-left group"
+                    >
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10">
+                        {user.image ? (
+                          <Image src={user.image} alt="" fill className="object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
+                            {user.name ? user.name[0] : '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-white group-hover:text-primary transition-colors">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">@{user.username}</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
+                    </button>
+                  ))
+                )
               ) : (
-                mutualFollowers.map(user => (
-                  <button
-                    key={user.id}
-                    onClick={() => startChat(user.id)}
-                    className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-colors text-left"
-                  >
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10">
-                      {user.image ? (
-                        <Image src={user.image} alt="" fill className="object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
-                          {user.name ? user.name[0] : '?'}
-                        </div>
-                      )}
+                nonMutualFollowings.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <p>No one to request.</p>
+                    <p className="text-xs mt-2">Follow more people to see them here!</p>
+                  </div>
+                ) : (
+                  nonMutualFollowings.map(user => (
+                    <div
+                      key={user.id}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl transition-colors text-left group"
+                    >
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10">
+                        {user.image ? (
+                          <Image src={user.image} alt="" fill className="object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
+                            {user.name ? user.name[0] : '?'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-white">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">@{user.username}</p>
+                      </div>
+                      <button 
+                        onClick={() => handleRequestFollowBack(user.id)}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-colors"
+                      >
+                        Request
+                      </button>
                     </div>
-                    <div>
-                      <p className="font-bold text-white">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">@{user.username}</p>
-                    </div>
-                  </button>
-                ))
+                  ))
+                )
               )}
             </div>
           </div>
         </div>
       )}
+
+      {/* Mini Profile Modal */}
+      <MiniProfile 
+        userId={miniProfileId} 
+        isOpen={!!miniProfileId} 
+        onClose={() => setMiniProfileId(null)} 
+      />
     </div>
   );
 }
