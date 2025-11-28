@@ -7,6 +7,7 @@ import { joinCommunity } from '@/app/actions/join-community';
 import Link from 'next/link';
 import Image from 'next/image';
 import PostCard from '@/components/PostCard';
+import DeleteCommunityButton from '@/components/DeleteCommunityButton';
 
 async function getCommunity(id: string, userId: string) {
   const community = await prisma.community.findUnique({
@@ -141,6 +142,9 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                           <Settings className="w-4 h-4 mr-2" />
                           Settings
                         </Link>
+                      )}
+                      {community.creatorId === session?.id && (
+                        <DeleteCommunityButton communityId={community.id} />
                       )}
                     </div>
                   ) : community.memberStatus === 'PENDING' ? (

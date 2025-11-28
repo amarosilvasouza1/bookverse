@@ -79,6 +79,38 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null);
 
+  // --- State: Swipe Gestures ---
+  const touchStart = useRef<number | null>(null);
+  const touchEnd = useRef<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEnd.current = null;
+    touchStart.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEnd.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return;
+    
+    // Don't swipe if text is selected
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) return;
+    
+    const distance = touchStart.current - touchEnd.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
+
   useEffect(() => {
     const handleSelection = () => {
       const selection = window.getSelection();
@@ -117,11 +149,24 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
         if (result.success && result.data) {
           const { currentPage: roomPage, status, host, participants, isHost } = result.data;
           
-          setRoomState({
-            isActive: status === 'ACTIVE',
-            isHost: !!isHost,
-            participants,
-            hostName: host.name || 'Host'
+          setRoomState(prev => {
+            const newState = {
+              isActive: status === 'ACTIVE',
+              isHost: !!isHost,
+              participants,
+              hostName: host.name || 'Host'
+            };
+
+            // Deep comparison to prevent re-renders
+            if (
+              prev.isActive === newState.isActive &&
+              prev.isHost === newState.isHost &&
+              prev.hostName === newState.hostName &&
+              JSON.stringify(prev.participants) === JSON.stringify(newState.participants)
+            ) {
+              return prev;
+            }
+            return newState;
           });
 
           // If participant (not host), sync page
@@ -502,8 +547,11 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
       {/* Main Content */}
       <div className="max-w-3xl mx-auto px-6 py-12 md:py-20 min-h-[80vh]">
         <div 
-          className={`prose max-w-none leading-relaxed transition-all duration-300 ${fontStyles[fontFamily]} ${showOverlay ? 'select-none blur-[1px]' : ''}`}
+          className={`prose max-w-none leading-relaxed transition-all duration-300 ${fontStyles[fontFamily]} ${showOverlay ? 'select-none blur-[1px]' : 'select-auto touch-pan-y'}`}
           style={{ fontSize: `${fontSize}px` }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           {activePage.title && (
             <h2 className={`text-2xl font-bold mb-8 opacity-90 ${fontFamily === 'serif' ? 'font-serif' : 'font-bold'}`}>
@@ -511,9 +559,10 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
             </h2>
           )}
           
-          <div className="whitespace-pre-wrap opacity-90">
-            {activePage.content}
-          </div>
+          <div 
+            className="prose prose-lg dark:prose-invert max-w-none leading-relaxed opacity-90 select-auto"
+            dangerouslySetInnerHTML={{ __html: activePage.content }}
+          />
         </div>
 
         {/* Locked Overlay */}
