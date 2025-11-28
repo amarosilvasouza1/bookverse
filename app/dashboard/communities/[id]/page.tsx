@@ -93,28 +93,28 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   return (
     <div className="-mt-6 -mx-6 md:-mt-8 md:-mx-8">
       {/* Immersive Header */}
-      <div className={`relative h-64 md:h-80 bg-linear-to-r ${gradient}`}>
+      <div className={`relative h-48 md:h-80 bg-linear-to-r ${gradient}`}>
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40"></div>
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
         
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 max-w-7xl mx-auto w-full">
-          <div className="flex flex-col md:flex-row items-end gap-6 md:gap-8">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-10 max-w-7xl mx-auto w-full">
+          <div className="flex flex-col md:flex-row items-end gap-4 md:gap-8">
             {/* Avatar */}
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-black border-4 border-black shadow-2xl flex items-center justify-center text-white font-bold text-3xl md:text-5xl shrink-0 relative z-10 -mb-12 md:-mb-16 bg-linear-to-br from-gray-800 to-gray-900">
+            <div className="w-20 h-20 md:w-32 md:h-32 rounded-2xl bg-black border-4 border-black shadow-2xl flex items-center justify-center text-white font-bold text-2xl md:text-5xl shrink-0 relative z-10 -mb-10 md:-mb-16 bg-linear-to-br from-gray-800 to-gray-900">
               {community.name.substring(0, 2).toUpperCase()}
             </div>
             
             {/* Info */}
-            <div className="flex-1 mb-2 md:mb-4 w-full">
+            <div className="flex-1 mb-1 md:mb-4 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 flex items-center gap-3 tracking-tight">
+                  <h1 className="text-2xl md:text-5xl font-bold text-white mb-1 md:mb-2 flex items-center gap-2 md:gap-3 tracking-tight">
                     {community.name}
                     {community.privacy === 'CLOSED' && (
-                      <Lock className="w-6 h-6 text-white/60" />
+                      <Lock className="w-5 h-5 md:w-6 md:h-6 text-white/60" />
                     )}
                   </h1>
-                  <p className="text-white/80 max-w-2xl line-clamp-1 md:line-clamp-none text-lg">
+                  <p className="text-white/80 max-w-2xl line-clamp-1 md:line-clamp-none text-sm md:text-lg">
                     {community.description || 'No description provided.'}
                   </p>
                 </div>

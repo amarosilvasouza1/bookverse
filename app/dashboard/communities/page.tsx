@@ -44,27 +44,27 @@ export default async function CommunitiesPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-indigo-900 via-purple-900 to-pink-900 border border-white/10 shadow-2xl">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-        <div className="absolute top-0 right-0 p-12 opacity-30">
+        <div className="absolute top-0 right-0 p-12 opacity-30 hidden md:block">
           <Globe className="w-64 h-64 text-white blur-3xl" />
         </div>
         
-        <div className="relative z-10 p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="max-w-2xl space-y-4 text-center md:text-left">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-purple-200 backdrop-blur-md mb-2">
-              <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
+        <div className="relative z-10 p-4 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+          <div className="max-w-2xl space-y-4 text-center md:text-left w-full md:w-auto">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs md:text-sm font-medium text-purple-200 backdrop-blur-md mb-2">
+              <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-2 text-yellow-400" />
               Connect & Collaborate
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl md:text-5xl font-bold text-white tracking-tight">
               Discover Your <span className="text-transparent bg-clip-text bg-linear-to-r from-pink-400 to-purple-400">Community</span>
             </h1>
-            <p className="text-base md:text-lg text-purple-100/80 max-w-lg mx-auto md:mx-0">
+            <p className="text-sm md:text-lg text-purple-100/80 max-w-lg mx-auto md:mx-0">
               Join discussions, share your stories, and connect with fellow readers and authors in specialized communities.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4 w-full sm:w-auto">
               <Link 
                 href="/dashboard/communities/create"
-                className="inline-flex items-center justify-center px-6 py-3 bg-white text-purple-900 font-bold rounded-xl hover:bg-purple-50 transition-all shadow-lg shadow-white/10 hover:scale-105 active:scale-95 w-full sm:w-auto"
+                className="inline-flex items-center justify-center px-6 py-3 bg-white text-purple-900 font-bold rounded-xl hover:bg-purple-50 transition-all shadow-lg shadow-white/10 hover:scale-105 active:scale-95 w-full sm:w-auto text-sm md:text-base"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Create Community
@@ -74,7 +74,7 @@ export default async function CommunitiesPage() {
                 <input 
                   type="text" 
                   placeholder="Search communities..." 
-                  className="w-full sm:w-64 bg-black/20 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-purple-300/50 focus:outline-none focus:bg-black/40 focus:border-white/20 transition-all backdrop-blur-md"
+                  className="w-full sm:w-64 bg-black/20 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-purple-300/50 focus:outline-none focus:bg-black/40 focus:border-white/20 transition-all backdrop-blur-md text-sm md:text-base"
                 />
               </div>
             </div>
