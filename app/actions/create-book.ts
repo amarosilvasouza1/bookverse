@@ -125,16 +125,47 @@ export async function createBook(data: {
     try {
       await checkAndAwardAchievements(session.id as string, 'BOOK_COUNT');
       
-      // Log activity if published
+      // Log activity and create status if published
       if (published) {
         await logActivity(session.id as string, 'PUBLISH_BOOK', book.id, {
           title: book.title,
           coverImage: book.coverImage,
           authorName: session.name || session.username
         });
+
+        // Create Status for Book Publish
+        // Only if it's a new publish (we can't easily check previous state here for new books, but for updates we could have)
+        // For now, let's just create it. The user can delete it if they want (future feature).
+        // Or better, check if we just switched to published.
+        // But for now, let's assume if they hit save and it's published, we announce it.
+        // To avoid spam, we might want to check if a status exists recently, but let's keep it simple.
+        
+        const { createStatus } = await import('@/app/actions/status');
+        await createStatus('BOOK_PUBLISH', {
+          bookId: book.id,
+          bookTitle: book.title,
+          coverImage: book.coverImage,
+          authorName: session.name || session.username
+        });
       }
+
+      // Check for scheduled chapters
+      const scheduledPages = pages.filter(p => p.scheduledAt);
+      if (scheduledPages.length > 0) {
+        const { createStatus } = await import('@/app/actions/status');
+        for (const page of scheduledPages) {
+           await createStatus('CHAPTER_RELEASE', {
+            bookId: book.id,
+            bookTitle: book.title,
+            coverImage: book.coverImage,
+            chapterTitle: page.title,
+            releaseDate: page.scheduledAt
+          });
+        }
+      }
+
     } catch (e) {
-      console.error('Error checking achievements/activity:', e);
+      console.error('Error checking achievements/activity/status:', e);
     }
 
     return { success: true, bookId: book.id };

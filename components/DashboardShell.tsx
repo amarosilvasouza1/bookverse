@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookOpen, Users, Settings, LogOut, PlusCircle, Zap } from 'lucide-react';
+import { LayoutDashboard, BookOpen, MessageCircle, Settings, LogOut, PlusCircle, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/LanguageContext';
 import NotificationBell from './NotificationBell';
@@ -21,7 +21,7 @@ export default function DashboardShell({
     { name: t('overview'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('browse'), href: '/dashboard/browse', icon: BookOpen },
     { name: t('myBooks'), href: '/dashboard/books', icon: BookOpen },
-    { name: t('communities'), href: '/dashboard/communities', icon: Users },
+    { name: 'Social', href: '/dashboard/social', icon: MessageCircle },
     { name: t('settings'), href: '/dashboard/settings', icon: Settings },
     { name: 'Subscription', href: '/dashboard/subscription', icon: Zap },
   ];
