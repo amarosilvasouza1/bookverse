@@ -21,7 +21,7 @@ interface SettingsFormProps {
 }
 
 export default function SettingsForm({ user }: SettingsFormProps) {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
@@ -119,7 +119,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-4xl font-bold mb-8 bg-linear-to-r from-white to-white/50 bg-clip-text text-transparent">
-        Profile Settings
+        {t('profileSettings')}
       </h1>
 
       {notification && (
@@ -140,12 +140,12 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">
               <ImageIcon className="w-5 h-5 text-primary" />
-              Visual Identity
+              {t('visualIdentity')}
             </h2>
 
             <div className="space-y-6">
               <ImageUpload
-                label="Profile Avatar"
+                label={t('profileAvatar')}
                 value={formData.image}
                 onChange={(value) => setFormData({...formData, image: value})}
                 aspectRatio="square"
@@ -157,7 +157,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
               </p>
               
               <ImageUpload
-                label="Profile Banner"
+                label={t('profileBanner')}
                 value={formData.banner}
                 onChange={(value) => setFormData({...formData, banner: value})}
                 aspectRatio="video"
@@ -169,12 +169,12 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">
               <Globe className="w-5 h-5 text-primary" />
-              Language & Preferences
+              {t('languagePreferences')}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Interface Language</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">{t('interfaceLanguage')}</label>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as 'en' | 'pt' | 'jp')}
@@ -184,7 +184,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                   <option value="pt">Português</option>
                   <option value="jp">日本語</option>
                 </select>
-                <p className="text-xs text-muted-foreground mt-1">Changes the language of the sidebar and menus.</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('languageHelp')}</p>
               </div>
             </div>
           </div>
@@ -193,39 +193,39 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">
               <User className="w-5 h-5 text-primary" />
-              Personal Info
+              {t('personalInfo')}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Username</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">{t('username')}</label>
                 <input
                   type="text"
                   value={formData.username}
                   disabled
                   className="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-muted-foreground cursor-not-allowed"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Username cannot be changed</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('usernameHelp')}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Display Name</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">{t('displayName')}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 transition-all placeholder:text-white/20"
-                  placeholder="Your name"
+                  placeholder={t('yourName')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Bio</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">{t('bio')}</label>
                 <textarea
                   value={formData.bio}
                   onChange={(e) => setFormData({...formData, bio: e.target.value})}
                   className="w-full h-32 bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 resize-none transition-all placeholder:text-white/20"
-                  placeholder="Tell your story..."
+                  placeholder={t('bioPlaceholder')}
                 />
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">
               <LinkIcon className="w-5 h-5 text-primary" />
-              Social Connections
+              {t('socialConnections')}
             </h2>
 
             <div className="space-y-4">
@@ -287,12 +287,12 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">
               <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center text-[10px] font-bold">AI</div>
-              AI Configuration
+              {t('aiConfiguration')}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Gemini API Key</label>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">{t('geminiApiKey')}</label>
                 <input
                   type="password"
                   value={formData.geminiApiKey}
@@ -301,7 +301,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                   placeholder="AIza..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Your key is stored securely and used only for your requests.
+                  {t('apiKeyHelp')}
                 </p>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
               className="flex items-center px-8 py-4 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
             >
               {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('saving') : t('saveChanges')}
             </button>
           </div>
         </form>
@@ -322,7 +322,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
         {/* Right Column: Live Preview */}
         <div className="hidden lg:block space-y-6">
           <div className="sticky top-8">
-            <h2 className="text-sm font-bold mb-6 text-muted-foreground uppercase tracking-wider">Live Preview</h2>
+            <h2 className="text-sm font-bold mb-6 text-muted-foreground uppercase tracking-wider">{t('livePreview')}</h2>
             
             {/* Profile Card Preview */}
             <div className="glass-card rounded-3xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl">
@@ -350,12 +350,12 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                 </div>
 
                 <h2 className="text-3xl font-bold text-white mb-1">
-                  {formData.name || 'Your Name'}
+                  {formData.name || t('yourName')}
                 </h2>
                 <p className="text-primary font-medium mb-4">@username</p>
 
                 <p className="text-gray-300 leading-relaxed mb-6">
-                  {formData.bio || 'Your biography will appear here...'}
+                  {formData.bio || t('bioPreview')}
                 </p>
 
                 <div className="flex gap-3">
