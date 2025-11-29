@@ -6,6 +6,7 @@ import { getSession } from '@/lib/auth';
 import { ProfileActions } from '@/components/ProfileActions';
 import ProfileContent from './components/ProfileContent';
 import UserAvatar from '@/components/UserAvatar';
+import { cn } from '@/lib/utils';
 
 async function getUserProfile(username: string, currentUserId?: string) {
   const user = await prisma.user.findUnique({
@@ -46,6 +47,18 @@ async function getUserProfile(username: string, currentUserId?: string) {
       }
     }
   });
+
+  // Fetch tags using raw query because Prisma Client is outdated
+  const tagsResult = await prisma.$queryRaw<{ id: string, tags: string | null }[]>`
+    SELECT id, tags FROM User WHERE username = ${username}
+  `;
+  
+  const tags = tagsResult[0]?.tags;
+
+  if (user) {
+    // @ts-expect-error injecting tags manually
+    user.tags = tags;
+  }
 
   return user;
 }
@@ -100,7 +113,29 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
 
             <div className="space-y-4 w-full">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white">{user.name || username}</h1>
+                <div className="flex items-center gap-2 justify-center md:justify-start">
+                  <h1 className={cn(
+                    "text-2xl md:text-3xl font-bold",
+                    // @ts-expect-error tags field exists in DB but client not generated
+                    user.tags?.includes('BETA') ? "text-yellow-400 drop-shadow-md" : "text-white"
+                  )}>
+                    {user.name || username}
+                  </h1>
+                  
+                  {/* Tags/Badges */}
+                  {/* @ts-expect-error tags field exists in DB */}
+                  {user.tags?.includes('DEV') && (
+                    <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 text-xs font-bold border border-blue-500/30">
+                      DEV
+                    </span>
+                  )}
+                  {/* @ts-expect-error tags field exists in DB */}
+                  {user.tags?.includes('BETA') && (
+                    <span className="px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-400 text-xs font-bold border border-yellow-500/30">
+                      BETA
+                    </span>
+                  )}
+                </div>
                 <p className="text-muted-foreground">@{user.username}</p>
               </div>
 

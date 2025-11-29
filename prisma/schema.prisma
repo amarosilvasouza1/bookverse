@@ -28,6 +28,7 @@ model User {
   socialLinks       String?           @db.Text // JSON string for social links
   geminiApiKey      String?           @db.Text // User's Gemini API Key
   balance           Float             @default(0) // User's wallet balance
+  tags              String?           @db.Text // Comma-separated tags: BETA, DEV, VIP
 
   purchases         Purchase[]
   sales             Purchase[]         @relation("Seller")

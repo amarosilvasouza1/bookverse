@@ -705,6 +705,41 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
       {book.ambience && (
         <AmbiencePlayer type={book.ambience} />
       )}
+
+      {/* Mobile Navigation Buttons (Floating) */}
+      {!showOverlay && (
+        <>
+          {/* Prev Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrev();
+            }}
+            disabled={currentPage === 0}
+            className={`fixed left-2 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full shadow-lg backdrop-blur-sm transition-all md:hidden
+              ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-70 hover:opacity-100 active:scale-95'}
+              ${theme === 'dark' ? 'bg-black/40 text-white border border-white/10' : 'bg-white/40 text-black border border-black/10'}`}
+            aria-label="Previous Page"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          {/* Next Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNext();
+            }}
+            disabled={currentPage === pages.length - 1}
+            className={`fixed right-2 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full shadow-lg backdrop-blur-sm transition-all md:hidden
+              ${currentPage === pages.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-70 hover:opacity-100 active:scale-95'}
+              ${theme === 'dark' ? 'bg-black/40 text-white border border-white/10' : 'bg-white/40 text-black border border-black/10'}`}
+            aria-label="Next Page"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </>
+      )}
     </div>
   );
 }

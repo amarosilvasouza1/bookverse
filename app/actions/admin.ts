@@ -150,11 +150,72 @@ export async function executeAdminCommand(command: string) {
          return { success: true, message: `Deleted user @${targetUsername}` };
       }
 
+      // Command: @username add beta
+      if (action === 'add' && parts[2] === 'beta') {
+        // 1. Grant Achievement
+        await prisma.userAchievement.upsert({
+          where: {
+            userId_achievementId: {
+              userId: targetUser.id,
+              achievementId: 'achievement-beta-tester'
+            }
+          },
+          update: {},
+          create: {
+            userId: targetUser.id,
+            achievementId: 'achievement-beta-tester'
+          }
+        });
+
+        // 2. Add Tag
+        // @ts-expect-error tags field exists in DB
+        const currentTags = targetUser.tags ? targetUser.tags.split(',') : [];
+        if (!currentTags.includes('BETA')) {
+          currentTags.push('BETA');
+          const newTags = currentTags.join(',');
+          // Use executeRaw to bypass Prisma Client validation (since client is outdated)
+          await prisma.$executeRaw`UPDATE User SET tags = ${newTags} WHERE id = ${targetUser.id}`;
+        }
+
+        return { success: true, message: `Granted Beta Tester status to @${targetUsername}` };
+      }
+
+      // Command: @username add dev
+      if (action === 'add' && parts[2] === 'dev') {
+        // 1. Grant Achievement
+        await prisma.userAchievement.upsert({
+          where: {
+            userId_achievementId: {
+              userId: targetUser.id,
+              achievementId: 'achievement-dev'
+            }
+          },
+          update: {},
+          create: {
+            userId: targetUser.id,
+            achievementId: 'achievement-dev'
+          }
+        });
+
+        // 2. Add Tag
+        // @ts-expect-error tags field exists in DB
+        const currentTags = targetUser.tags ? targetUser.tags.split(',') : [];
+        if (!currentTags.includes('DEV')) {
+          currentTags.push('DEV');
+          const newTags = currentTags.join(',');
+          // Use executeRaw to bypass Prisma Client validation
+          await prisma.$executeRaw`UPDATE User SET tags = ${newTags} WHERE id = ${targetUser.id}`;
+        }
+
+        return { success: true, message: `Granted Developer status to @${targetUsername}` };
+      }
+
       return { success: false, error: 'Unknown command' };
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Admin command error:', error);
-      return { success: false, error: 'Command execution failed' };
+      const errorMessage = error instanceof Error ? error.message : 'Command execution failed';
+      return { success: false, error: errorMessage };
     }
 
 }

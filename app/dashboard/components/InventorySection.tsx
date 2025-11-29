@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getUserInventory, equipItem, unequipItem } from '@/app/actions/store';
 import { Loader2, Backpack, Check } from 'lucide-react';
+import UserAvatar from '@/components/UserAvatar';
 
 type UserItem = {
   id: string;
@@ -84,11 +85,13 @@ export default function InventorySection() {
         {items.map((userItem) => (
           <div key={userItem.id} className={`glass-card p-4 rounded-2xl border transition-all ${userItem.equipped ? 'border-primary bg-primary/10' : 'border-white/10 bg-black/40'}`}>
             <div className="flex justify-center my-4">
-              <div className={`w-20 h-20 rounded-full bg-zinc-800 ${getFrameClass(userItem.item.rarity)}`}>
-                 <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-[10px] text-zinc-600">
-                    Preview
-                 </div>
-              </div>
+              <UserAvatar 
+                src={null} 
+                alt={userItem.item.name} 
+                size={80} 
+                rarity={userItem.item.type === 'FRAME' ? userItem.item.rarity : undefined}
+                className="bg-zinc-800"
+              />
             </div>
 
             <h3 className="text-center font-bold text-white mb-1 truncate">{userItem.item.name}</h3>

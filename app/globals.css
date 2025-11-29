@@ -23,126 +23,163 @@
   --radius: 0.5rem;
 }
 
-/* Avatar Frames */
-.avatar-frame-wrapper {
+/* Electric Frame Variables */
+/* Electric Frame Variables */
+:root {
+  /* Default Orange (Electric Aura) */
+  --electric-primary: #dd8448;
+  --electric-secondary: #fcebd5;
+  --electric-border-rgba: rgba(221, 132, 72, 0.8);
+  
+  --color-neutral-900: #1a1a1a;
+}
+
+/* Blue Variant (Electric Blue) */
+.electric-blue {
+  --electric-primary: #00bfff; /* Deep Sky Blue */
+  --electric-secondary: #e0ffff; /* Light Cyan */
+  --electric-border-rgba: rgba(0, 191, 255, 0.8);
+}
+
+/* Electric Frame Implementation */
+.electric-frame-wrapper {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-}
-
-.frame-common {
-  border: 4px solid #71717a;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
-}
-
-.frame-rare {
-  border: 4px solid #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.3);
-}
-
-.frame-epic {
-  border: 4px solid #a855f7;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.7), 0 0 40px rgba(168, 85, 247, 0.3);
-  animation: pulse-purple 2s infinite;
-}
-
-.frame-legendary {
-  position: relative;
-  padding: 4px;
-  background: linear-gradient(45deg, #ffd700, #ff8c00, #ffff00, #ffd700);
-  background-size: 300% 300%;
-  animation: shimmer 3s linear infinite;
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
   border-radius: 50%;
+  padding: 4px; /* Space for the effect */
+  background: linear-gradient(
+      -30deg,
+      var(--electric-primary),
+      transparent,
+      var(--electric-primary)
+    ),
+    linear-gradient(
+      to bottom,
+      var(--color-neutral-900),
+      var(--color-neutral-900)
+    );
+  /* Faster rotation for more energy */
+  animation: electric-spin 2s linear infinite;
 }
 
-.frame-cosmic {
-  position: relative;
-  padding: 5px;
-  background: conic-gradient(
-    from 0deg,
-    #ff0000,
-    #ff8800,
-    #ffff00,
-    #00ff00,
-    #00ffff,
-    #0000ff,
-    #ff00ff,
-    #ff0000
-  );
-  animation: spin 4s linear infinite;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-}
-
-.frame-cosmic::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: inherit;
-  filter: blur(12px);
-  z-index: -1;
-  opacity: 0.8;
-}
-
-/* DRAGON FRAME */
-.frame-dragon {
-  position: relative;
-  /* No padding here, we use negative inset on pseudo-elements to go outside */
-  background: transparent;
-  box-shadow: 0 0 30px rgba(255, 69, 0, 0.4);
-  border-radius: 50%;
-  z-index: 1; /* Ensure the container is above standard content */
-}
-
-/* The rotating dragon body/fire */
-.frame-dragon::before {
-  content: "";
-  position: absolute;
-  inset: -8px; /* Extend well outside */
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    transparent 270deg,
-    #ff4500 300deg,
-    #ff0000 330deg,
-    #ffd700 360deg
-  );
-  animation: spin 2s linear infinite;
-  filter: drop-shadow(0 0 10px #ff4500);
-  z-index: 10; /* Above the image */
-}
-
-/* Inner glow/border */
-.frame-dragon::after {
-  content: "";
-  position: absolute;
-  inset: -2px; /* Just outside the image */
-  border-radius: 50%;
-  border: 2px solid #ff4500;
-  box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.5);
-  z-index: 20; /* Topmost */
-  pointer-events: none;
-}
-
-@keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes spin {
+@keyframes electric-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-@keyframes pulse-purple {
-  0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.7); }
-  50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.9); }
+/* Ensure inner content doesn't rotate with the wrapper */
+.electric-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: electric-counter-spin 2s linear infinite;
+}
+
+@keyframes electric-counter-spin {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.electric-border-outer {
+  position: absolute;
+  inset: -4px;
+  border: 3px solid var(--electric-border-rgba); /* Thicker border */
+  border-radius: 50%;
+  padding-right: 4px;
+  padding-bottom: 4px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.electric-main-card {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 4px solid var(--electric-primary); /* Thicker main wire */
+  filter: url(#turbulent-displace);
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+@keyframes electric-pulse {
+  0%, 100% { opacity: 0.5; filter: blur(2px) brightness(1); }
+  50% { opacity: 1; filter: blur(5px) brightness(1.5); }
+}
+
+.electric-glow-1 {
+  border: 3px solid var(--electric-border-rgba); /* Thicker glow */
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  animation: electric-pulse 1s ease-in-out infinite alternate;
+}
+
+.electric-glow-2 {
+  border: 3px solid var(--electric-secondary); /* Thicker glow */
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  animation: electric-pulse 1.5s ease-in-out infinite alternate-reverse;
+}
+
+.electric-overlay-1 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 1;
+  mix-blend-mode: overlay;
+  transform: scale(1.1);
+  filter: blur(16px);
+  background: linear-gradient(
+    -30deg,
+    white,
+    transparent 30%,
+    transparent 70%,
+    white
+  );
+  z-index: 25;
+  pointer-events: none;
+  animation: electric-pulse 2s ease-in-out infinite;
+}
+
+.electric-overlay-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  transform: scale(1.1);
+  filter: blur(16px);
+  background: linear-gradient(
+    -30deg,
+    white,
+    transparent 30%,
+    transparent 70%,
+    white
+  );
+  z-index: 25;
+  pointer-events: none;
+}
+
+.electric-background-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(32px);
+  transform: scale(1.1);
+  opacity: 0.3;
+  z-index: -1;
+  background: linear-gradient(
+    -30deg,
+    var(--electric-secondary),
+    transparent,
+    var(--electric-primary)
+  );
 }
 
 /* Custom Utilities */

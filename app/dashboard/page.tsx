@@ -56,9 +56,15 @@ export default async function DashboardPage() {
     }
   });
 
+  // Fetch tags using raw query
+  const tagsResult = await prisma.$queryRaw<{ id: string, tags: string | null }[]>`
+    SELECT id, tags FROM User WHERE id = ${session.id}
+  `;
+  const tags = tagsResult[0]?.tags;
+  
   const userName = user?.name || 'Author';
   const userImage = user?.image || null;
   const equippedFrame = user?.items[0]?.item || null;
 
-  return <DashboardContent userName={userName} userImage={userImage} equippedFrame={equippedFrame} stats={stats} />;
+  return <DashboardContent userName={userName} userImage={userImage} equippedFrame={equippedFrame} stats={stats} tags={tags} />;
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getStoreItems, buyItem } from '@/app/actions/store';
 import { Loader2, ShoppingBag, Sparkles } from 'lucide-react';
+import UserAvatar from '@/components/UserAvatar';
 
 
 type Item = {
@@ -116,12 +117,13 @@ export default function StoreSection() {
             </div>
 
             <div className="flex justify-center my-8">
-              <div className={`w-24 h-24 rounded-full bg-zinc-800 ${getFrameClass(item.rarity)}`}>
-                 {/* Preview Placeholder */}
-                 <div className="w-full h-full rounded-full bg-zinc-900 flex items-center justify-center text-xs text-zinc-600">
-                    Preview
-                 </div>
-              </div>
+              <UserAvatar 
+                src={null} 
+                alt={item.name} 
+                size={96} 
+                rarity={item.type === 'FRAME' ? item.rarity : undefined}
+                className="bg-zinc-800"
+              />
             </div>
 
             <p className="text-sm text-zinc-400 mb-6 min-h-[40px]">{item.description}</p>
