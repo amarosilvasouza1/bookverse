@@ -198,7 +198,6 @@ export async function executeAdminCommand(command: string) {
         });
 
         // 2. Add Tag
-        // @ts-expect-error tags field exists in DB
         const currentTags = targetUser.tags ? targetUser.tags.split(',') : [];
         if (!currentTags.includes('DEV')) {
           currentTags.push('DEV');
