@@ -8,16 +8,43 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { updateProfile } from '@/app/actions/user';
 import AdminCommandPalette from '@/components/AdminCommandPalette';
+import { equipItem, unequipItem } from '@/app/actions/store';
 
-interface SettingsFormProps {
+interface ItemData {
+  cssClass?: string;
+  animation?: string;
+  [key: string]: unknown;
+}
+
+export interface UserItem {
+  item: {
+    id: string;
+    name: string;
+    description: string;
+    type: string;
+    rarity: string;
+    image: string | null;
+    data: ItemData | null;
+  };
+  equipped: boolean;
+}
+
+export interface SocialLinks {
+  twitter: string;
+  instagram: string;
+  website: string;
+}
+
+export interface SettingsFormProps {
   user: {
     name: string | null;
     username: string;
     bio: string | null;
     image: string | null;
     banner: string | null;
-    socialLinks: Record<string, string> | string | null;
+    socialLinks: string | SocialLinks | null;
     geminiApiKey: string | null;
+    items?: UserItem[];
   };
 }
 
@@ -102,6 +129,24 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           message: error instanceof Error ? error.message : 'Something went wrong. Please try again.' 
         });
       }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEquip = async (itemId: string, currentEquipped: boolean) => {
+    setSaving(true); // Reuse saving state for loading indicator
+    try {
+      if (currentEquipped) {
+        await unequipItem(itemId);
+      } else {
+        await equipItem(itemId);
+      }
+      router.refresh();
+      setNotification({ type: 'success', message: currentEquipped ? 'Item unequipped' : 'Item equipped' });
+    } catch (error) {
+      console.error(error);
+      setNotification({ type: 'error', message: 'Failed to update item' });
     } finally {
       setSaving(false);
     }
@@ -324,11 +369,44 @@ export default function SettingsForm({ user }: SettingsFormProps) {
             </h2>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {/* This would ideally be a separate component fetching data, but for now we'll just link to it or show a placeholder if data isn't passed */}
-              <div className="col-span-full text-center py-8 text-muted-foreground">
-                <p>Equipped items and collection will appear here.</p>
-                <p className="text-xs mt-2">Use command <code className="bg-white/10 px-1 rounded">@user md code</code> to redeem items.</p>
-              </div>
+              {user.items && user.items.length > 0 ? (
+                user.items.map((userItem: UserItem) => (
+                  <div key={userItem.item.id} className={`bg-black/40 border rounded-xl p-3 flex flex-col items-center text-center gap-2 transition-colors ${
+                    userItem.equipped ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-primary/50'
+                  }`}>
+                    <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center bg-gray-800 ${
+                      userItem.item.rarity === 'LEGENDARY' ? 'border-orange-500 shadow-orange-500/50 shadow-lg' :
+                      userItem.item.rarity === 'EPIC' ? 'border-purple-500 shadow-purple-500/50 shadow-lg' :
+                      userItem.item.rarity === 'RARE' ? 'border-blue-500 shadow-blue-500/50 shadow-lg' :
+                      'border-gray-500'
+                    }`}>
+                      {/* Placeholder for item icon/image if available, otherwise generic icon */}
+                      <div className="text-xs font-bold text-white/50">{userItem.item.name.substring(0, 2).toUpperCase()}</div>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">{userItem.item.name}</h3>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{userItem.item.rarity}</p>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleEquip(userItem.item.id, userItem.equipped)}
+                      disabled={saving}
+                      className={`text-xs px-3 py-1 rounded-full font-bold transition-all ${
+                        userItem.equipped 
+                          ? 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600' 
+                          : 'bg-primary text-white hover:bg-primary/90'
+                      }`}
+                    >
+                      {userItem.equipped ? 'Unequip' : 'Equip'}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  <p>Equipped items and collection will appear here.</p>
+                  <p className="text-xs mt-2">Use command <code className="bg-white/10 px-1 rounded">@user md code</code> to redeem items.</p>
+                </div>
+              )}
             </div>
           </div>
 

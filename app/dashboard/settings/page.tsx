@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import SettingsForm from '@/components/SettingsForm';
+import SettingsForm, { SettingsFormProps } from '@/components/SettingsForm';
 import { redirect } from 'next/navigation';
 
 export default async function SettingsPage() {
@@ -20,6 +20,11 @@ export default async function SettingsPage() {
       banner: true,
       socialLinks: true,
       geminiApiKey: true,
+      items: {
+        include: {
+          item: true
+        }
+      }
     }
   });
 
@@ -27,5 +32,5 @@ export default async function SettingsPage() {
     redirect('/login');
   }
 
-  return <SettingsForm user={user} />;
+  return <SettingsForm user={user as unknown as SettingsFormProps['user']} />;
 }
