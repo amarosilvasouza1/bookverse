@@ -32,5 +32,5 @@ export default async function SocialPage() {
 
   const { communities, statuses } = await getSocialData(session.id as string);
 
-  return <SocialMain communities={communities} statuses={statuses} />;
+  return <SocialMain communities={communities} statuses={statuses as unknown as any} />;
 }

@@ -19,15 +19,17 @@ interface Community {
   };
 }
 
-interface StatusData {
+export interface StatusData {
   bookId: string;
   bookTitle: string;
   coverImage?: string | null;
   chapterTitle?: string;
   chapterId?: string;
+  authorName?: string;
+  releaseDate?: Date | string;
 }
 
-interface Status {
+export interface Status {
   id: string;
   type: string;
   data: StatusData;
