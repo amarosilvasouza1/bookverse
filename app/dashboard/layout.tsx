@@ -1,6 +1,5 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { LanguageProvider } from '@/context/LanguageContext';
 import DashboardShell from '@/components/DashboardShell';
 
 export default async function DashboardLayout({
@@ -15,10 +14,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <LanguageProvider>
-      <DashboardShell userId={session.id as string}>
-        {children}
-      </DashboardShell>
-    </LanguageProvider>
+    <DashboardShell userId={session.id as string}>
+      {children}
+    </DashboardShell>
   );
 }

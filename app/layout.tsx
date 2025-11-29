@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AdminCommandPalette from "@/components/AdminCommandPalette";
 import { getSession } from "@/lib/auth";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        {children}
-        {session?.username === 'login' && <AdminCommandPalette username={session.username} />}
+        <LanguageProvider>
+          {children}
+          {session?.username === 'login' && <AdminCommandPalette username={session.username} />}
+        </LanguageProvider>
       </body>
     </html>
   );
