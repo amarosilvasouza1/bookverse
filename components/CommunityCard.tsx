@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MessageSquare, Users, Loader2, ArrowRight } from 'lucide-react';
 import { joinCommunity } from '@/app/actions/join-community';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface CommunityCardProps {
   community: {
@@ -20,6 +21,7 @@ interface CommunityCardProps {
 
 export default function CommunityCard({ community, isMember }: CommunityCardProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   const handleJoin = async (e: React.MouseEvent) => {
@@ -78,7 +80,7 @@ export default function CommunityCard({ community, isMember }: CommunityCardProp
         </div>
 
         <p className="text-sm text-gray-400 mb-6 line-clamp-2 h-10 leading-relaxed group-hover:text-gray-300 transition-colors">
-          {community.description || 'Join this community to connect with others and share your passion.'}
+          {community.description || t('defaultCommunityDesc')}
         </p>
 
         <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors">
@@ -96,7 +98,7 @@ export default function CommunityCard({ community, isMember }: CommunityCardProp
           {isMember ? (
             <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 flex items-center gap-1.5 shadow-lg shadow-emerald-900/20">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Member
+              {t('member')}
             </span>
           ) : (
             <button
@@ -108,7 +110,7 @@ export default function CommunityCard({ community, isMember }: CommunityCardProp
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <>
-                  Join
+                  {t('join')}
                   <ArrowRight className="w-3.5 h-3.5 ml-1 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
                 </>
               )}

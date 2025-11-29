@@ -8,6 +8,7 @@ import { createRoom } from '@/app/actions/reading-room';
 import { useRouter } from 'next/navigation';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import Image from 'next/image';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Book {
   id: string;
@@ -19,6 +20,7 @@ interface Book {
 
 export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [books, setBooks] = useState(initialBooks);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
@@ -36,7 +38,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
   });
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this book? This action cannot be undone.')) return;
+    if (!confirm(t('deleteConfirmation'))) return;
 
     setDeletingId(id);
     try {
@@ -48,7 +50,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
         alert(result.error);
       }
     } catch {
-      alert('Failed to delete book');
+      alert(t('failedToDelete'));
     } finally {
       setDeletingId(null);
     }
@@ -63,7 +65,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input 
               type="text" 
-              placeholder="Search your library..." 
+              placeholder={t('searchPlaceholder')} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
@@ -76,9 +78,9 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
               onChange={(e) => setFilter(e.target.value)}
               className="appearance-none bg-white/5 border border-white/10 rounded-xl pl-10 pr-8 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all [&>option]:bg-zinc-900 cursor-pointer min-w-[160px]"
             >
-              <option value="all">All Status</option>
-              <option value="published">Published</option>
-              <option value="draft">Drafts</option>
+              <option value="all">{t('allStatus')}</option>
+              <option value="published">{t('publishedStatus')}</option>
+              <option value="draft">{t('draftStatus')}</option>
             </select>
           </div>
         </div>
@@ -88,15 +90,15 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
               <BookOpen className="w-8 h-8 text-muted-foreground/50" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">No books found</h3>
+            <h3 className="text-lg font-bold text-white mb-2">{t('noBooksFound')}</h3>
             <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              We couldn&apos;t find any books matching your search. Try adjusting your filters or create a new one.
+              {t('noBooksFoundDesc')}
             </p>
             <button 
               onClick={() => { setSearch(''); setFilter('all'); }}
               className="text-primary hover:text-primary/80 font-medium hover:underline"
             >
-              Clear filters
+              {t('clearFilters')}
             </button>
           </div>
         ) : (
@@ -115,7 +117,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-br from-gray-800 to-gray-900 p-6 text-center">
                       <BookOpen className="w-12 h-12 text-white/10 mb-4" />
-                      <span className="text-white/20 text-sm font-medium uppercase tracking-widest">No Cover</span>
+                      <span className="text-white/20 text-sm font-medium uppercase tracking-widest">{t('noCover')}</span>
                     </div>
                   )}
                   
@@ -124,14 +126,14 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                     <Link 
                       href={`/dashboard/create-book?id=${book.id}`}
                       className="p-3 bg-white text-black rounded-full hover:scale-110 transition-transform shadow-lg"
-                      title="Edit Book"
+                      title={t('editBook')}
                     >
                       <Edit className="w-5 h-5" />
                     </Link>
                     <button
                       onClick={() => setSelectedAnalyticsBook(book.id)}
                       className="p-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white/20 hover:scale-110 transition-all backdrop-blur-md"
-                      title="View Analytics"
+                      title={t('viewAnalytics')}
                     >
                       <BarChart className="w-5 h-5" />
                     </button>
@@ -144,7 +146,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                         ? 'bg-green-500/20 text-green-300 border-green-500/30' 
                         : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
                     }`}>
-                      {book.published ? 'Published' : 'Draft'}
+                      {book.published ? t('publishedStatus') : t('draftStatus')}
                     </span>
                   </div>
                 </div>
@@ -160,26 +162,26 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                   <div className="mt-auto flex items-center justify-between pt-3 border-t border-white/5">
                     <button
                       onClick={async () => {
-                        if (confirm('Start a Reading Party for this book?')) {
+                        if (confirm(t('startReadingParty'))) {
                           const result = await createRoom(book.id);
                           if (result.success) {
                             router.push(`/dashboard/books/${book.id}/read?roomId=${result.roomId}`);
                           } else {
-                            alert('Failed to create room');
+                            alert(t('failedToCreateRoom'));
                           }
                         }
                       }}
                       className="text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center transition-colors"
                     >
                       <Users className="w-3 h-3 mr-1" />
-                      Reading Party
+                      {t('readingParty')}
                     </button>
 
                     <button 
                       onClick={() => handleDelete(book.id)}
                       disabled={deletingId === book.id}
                       className="text-muted-foreground hover:text-red-400 transition-colors p-1"
-                      title="Delete Book"
+                      title={t('deleteBookTitle')}
                     >
                       {deletingId === book.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
                     </button>
@@ -200,7 +202,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-zinc-900/50">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <BarChart className="w-5 h-5 text-primary" />
-                Book Analytics
+                {t('bookAnalytics')}
               </h2>
               <button 
                 onClick={() => setSelectedAnalyticsBook(null)}

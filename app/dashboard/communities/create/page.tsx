@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCommunity } from '@/app/actions/create-community';
 import { Users, Loader2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function CreateCommunityPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,8 +30,8 @@ export default function CreateCommunityPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create a Community</h1>
-        <p className="text-muted-foreground">Start a space for readers to discuss your favorite topics.</p>
+        <h1 className="text-3xl font-bold mb-2">{t('createCommunityTitle')}</h1>
+        <p className="text-muted-foreground">{t('createCommunitySubtitle')}</p>
       </div>
 
       <div className="glass-card p-8 rounded-xl border border-white/10">
@@ -41,7 +43,7 @@ export default function CreateCommunityPage() {
           )}
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-2">Community Name</label>
+            <label htmlFor="name" className="block text-sm font-medium mb-2">{t('communityName')}</label>
             <div className="relative">
               <Users className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
               <input
@@ -50,7 +52,7 @@ export default function CreateCommunityPage() {
                 name="name"
                 required
                 minLength={3}
-                placeholder="e.g., Fantasy Lovers"
+                placeholder={t('communityNamePlaceholder')}
                 className="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
               />
             </div>
@@ -58,28 +60,28 @@ export default function CreateCommunityPage() {
 
           <div className="space-y-2">
             <label htmlFor="description" className="text-sm font-medium text-gray-200">
-              Description
+              {t('communityDescription')}
             </label>
             <textarea
               id="description"
               name="description"
               rows={4}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary/50 transition-colors"
-              placeholder="What is this community about?"
+              placeholder={t('communityDescriptionPlaceholder')}
             />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="privacy" className="text-sm font-medium text-gray-200">
-              Privacy
+              {t('privacy')}
             </label>
             <select
               id="privacy"
               name="privacy"
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary/50 transition-colors [&>option]:bg-zinc-900"
             >
-              <option value="OPEN">Open (Anyone can join)</option>
-              <option value="CLOSED">Closed (Requires approval)</option>
+              <option value="OPEN">{t('privacyOpen')}</option>
+              <option value="CLOSED">{t('privacyClosed')}</option>
             </select>
           </div>
 
@@ -91,7 +93,7 @@ export default function CreateCommunityPage() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              'Create Community'
+              t('createCommunity')
             )}
           </button>
         </form>

@@ -7,6 +7,7 @@ import { MoreHorizontal, Heart, MessageSquare, Share2 } from 'lucide-react';
 import { togglePostLike } from '@/app/actions/community-interactions';
 import CommentSection from './CommentSection';
 import { formatDistanceToNow } from 'date-fns';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface PostCardProps {
   post: {
@@ -28,6 +29,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, currentUserId }: PostCardProps) {
+  const { t } = useLanguage();
   const [isLiked, setIsLiked] = useState(post.likes.some(like => like.userId === currentUserId));
   const [likesCount, setLikesCount] = useState(post._count.likes);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
@@ -101,7 +103,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               <div className={`p-2 rounded-full group-hover:bg-pink-500/10 transition-colors ${isLiked ? 'bg-pink-500/10' : ''}`}>
                 <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
               </div>
-              <span>{likesCount} {likesCount === 1 ? 'Like' : 'Likes'}</span>
+              <span>{likesCount} {likesCount === 1 ? t('like') : t('likes')}</span>
             </button>
             
             <button 
@@ -111,7 +113,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
               <div className={`p-2 rounded-full group-hover:bg-blue-500/10 transition-colors ${showComments ? 'bg-blue-500/10' : ''}`}>
                 <MessageSquare className="w-4 h-4" />
               </div>
-              <span>{post._count.comments} Comments</span>
+              <span>{post._count.comments} {t('comments')}</span>
             </button>
             
             <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-green-400 transition-colors group ml-auto">

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { createComment, deleteComment, getComments } from '@/app/actions/community-interactions';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, Send, Trash2 } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Comment {
   id: string;
@@ -20,6 +21,7 @@ interface Comment {
 }
 
 export default function CommentSection({ postId }: { postId: string }) {
+  const { t } = useLanguage();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -90,7 +92,7 @@ export default function CommentSection({ postId }: { postId: string }) {
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
+            placeholder={t('writeComment')}
             className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pr-10 text-sm focus:outline-none focus:bg-white/10 transition-colors"
           />
           <button 

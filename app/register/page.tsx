@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useLanguage();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,11 +29,11 @@ export default function RegisterPage() {
         window.location.href = '/login';
       } else {
         const data = await response.json();
-        alert(data.error || 'Registration failed');
+        alert(data.error || t('registrationFailed'));
       }
     } catch (error) {
       console.error('Registration error:', error);
-      alert('An error occurred. Please try again.');
+      alert(t('errorOccurred'));
     } finally {
       setIsLoading(false);
     }
@@ -48,39 +50,39 @@ export default function RegisterPage() {
       <div className="glass-card w-full max-w-md p-8 rounded-2xl">
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-white mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          {t('backToHome')}
         </Link>
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Create Account</h1>
-          <p className="text-muted-foreground">Join the BookVerse community today</p>
+          <h1 className="text-3xl font-bold mb-2">{t('createAccount')}</h1>
+          <p className="text-muted-foreground">{t('joinCommunitySubtitle')}</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="username">Username</label>
+            <label className="block text-sm font-medium mb-2" htmlFor="username">{t('usernameLabel')}</label>
             <input 
               id="username"
               name="username"
               type="text" 
               className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-              placeholder="unique_username"
+              placeholder={t('usernamePlaceholder')}
               required
               pattern="^[a-zA-Z0-9._]+$"
-              title="Username can only contain letters, numbers, dots, and underscores"
+              title={t('usernamePatternError')}
               onChange={(e) => {
                 const val = e.target.value;
                 if (!/^[a-zA-Z0-9._]*$/.test(val)) {
-                  e.target.setCustomValidity('Username can only contain letters, numbers, dots, and underscores');
+                  e.target.setCustomValidity(t('usernamePatternError'));
                 } else {
                   e.target.setCustomValidity('');
                 }
               }}
             />
-            <p className="text-xs text-muted-foreground mt-1">Only letters, numbers, dots, and underscores allowed.</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('usernameHelper')}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="email">Email</label>
+            <label className="block text-sm font-medium mb-2" htmlFor="email">{t('emailLabel')}</label>
             <input 
               id="email"
               name="email"
@@ -91,7 +93,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="password">Password</label>
+            <label className="block text-sm font-medium mb-2" htmlFor="password">{t('passwordLabel')}</label>
             <input 
               id="password"
               name="password"
@@ -107,14 +109,14 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Creating Account...' : 'Sign Up'}
+            {isLoading ? t('creatingAccountButton') : t('signUpButton')}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          {t('alreadyHaveAccount')}{' '}
           <Link href="/login" className="text-primary hover:text-primary/80 font-medium">
-            Sign in
+            {t('signInLink')}
           </Link>
         </div>
       </div>

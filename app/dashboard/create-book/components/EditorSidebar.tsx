@@ -448,7 +448,7 @@ export default function EditorSidebar({
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder={t('usernamePlaceholder')}
+                    placeholder={t('teamUsernamePlaceholder')}
                     value={collaboratorSearch}
                     onChange={(e) => setCollaboratorSearch(e.target.value)}
                     className="flex-1 bg-black/20 border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all placeholder:text-zinc-600"

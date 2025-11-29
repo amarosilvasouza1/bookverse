@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useLanguage();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -26,11 +28,11 @@ export default function LoginPage() {
         window.location.href = '/dashboard';
       } else {
         const data = await response.json();
-        alert(data.error || 'Login failed');
+        alert(data.error || t('loginFailed'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('An error occurred. Please try again.');
+      alert(t('errorOccurred'));
     } finally {
       setIsLoading(false);
     }
@@ -47,17 +49,17 @@ export default function LoginPage() {
       <div className="glass-card w-full max-w-md p-8 rounded-2xl">
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-white mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          {t('backToHome')}
         </Link>
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to continue your journey</p>
+          <h1 className="text-3xl font-bold mb-2">{t('loginWelcomeBack')}</h1>
+          <p className="text-muted-foreground">{t('signInToContinue')}</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="email">Email</label>
+            <label className="block text-sm font-medium mb-2" htmlFor="email">{t('emailLabel')}</label>
             <input 
               id="email"
               name="email"
@@ -68,7 +70,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" htmlFor="password">Password</label>
+            <label className="block text-sm font-medium mb-2" htmlFor="password">{t('passwordLabel')}</label>
             <input 
               id="password"
               name="password"
@@ -84,14 +86,14 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? t('signingInButton') : t('signInButton')}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{' '}
+          {t('dontHaveAccount')}{' '}
           <Link href="/register" className="text-primary hover:text-primary/80 font-medium">
-            Sign up
+            {t('signUpLink')}
           </Link>
         </div>
       </div>
