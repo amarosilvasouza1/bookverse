@@ -4,9 +4,17 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
+export interface StatusData {
+  bookId: string;
+  bookTitle: string;
+  coverImage?: string | null;
+  chapterTitle?: string;
+  chapterId?: string;
+}
+
 export async function createStatus(
   type: 'BOOK_PUBLISH' | 'CHAPTER_RELEASE',
-  data: any
+  data: StatusData
 ) {
   try {
     const session = await getSession();
@@ -19,7 +27,8 @@ export async function createStatus(
       data: {
         userId: session.id as string,
         type,
-        data,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: data as any,
         expiresAt
       }
     });

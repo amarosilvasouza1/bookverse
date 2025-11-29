@@ -9,14 +9,43 @@ import ChatInterface from '@/components/ChatInterface';
 
 import StatusViewer from '@/components/StatusViewer';
 
+interface Community {
+  id: string;
+  name: string;
+  description: string | null;
+  _count: {
+    members: number;
+    posts: number;
+  };
+}
+
+interface StatusData {
+  bookId: string;
+  bookTitle: string;
+  coverImage?: string | null;
+  chapterTitle?: string;
+  chapterId?: string;
+}
+
+interface Status {
+  id: string;
+  type: string;
+  data: StatusData;
+  user: {
+    name: string | null;
+    image: string | null;
+  };
+  expiresAt: Date;
+}
+
 interface SocialMainProps {
-  communities: any[];
-  statuses: any[];
+  communities: Community[];
+  statuses: Status[];
 }
 
 export default function SocialMain({ communities, statuses }: SocialMainProps) {
   const [activeTab, setActiveTab] = useState<'feed' | 'chat'>('feed');
-  const [viewingStatus, setViewingStatus] = useState<any>(null);
+  const [viewingStatus, setViewingStatus] = useState<Status | null>(null);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-4 md:p-8">
@@ -31,7 +60,7 @@ export default function SocialMain({ communities, statuses }: SocialMainProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2 bg-linear-to-r from-white via-white/80 to-white/50 bg-clip-text text-transparent tracking-tight">
+          <h1 className="text-4xl font-bold mb-2 bg-linear-to-r from-white via-white/80 to-white/50 bg-clip-text text-transparent tracking-tight">
             Social Hub
           </h1>
           <p className="text-muted-foreground text-lg">Connect, share, and explore the community.</p>
@@ -67,7 +96,7 @@ export default function SocialMain({ communities, statuses }: SocialMainProps) {
       </div>
 
       {/* Content Area */}
-      <div className="mt-8 min-h-[600px]">
+      <div className="mt-8 min-h-[calc(100vh-200px)] md:min-h-[600px]">
         {/* Feed Tab Content */}
         {activeTab === 'feed' && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
@@ -183,7 +212,7 @@ export default function SocialMain({ communities, statuses }: SocialMainProps) {
 
         {/* Chat Tab Content */}
         {activeTab === 'chat' && (
-          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out h-full">
+          <div className="animate-in fade-in zoom-in-95 duration-300 -mx-4 md:mx-0">
              <ChatInterface />
           </div>
         )}

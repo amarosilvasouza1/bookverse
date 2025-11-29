@@ -33,12 +33,12 @@ export default function MemberManagement({
 
   if (!canRemove && !canPromote && !canDemote) return null;
 
-  const handleAction = async (action: () => Promise<any>) => {
+  const handleAction = async (action: () => Promise<{ error?: string } | void>) => {
     setLoading(true);
     setIsOpen(false);
     try {
       const result = await action();
-      if (result.error) {
+      if (result && result.error) {
         alert(result.error);
       } else {
         router.refresh();

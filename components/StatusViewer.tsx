@@ -5,8 +5,25 @@ import Image from 'next/image';
 import { X, ChevronRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
+interface StatusData {
+  bookId: string;
+  bookTitle: string;
+  coverImage?: string | null;
+  chapterTitle?: string;
+}
+
+interface Status {
+  id: string;
+  type: string;
+  data: StatusData;
+  user: {
+    name: string | null;
+    image: string | null;
+  };
+}
+
 interface StatusViewerProps {
-  status: any;
+  status: Status;
   onClose: () => void;
 }
 
@@ -28,7 +45,7 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
     return () => clearInterval(timer);
   }, [onClose]);
 
-  const data = status.data as any; // { bookId, bookTitle, coverImage, ... }
+  const data = status.data;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
@@ -55,10 +72,10 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
         <div className="absolute top-4 left-4 right-4 flex items-center gap-3 z-20">
           <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden relative">
              {status.user.image && (status.user.image.startsWith('http') || status.user.image.startsWith('/')) ? (
-                <Image src={status.user.image} alt={status.user.name} fill className="object-cover" />
+                <Image src={status.user.image || ''} alt={status.user.name || 'User'} fill className="object-cover" />
              ) : (
                 <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-white">
-                  {status.user.name[0]}
+                  {(status.user.name || '?')[0]}
                 </div>
              )}
           </div>

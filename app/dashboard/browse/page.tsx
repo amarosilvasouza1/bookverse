@@ -216,7 +216,7 @@ function BrowseBooksContent() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="aspect-2/3 bg-white/5 rounded-2xl animate-pulse" />
               ))}
@@ -238,7 +238,7 @@ function BrowseBooksContent() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
               {books.map((book) => (
                 <Link 
                   href={`/dashboard/books/${book.id}`} 

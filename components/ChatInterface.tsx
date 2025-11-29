@@ -182,7 +182,7 @@ export default function ChatInterface() {
   const activeConvData = conversations.find(c => c.id === activeConversation);
 
   return (
-    <div className="flex h-[600px] bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+    <div className="flex h-[calc(100vh-180px)] md:h-[600px] bg-white/5 backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-2xl overflow-hidden shadow-2xl">
       {/* Sidebar */}
       <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col", activeConversation ? "hidden md:flex" : "flex")}>
         <div className="p-4 border-b border-white/10 flex justify-between items-center">
@@ -240,7 +240,7 @@ export default function ChatInterface() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <p className={cn("text-sm truncate max-w-[140px]", conv.unreadCount > 0 ? "text-white font-medium" : "text-muted-foreground")}>
+                    <p className={cn("text-base md:text-sm truncate max-w-[140px]", conv.unreadCount > 0 ? "text-white font-medium" : "text-muted-foreground")}>
                       {conv.lastMessage?.content || 'Start a conversation'}
                     </p>
                     {conv.unreadCount > 0 && (
@@ -299,7 +299,7 @@ export default function ChatInterface() {
                 return (
                   <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
                     <div className={cn(
-                      "max-w-[75%] p-4 text-sm shadow-lg relative group transition-all duration-300 hover:scale-[1.01]",
+                      "max-w-[75%] p-4 text-base md:text-sm shadow-lg relative group transition-all duration-300 hover:scale-[1.01]",
                       isMe 
                         ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white rounded-2xl rounded-tr-sm" 
                         : "bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-2xl rounded-tl-sm"
@@ -326,7 +326,7 @@ export default function ChatInterface() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..." 
-                  className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+                  className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-base md:text-sm"
                 />
                 <button 
                   type="submit"

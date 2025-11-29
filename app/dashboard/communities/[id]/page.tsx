@@ -100,46 +100,64 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
   return (
     <div className="-mt-4 -mx-4 md:-mt-8 md:-mx-8">
       {/* Immersive Header */}
-      <div className={`relative h-48 md:h-80 bg-linear-to-r ${gradient}`}>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40"></div>
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent"></div>
+      <div className="relative h-[400px] md:h-[500px] overflow-hidden group">
+        {/* Dynamic Background */}
+        <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-80`} />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
         
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-10 max-w-7xl mx-auto w-full">
-          <div className="flex flex-col md:flex-row items-end gap-4 md:gap-8">
-            {/* Avatar */}
-            <div className="w-20 h-20 md:w-32 md:h-32 rounded-2xl bg-black border-4 border-black shadow-2xl flex items-center justify-center text-white font-bold text-2xl md:text-5xl shrink-0 relative z-10 -mb-10 md:-mb-16 bg-linear-to-br from-gray-800 to-gray-900">
-              {community.name.substring(0, 2).toUpperCase()}
+        {/* Animated Elements */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 max-w-7xl mx-auto w-full z-20">
+          <div className="flex flex-col md:flex-row items-end gap-8">
+            {/* Avatar with Glow */}
+            <div className="relative group/avatar">
+              <div className={`absolute inset-0 bg-linear-to-br ${gradient} blur-2xl opacity-50 group-hover/avatar:opacity-80 transition-opacity duration-500`} />
+              <div className="w-24 h-24 md:w-40 md:h-40 rounded-4xl bg-zinc-900 border-4 border-zinc-950 shadow-2xl flex items-center justify-center text-white font-bold text-3xl md:text-6xl shrink-0 relative z-10 -mb-12 md:-mb-20 transform group-hover/avatar:scale-105 transition-transform duration-500">
+                {community.name.substring(0, 2).toUpperCase()}
+              </div>
             </div>
             
             {/* Info */}
-            <div className="flex-1 mb-1 md:mb-4 w-full">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-5xl font-bold text-white mb-1 md:mb-2 flex items-center gap-2 md:gap-3 tracking-tight">
-                    {community.name}
+            <div className="flex-1 mb-2 md:mb-6 w-full">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
                     {community.privacy === 'CLOSED' && (
-                      <Lock className="w-5 h-5 md:w-6 md:h-6 text-white/60" />
+                      <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold text-white/80 flex items-center gap-1.5">
+                        <Lock className="w-3 h-3" /> Private
+                      </span>
                     )}
+                    <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-xs font-bold text-white/80 flex items-center gap-1.5">
+                      <Globe className="w-3 h-3" /> Community
+                    </span>
+                  </div>
+                  
+                  <h1 className="text-4xl md:text-7xl font-bold text-white tracking-tight leading-none">
+                    {community.name}
                   </h1>
-                  <p className="text-white/80 max-w-2xl line-clamp-1 md:line-clamp-none text-sm md:text-lg">
+                  
+                  <p className="text-lg md:text-xl text-gray-300 max-w-2xl line-clamp-2 leading-relaxed">
                     {community.description || 'No description provided.'}
                   </p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-4 pb-2">
                   {community.isMember ? (
                     <div className="flex items-center gap-3">
-                      <div className="inline-flex items-center px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-full font-bold border border-emerald-500/30 backdrop-blur-md">
-                        <Shield className="w-4 h-4 mr-2" />
+                      <div className="inline-flex items-center px-6 py-3 bg-emerald-500/10 text-emerald-400 rounded-2xl font-bold border border-emerald-500/20 backdrop-blur-md shadow-lg shadow-emerald-900/20">
+                        <Shield className="w-5 h-5 mr-2" />
                         Member
                       </div>
                       {community.memberRole === 'ADMIN' && (
                         <Link 
                           href={`/dashboard/communities/${id}/settings`}
-                          className="inline-flex items-center px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full font-medium transition-colors border border-white/10 backdrop-blur-md"
+                          className="inline-flex items-center px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold transition-all border border-white/10 backdrop-blur-md hover:scale-105 active:scale-95"
                         >
-                          <Settings className="w-4 h-4 mr-2" />
+                          <Settings className="w-5 h-5 mr-2" />
                           Settings
                         </Link>
                       )}
@@ -148,14 +166,14 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
                       )}
                     </div>
                   ) : community.memberStatus === 'PENDING' ? (
-                    <div className="inline-flex items-center px-4 py-2 bg-yellow-500/20 text-yellow-300 rounded-full font-medium border border-yellow-500/30 backdrop-blur-md">
+                    <div className="inline-flex items-center px-6 py-3 bg-yellow-500/10 text-yellow-400 rounded-2xl font-bold border border-yellow-500/20 backdrop-blur-md">
                       Request Pending
                     </div>
                   ) : (
                     <form action={handleJoin}>
                       <button 
                         type="submit"
-                        className="bg-white text-black hover:bg-gray-100 px-8 py-3 rounded-full font-bold transition-all shadow-lg hover:scale-105 active:scale-95"
+                        className="bg-white text-black hover:bg-gray-100 px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-white/10 hover:scale-105 active:scale-95 text-lg"
                       >
                         {community.privacy === 'CLOSED' ? 'Request to Join' : 'Join Community'}
                       </button>
@@ -173,7 +191,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column: Feed (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-6 order-2 lg:order-1">
             {community.isMember && (
               <CreatePostForm communityId={community.id} />
             )}
@@ -204,7 +222,7 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
           </div>
 
           {/* Right Column: Sidebar (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-6 order-1 lg:order-2">
             {/* About Card */}
             <div className="glass-card p-6 rounded-2xl border border-white/10 bg-black/20 sticky top-24">
               <h3 className="font-bold mb-4 text-lg text-white flex items-center gap-2">

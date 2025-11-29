@@ -100,7 +100,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredBooks.map((book) => (
               <div key={book.id} className="group glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 flex flex-col">
                 {/* Cover Image Area */}

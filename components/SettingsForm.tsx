@@ -117,8 +117,8 @@ export default function SettingsForm({ user }: SettingsFormProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-4xl font-bold mb-8 bg-linear-to-r from-white to-white/50 bg-clip-text text-transparent">
+    <div className="max-w-6xl mx-auto p-4 md:p-6">
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 bg-linear-to-r from-white to-white/50 bg-clip-text text-transparent">
         {t('profileSettings')}
       </h1>
 
@@ -143,25 +143,67 @@ export default function SettingsForm({ user }: SettingsFormProps) {
               {t('visualIdentity')}
             </h2>
 
-            <div className="space-y-6">
-              <ImageUpload
-                label={t('profileAvatar')}
-                value={formData.image}
-                onChange={(value) => setFormData({...formData, image: value})}
-                aspectRatio="square"
-              />
-              <p className="text-xs text-muted-foreground">
-                Current payload size: {((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024 > 1024 
-                  ? `${(((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024 / 1024).toFixed(2)} MB`
-                  : `${(((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024).toFixed(2)} KB`}
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <ImageUpload
+                  label={t('profileAvatar')}
+                  value={formData.image}
+                  onChange={(value) => setFormData({...formData, image: value})}
+                  aspectRatio="square"
+                />
+              </div>
               
-              <ImageUpload
-                label={t('profileBanner')}
-                value={formData.banner}
-                onChange={(value) => setFormData({...formData, banner: value})}
-                aspectRatio="video"
-              />
+              <div className="space-y-2">
+                <ImageUpload
+                  label={t('profileBanner')}
+                  value={formData.banner}
+                  onChange={(value) => setFormData({...formData, banner: value})}
+                  aspectRatio="video"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Current payload size: {((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024 > 1024 
+                ? `${(((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024 / 1024).toFixed(2)} MB`
+                : `${(((formData.image?.length || 0) + (formData.banner?.length || 0)) / 1024).toFixed(2)} KB`}
+            </p>
+          </div>
+
+          {/* Mobile Preview (Moved Here) */}
+          <div className="lg:hidden space-y-6">
+            <div className="glass-card rounded-3xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl">
+              {/* Banner Preview */}
+              <div className="h-32 w-full bg-linear-to-r from-gray-800 to-gray-900 relative">
+                {formData.banner ? (
+                  <Image src={formData.banner} alt="Banner" fill className="object-cover" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/10">
+                    <ImageIcon className="w-12 h-12" />
+                  </div>
+                )}
+              </div>
+
+              {/* Avatar & Info */}
+              <div className="px-6 pb-6 -mt-12 relative">
+                <div className="w-24 h-24 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4 relative">
+                  {formData.image ? (
+                    <Image src={formData.image} alt="Avatar" fill className="object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/20">
+                      <User className="w-12 h-12" />
+                    </div>
+                  )}
+                </div>
+
+                <h2 className="text-2xl font-bold text-white mb-1">
+                  {formData.name || t('yourName')}
+                </h2>
+                <p className="text-primary font-medium mb-4">@username</p>
+
+                <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3">
+                  {formData.bio || t('bioPreview')}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -311,7 +353,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center px-8 py-4 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full md:w-auto flex items-center justify-center px-8 py-4 bg-primary text-white font-bold rounded-full hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
             >
               {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
               {saving ? t('saving') : t('saveChanges')}
@@ -319,7 +361,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           </div>
         </form>
 
-        {/* Right Column: Live Preview */}
+        {/* Right Column: Live Preview (Desktop Only) */}
         <div className="hidden lg:block space-y-6">
           <div className="sticky top-8">
             <h2 className="text-sm font-bold mb-6 text-muted-foreground uppercase tracking-wider">{t('livePreview')}</h2>
@@ -327,7 +369,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
             {/* Profile Card Preview */}
             <div className="glass-card rounded-3xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl">
               {/* Banner Preview */}
-              <div className="h-48 w-full bg-linear-to-r from-gray-800 to-gray-900 relative">
+              <div className="h-32 md:h-48 w-full bg-linear-to-r from-gray-800 to-gray-900 relative">
                 {formData.banner ? (
                   <Image src={formData.banner} alt="Banner" fill className="object-cover" />
                 ) : (
@@ -338,8 +380,8 @@ export default function SettingsForm({ user }: SettingsFormProps) {
               </div>
 
               {/* Avatar & Info */}
-              <div className="px-8 pb-8 -mt-16 relative">
-                <div className="w-32 h-32 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4 relative">
+              <div className="px-6 md:px-8 pb-8 -mt-12 md:-mt-16 relative">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4 relative">
                   {formData.image ? (
                     <Image src={formData.image} alt="Avatar" fill className="object-cover" />
                   ) : (
