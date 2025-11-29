@@ -15,8 +15,8 @@ export default function AdminCommandPalette({ username }: { username?: string })
     if (username !== 'login') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Toggle with Ctrl+Shift+A or F2
-      if ((e.ctrlKey && e.shiftKey && e.key === 'A') || e.key === 'F2') {
+      // Toggle with Ctrl+Q or F2
+      if ((e.ctrlKey && e.key === 'q') || e.key === 'F2') {
         e.preventDefault();
         setIsOpen(prev => !prev);
       }
