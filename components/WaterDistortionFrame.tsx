@@ -234,7 +234,7 @@ export default function WaterDistortionFrame({ src, size }: WaterDistortionFrame
     let targetIntensity = 0;
 
     function render() {
-      if (!gl || !program || !uniforms) return;
+      if (!gl || !program || !uniforms || !canvas) return;
       
       const width = size * (window.devicePixelRatio || 1);
       const height = size * (window.devicePixelRatio || 1);
