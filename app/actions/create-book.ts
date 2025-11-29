@@ -5,7 +5,7 @@ import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { checkAndAwardAchievements } from '@/lib/gamification';
 import { logActivity } from '@/app/actions/activity';
-import { createStatus } from '@/app/actions/status';
+import { createStatus, StatusData } from '@/app/actions/status';
 
 export async function createBook(data: {
   id?: string;
@@ -146,13 +146,12 @@ export async function createBook(data: {
           bookTitle: book.title,
           coverImage: book.coverImage,
           authorName: (session.name || session.username) as string
-        });
+        } as StatusData);
       }
 
       // Check for scheduled chapters
       const scheduledPages = pages.filter(p => p.scheduledAt);
       if (scheduledPages.length > 0) {
-        const { createStatus } = await import('@/app/actions/status');
         for (const page of scheduledPages) {
            await createStatus('CHAPTER_RELEASE', {
             bookId: book.id,
@@ -160,7 +159,7 @@ export async function createBook(data: {
             coverImage: book.coverImage,
             chapterTitle: page.title,
             releaseDate: page.scheduledAt
-          });
+          } as StatusData);
         }
       }
 
