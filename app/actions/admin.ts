@@ -168,13 +168,15 @@ export async function executeAdminCommand(command: string) {
         });
 
         // 2. Add Tag
-        // @ts-expect-error tags field exists in DB
         const currentTags = targetUser.tags ? targetUser.tags.split(',') : [];
         if (!currentTags.includes('BETA')) {
           currentTags.push('BETA');
           const newTags = currentTags.join(',');
-          // Use executeRaw to bypass Prisma Client validation (since client is outdated)
-          await prisma.$executeRaw`UPDATE User SET tags = ${newTags} WHERE id = ${targetUser.id}`;
+          
+          await prisma.user.update({
+            where: { id: targetUser.id },
+            data: { tags: newTags }
+          });
         }
 
         return { success: true, message: `Granted Beta Tester status to @${targetUsername}` };
@@ -202,8 +204,11 @@ export async function executeAdminCommand(command: string) {
         if (!currentTags.includes('DEV')) {
           currentTags.push('DEV');
           const newTags = currentTags.join(',');
-          // Use executeRaw to bypass Prisma Client validation
-          await prisma.$executeRaw`UPDATE User SET tags = ${newTags} WHERE id = ${targetUser.id}`;
+          
+          await prisma.user.update({
+            where: { id: targetUser.id },
+            data: { tags: newTags }
+          });
         }
 
         return { success: true, message: `Granted Developer status to @${targetUsername}` };
