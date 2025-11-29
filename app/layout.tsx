@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AdminCommandPalette from "@/components/AdminCommandPalette";
 import { getSession } from "@/lib/auth";
 import { LanguageProvider } from "@/context/LanguageContext";
 
@@ -35,7 +34,6 @@ export default async function RootLayout({
       >
         <LanguageProvider>
           {children}
-          {session?.username === 'login' && <AdminCommandPalette username={session.username} />}
         </LanguageProvider>
       </body>
     </html>

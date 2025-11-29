@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Instagram, Globe } from 'lucide-react';
+import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Instagram, Globe, Terminal } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { updateProfile } from '@/app/actions/user';
+import AdminCommandPalette from '@/components/AdminCommandPalette';
 
 interface SettingsFormProps {
   user: {
@@ -25,6 +26,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [showAdminConsole, setShowAdminConsole] = useState(false);
 
   const [formData, setFormData] = useState({
     name: user.name || '',
@@ -44,12 +46,6 @@ export default function SettingsForm({ user }: SettingsFormProps) {
     setNotification(null);
 
     try {
-      // Create timeout for large uploads
-
-
-
-      // const { updateProfile } = await import('@/app/actions/user');
-      
       const data = new FormData();
       data.append('name', formData.name);
       data.append('bio', formData.bio);
@@ -59,8 +55,6 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           const imageBlob = await fetch(formData.image).then(r => r.blob());
           data.append('image', imageBlob, 'profile-image.jpg');
         } else if (formData.image) {
-           // It's a URL but different from user.image? (e.g. user cleared it then pasted a URL? Unlikely for this UI)
-           // Or maybe user cleared it (empty string)
            data.append('image', formData.image);
         }
       }
@@ -75,13 +69,10 @@ export default function SettingsForm({ user }: SettingsFormProps) {
         }
       }
 
-      // Alert for debugging Vercel 413 - REMOVED
       data.append('socialLinks', JSON.stringify(formData.socialLinks));
       data.append('geminiApiKey', formData.geminiApiKey);
 
       console.log('Sending profile update...');
-      console.log('Image length:', formData.image?.length);
-      console.log('Banner length:', formData.banner?.length);
 
       const result = await updateProfile(data);
       
@@ -360,6 +351,24 @@ export default function SettingsForm({ user }: SettingsFormProps) {
             </button>
           </div>
         </form>
+
+        {/* Admin Console Button (Only for 'login' user) */}
+        {user.username === 'login' && (
+          <div className="fixed bottom-6 right-6 z-40">
+            <button
+              onClick={() => setShowAdminConsole(true)}
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-3 rounded-full shadow-lg border border-white/10 transition-all"
+              title="Admin Console"
+            >
+              <Terminal className="w-5 h-5" />
+            </button>
+            <AdminCommandPalette 
+              username={user.username} 
+              isOpen={showAdminConsole} 
+              onClose={() => setShowAdminConsole(false)} 
+            />
+          </div>
+        )}
 
         {/* Right Column: Live Preview (Desktop Only) */}
         <div className="hidden lg:block space-y-6">
