@@ -14,9 +14,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (username.includes(' ')) {
+    const usernameRegex = /^[a-zA-Z0-9._]+$/;
+    if (!usernameRegex.test(username)) {
       return NextResponse.json(
-        { error: 'Username cannot contain spaces' },
+        { error: 'Username can only contain letters, numbers, dots, and underscores' },
         { status: 400 }
       );
     }

@@ -66,8 +66,18 @@ export default function RegisterPage() {
               className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
               placeholder="unique_username"
               required
+              pattern="^[a-zA-Z0-9._]+$"
+              title="Username can only contain letters, numbers, dots, and underscores"
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!/^[a-zA-Z0-9._]*$/.test(val)) {
+                  e.target.setCustomValidity('Username can only contain letters, numbers, dots, and underscores');
+                } else {
+                  e.target.setCustomValidity('');
+                }
+              }}
             />
-            <p className="text-xs text-muted-foreground mt-1">This will be your unique handle.</p>
+            <p className="text-xs text-muted-foreground mt-1">Only letters, numbers, dots, and underscores allowed.</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-2" htmlFor="email">Email</label>
