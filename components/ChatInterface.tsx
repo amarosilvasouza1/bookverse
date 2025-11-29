@@ -386,7 +386,7 @@ export default function ChatInterface() {
               </button>
             </div>
 
-            <div className="p-2 overflow-y-auto flex-1">
+            <div className="p-2 overflow-y-auto flex-1 max-h-[60vh] custom-scrollbar">
               {modalTab === 'mutual' ? (
                 mutualFollowers.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">

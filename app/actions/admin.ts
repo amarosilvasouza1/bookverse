@@ -27,6 +27,10 @@ export async function executeAdminCommand(command: string) {
           image: true,
           bio: true,
           balance: true,
+          items: {
+            where: { equipped: true, item: { type: 'FRAME' } },
+            include: { item: true }
+          },
           _count: {
             select: {
               followers: true,

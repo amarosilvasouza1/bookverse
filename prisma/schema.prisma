@@ -51,6 +51,36 @@ model User {
   statuses        Status[]
   conversations   ConversationParticipant[]
   messages        DirectMessage[]
+
+  // Store & Inventory
+  items UserItem[]
+}
+
+model Item {
+  id          String     @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  type        String // FRAME, BACKGROUND
+  rarity      String // COMMON, RARE, EPIC, LEGENDARY
+  data        Json? // { cssClass: string, animation: string }
+  createdAt   DateTime   @default(now())
+  users       UserItem[]
+}
+
+model UserItem {
+  id         String   @id @default(cuid())
+  userId     String
+  itemId     String
+  equipped   Boolean  @default(false)
+  acquiredAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+  @@index([userId])
+  @@index([itemId])
 }
 
 model Status {

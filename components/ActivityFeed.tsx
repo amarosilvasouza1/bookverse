@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getActivityFeed } from '@/app/actions/activity';
 import { Book, Heart, MessageSquare, UserPlus, Clock } from 'lucide-react';
 import Link from 'next/link';
+import UserAvatar from '@/components/UserAvatar';
 
 interface ActivityMetadata {
   title?: string;
@@ -22,6 +23,11 @@ interface Activity {
     name: string | null;
     username: string;
     image: string | null;
+    items: {
+      item: {
+        rarity: string;
+      };
+    }[];
   };
 }
 
@@ -82,16 +88,12 @@ export default function ActivityFeed({ userId }: ActivityFeedProps) {
         <div key={activity.id} className="group relative flex gap-4 p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 hover:border-white/10 transition-all">
           {/* Avatar */}
           <Link href={`/dashboard/profile/${activity.user.username}`} className="shrink-0">
-            <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
-              {activity.user.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={activity.user.image} alt={activity.user.username} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-indigo-500/20 text-indigo-500 font-bold">
-                  {activity.user.username[0].toUpperCase()}
-                </div>
-              )}
-            </div>
+            <UserAvatar 
+              src={activity.user.image} 
+              alt={activity.user.username} 
+              size={40} 
+              rarity={activity.user.items[0]?.item.rarity}
+            />
           </Link>
 
           {/* Content */}

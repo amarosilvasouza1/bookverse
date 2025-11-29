@@ -44,7 +44,21 @@ export default async function DashboardPage() {
   }
 
   const stats = await getDashboardStats(session.id as string);
-  const userName = (session?.name as string) || 'Author';
+  const user = await prisma.user.findUnique({
+    where: { id: session.id as string },
+    select: {
+      name: true,
+      image: true,
+      items: {
+        where: { equipped: true, item: { type: 'FRAME' } },
+        include: { item: true }
+      }
+    }
+  });
 
-  return <DashboardContent userName={userName} stats={stats} />;
+  const userName = user?.name || 'Author';
+  const userImage = user?.image || null;
+  const equippedFrame = user?.items[0]?.item || null;
+
+  return <DashboardContent userName={userName} userImage={userImage} equippedFrame={equippedFrame} stats={stats} />;
 }

@@ -1,10 +1,13 @@
 'use client';
 
+
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Users, DollarSign, TrendingUp, Sparkles, ArrowRight, Star, PenTool, Plus } from 'lucide-react';
+import { BookOpen, Users, DollarSign, TrendingUp, Sparkles, ArrowRight, Star, PenTool, Plus, ShoppingBag } from 'lucide-react';
 import ActivityFeed from '@/components/ActivityFeed';
 import { useLanguage } from '@/context/LanguageContext';
+import UserAvatar from '@/components/UserAvatar';
+
 
 interface Book {
   id: string;
@@ -17,6 +20,10 @@ interface Book {
 
 interface DashboardContentProps {
   userName: string;
+  userImage: string | null;
+  equippedFrame: {
+    rarity: string;
+  } | null;
   stats: {
     booksCount: number;
     communitiesCount: number;
@@ -25,7 +32,7 @@ interface DashboardContentProps {
   };
 }
 
-export default function DashboardContent({ userName, stats }: DashboardContentProps) {
+export default function DashboardContent({ userName, userImage, equippedFrame, stats }: DashboardContentProps) {
   const { t } = useLanguage();
 
   return (
@@ -39,17 +46,27 @@ export default function DashboardContent({ userName, stats }: DashboardContentPr
         
         <div className="relative z-10 p-6 md:p-10 text-white">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 border border-white/20 text-xs md:text-sm font-medium backdrop-blur-md mb-3">
-                <Star className="w-3 h-3 md:w-4 md:h-4 mr-2 text-yellow-300 fill-yellow-300" />
-                {t('premiumAuthorDashboard')}
+            <div className="flex items-center gap-6">
+              <UserAvatar 
+                src={userImage} 
+                alt={userName} 
+                size={96} // 24 * 4 = 96px (w-24)
+                rarity={equippedFrame?.rarity}
+                className="md:w-24 md:h-24 w-20 h-20"
+              />
+              
+              <div>
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 border border-white/20 text-xs md:text-sm font-medium backdrop-blur-md mb-3">
+                  <Star className="w-3 h-3 md:w-4 md:h-4 mr-2 text-yellow-300 fill-yellow-300" />
+                  {t('premiumAuthorDashboard')}
+                </div>
+                <h1 className="text-2xl md:text-5xl font-bold mb-2 tracking-tight">
+                  {t('welcomeBack', { name: userName })}
+                </h1>
+                <p className="text-purple-100 text-sm md:text-lg max-w-xl">
+                  {t('readyToCreate', { books: stats.booksCount, communities: stats.communitiesCount })}
+                </p>
               </div>
-              <h1 className="text-2xl md:text-5xl font-bold mb-2 tracking-tight">
-                {t('welcomeBack', { name: userName })}
-              </h1>
-              <p className="text-purple-100 text-sm md:text-lg max-w-xl">
-                {t('readyToCreate', { books: stats.booksCount, communities: stats.communitiesCount })}
-              </p>
             </div>
             
             <Link 
@@ -108,6 +125,8 @@ export default function DashboardContent({ userName, stats }: DashboardContentPr
           </div>
         </div>
       </div>
+
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Books */}
@@ -192,6 +211,19 @@ export default function DashboardContent({ userName, stats }: DashboardContentPr
           </h2>
           
           <div className="space-y-3">
+            <Link href="/dashboard/store" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-pink-500/50 hover:bg-pink-500/5 transition-all group">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold text-white group-hover:text-pink-400 transition-colors">Item Store</div>
+                  <div className="text-xs text-muted-foreground">Buy frames & accessories</div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+
             <Link href="/dashboard/communities" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">

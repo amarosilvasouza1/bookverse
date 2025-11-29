@@ -5,11 +5,16 @@ import Image from 'next/image';
 import { getSession } from '@/lib/auth';
 import { ProfileActions } from '@/components/ProfileActions';
 import ProfileContent from './components/ProfileContent';
+import UserAvatar from '@/components/UserAvatar';
 
 async function getUserProfile(username: string, currentUserId?: string) {
   const user = await prisma.user.findUnique({
     where: { username },
     include: {
+      items: {
+        where: { equipped: true, item: { type: 'FRAME' } },
+        include: { item: true }
+      },
       followers: currentUserId ? {
         where: { followerId: currentUserId }
       } : false,
@@ -83,21 +88,14 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
           {/* Profile Info Sidebar */}
           <div className="w-full md:w-80 shrink-0 space-y-6 flex flex-col items-center md:items-stretch">
             {/* Avatar */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-zinc-800 shadow-2xl">
-              {user.image ? (
-                <div className="relative w-full h-full">
-                  <Image 
-                    src={user.image} 
-                    alt={user.name || username} 
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/20 text-primary text-4xl font-bold">
-                  {(user.name || username)[0].toUpperCase()}
-                </div>
-              )}
+            <div className="flex justify-center">
+              <UserAvatar 
+                src={user.image} 
+                alt={user.name || username} 
+                size={160} // w-40 h-40 = 160px
+                rarity={user.items[0]?.item.rarity}
+                className="w-32 h-32 md:w-40 md:h-40 border-4 border-[#0a0a0a]"
+              />
             </div>
 
             <div className="space-y-4 w-full">

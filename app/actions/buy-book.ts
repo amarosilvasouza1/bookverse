@@ -35,15 +35,21 @@ export async function buyBook(bookId: string) {
       return { error: 'You already own this book' };
     }
 
-    // Create purchase record
-    await prisma.purchase.create({
-      data: {
-        bookId,
-        buyerId: session.id as string,
-        sellerId: book.authorId,
-        amount: book.price,
-      },
-    });
+    // Transaction: Create purchase and update seller balance
+    await prisma.$transaction([
+      prisma.purchase.create({
+        data: {
+          bookId,
+          buyerId: session.id as string,
+          sellerId: book.authorId,
+          amount: book.price,
+        },
+      }),
+      prisma.user.update({
+        where: { id: book.authorId },
+        data: { balance: { increment: book.price } }
+      })
+    ]);
 
     revalidatePath(`/dashboard/books/${bookId}`);
     revalidatePath('/dashboard');

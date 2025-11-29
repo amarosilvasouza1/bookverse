@@ -20,7 +20,129 @@
   --color-border: hsl(240 3.7% 15.9%);
   --color-input: hsl(240 3.7% 15.9%);
   --color-ring: hsl(240 4.9% 83.9%);
-  --radius: 0.75rem;
+  --radius: 0.5rem;
+}
+
+/* Avatar Frames */
+.avatar-frame-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+}
+
+.frame-common {
+  border: 4px solid #71717a;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
+}
+
+.frame-rare {
+  border: 4px solid #3b82f6;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.frame-epic {
+  border: 4px solid #a855f7;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.7), 0 0 40px rgba(168, 85, 247, 0.3);
+  animation: pulse-purple 2s infinite;
+}
+
+.frame-legendary {
+  position: relative;
+  padding: 4px;
+  background: linear-gradient(45deg, #ffd700, #ff8c00, #ffff00, #ffd700);
+  background-size: 300% 300%;
+  animation: shimmer 3s linear infinite;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+  border-radius: 50%;
+}
+
+.frame-cosmic {
+  position: relative;
+  padding: 5px;
+  background: conic-gradient(
+    from 0deg,
+    #ff0000,
+    #ff8800,
+    #ffff00,
+    #00ff00,
+    #00ffff,
+    #0000ff,
+    #ff00ff,
+    #ff0000
+  );
+  animation: spin 4s linear infinite;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
+
+.frame-cosmic::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: inherit;
+  filter: blur(12px);
+  z-index: -1;
+  opacity: 0.8;
+}
+
+/* DRAGON FRAME */
+.frame-dragon {
+  position: relative;
+  /* No padding here, we use negative inset on pseudo-elements to go outside */
+  background: transparent;
+  box-shadow: 0 0 30px rgba(255, 69, 0, 0.4);
+  border-radius: 50%;
+  z-index: 1; /* Ensure the container is above standard content */
+}
+
+/* The rotating dragon body/fire */
+.frame-dragon::before {
+  content: "";
+  position: absolute;
+  inset: -8px; /* Extend well outside */
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 270deg,
+    #ff4500 300deg,
+    #ff0000 330deg,
+    #ffd700 360deg
+  );
+  animation: spin 2s linear infinite;
+  filter: drop-shadow(0 0 10px #ff4500);
+  z-index: 10; /* Above the image */
+}
+
+/* Inner glow/border */
+.frame-dragon::after {
+  content: "";
+  position: absolute;
+  inset: -2px; /* Just outside the image */
+  border-radius: 50%;
+  border: 2px solid #ff4500;
+  box-shadow: inset 0 0 15px rgba(255, 0, 0, 0.5);
+  z-index: 20; /* Topmost */
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-purple {
+  0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.7); }
+  50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.9); }
 }
 
 /* Custom Utilities */
@@ -44,11 +166,37 @@
 
 /* Custom Animations */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }

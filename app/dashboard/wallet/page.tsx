@@ -3,6 +3,18 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, Calendar, Loader2, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
+import UserAvatar from '@/components/UserAvatar';
+
+interface UserWithFrame {
+  name: string | null;
+  username: string;
+  image: string | null;
+  items: {
+    item: {
+      rarity: string;
+    };
+  }[];
+}
 
 interface Sale {
   id: string;
@@ -12,11 +24,7 @@ interface Sale {
     title: string;
     coverImage: string | null;
   };
-  buyer: {
-    name: string | null;
-    username: string;
-    image: string | null;
-  };
+  buyer: UserWithFrame;
 }
 
 interface Tip {
@@ -24,16 +32,13 @@ interface Tip {
   amount: number;
   message: string | null;
   createdAt: string;
-  sender: {
-    name: string | null;
-    username: string;
-    image: string | null;
-  };
+  sender: UserWithFrame;
 }
 
 export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
+    balance: number;
     totalEarnings: number;
     monthlyEarnings: number;
     sales: Sale[];
@@ -71,7 +76,18 @@ export default function WalletPage() {
       <h1 className="text-3xl font-bold mb-8">Wallet & Earnings</h1>
 
       {/* Stats Grid */}
-      <div className="grid md:grid-cols-2 gap-6 mb-10">
+      <div className="grid md:grid-cols-3 gap-6 mb-10">
+        <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4 text-pink-400">
+              <ShoppingBag className="w-6 h-6" />
+              <h3 className="font-medium">Current Balance</h3>
+            </div>
+            <p className="text-5xl font-bold">${data?.balance.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground mt-2">Available to spend</p>
+          </div>
+        </div>
         <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/20 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="relative z-10">
@@ -129,7 +145,15 @@ export default function WalletPage() {
                     <div>
                       <h4 className="font-bold text-lg">{sale.book.title}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Purchased by {sale.buyer.name || sale.buyer.username}</span>
+                        <div className="flex items-center gap-1">
+                          <UserAvatar 
+                            src={sale.buyer.image} 
+                            alt={sale.buyer.username} 
+                            size={20} 
+                            rarity={sale.buyer.items[0]?.item.rarity}
+                          />
+                          <span>{sale.buyer.name || sale.buyer.username}</span>
+                        </div>
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
@@ -166,9 +190,12 @@ export default function WalletPage() {
                 <div key={tip.id} className="p-6 hover:bg-white/5 transition-colors">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold">
-                        {tip.sender.username[0].toUpperCase()}
-                      </div>
+                      <UserAvatar 
+                        src={tip.sender.image} 
+                        alt={tip.sender.username} 
+                        size={40} 
+                        rarity={tip.sender.items[0]?.item.rarity}
+                      />
                       <div>
                         <div className="font-bold">{tip.sender.name || tip.sender.username}</div>
                         <div className="text-xs text-muted-foreground flex items-center gap-1">

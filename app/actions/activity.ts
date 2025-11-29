@@ -42,6 +42,10 @@ export async function getActivityFeed(userId?: string) {
             name: true,
             username: true,
             image: true,
+            items: {
+              where: { equipped: true, item: { type: 'FRAME' } },
+              include: { item: true }
+            }
           },
         },
       },

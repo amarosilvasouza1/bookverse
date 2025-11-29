@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { executeAdminCommand } from '@/app/actions/admin';
 import { Terminal, X, Loader2, ChevronRight } from 'lucide-react';
+import UserAvatar from '@/components/UserAvatar';
 
 interface AdminCommandPaletteProps {
   username?: string;
@@ -17,6 +18,11 @@ type UserData = {
   image: string | null;
   bio: string | null;
   balance: number;
+  items: {
+    item: {
+      rarity: string;
+    };
+  }[];
   _count: {
     followers: number;
     following: number;
@@ -60,7 +66,8 @@ export default function AdminCommandPalette({ username, isOpen, onClose }: Admin
       
       if (result.success) {
         if (result.type === 'USER_LIST') {
-             setOutput(prev => [...prev, { type: 'user_list', users: result.users }]);
+             // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             setOutput(prev => [...prev, { type: 'user_list', users: result.users as any }]);
         } else {
              setOutput(prev => [...prev, { type: 'success', message: result.message || 'Success' }]);
         }
@@ -121,15 +128,12 @@ export default function AdminCommandPalette({ username, isOpen, onClose }: Admin
                       onClick={() => setSelectedUser(user)}
                       className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all text-left group"
                     >
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden shrink-0 border border-white/10">
-                        {user.image ? (
-                          <img src={user.image} alt={user.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-zinc-500 text-xs">
-                            {user.username[0].toUpperCase()}
-                          </div>
-                        )}
-                      </div>
+                      <UserAvatar 
+                        src={user.image} 
+                        alt={user.username} 
+                        size={40} 
+                        rarity={user.items?.[0]?.item.rarity}
+                      />
                       <div className="min-w-0">
                         <div className="text-white font-bold truncate group-hover:text-emerald-400 transition-colors">
                           {user.name || user.username}
@@ -168,7 +172,7 @@ export default function AdminCommandPalette({ username, isOpen, onClose }: Admin
 
       {/* Mini Profile Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-200">
             <button 
               onClick={() => setSelectedUser(null)}
@@ -182,18 +186,18 @@ export default function AdminCommandPalette({ username, isOpen, onClose }: Admin
             </div>
 
             <div className="px-6 pb-6 -mt-12 relative">
-               <div className="w-24 h-24 rounded-full border-4 border-[#0a0a0a] bg-zinc-800 overflow-hidden shadow-xl mb-4">
-                  {selectedUser.image ? (
-                    <img src={selectedUser.image} alt={selectedUser.username} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-500 text-2xl font-bold">
-                      {selectedUser.username[0].toUpperCase()}
-                    </div>
-                  )}
+               <div className="flex justify-center mb-4">
+                 <UserAvatar 
+                    src={selectedUser.image} 
+                    alt={selectedUser.username} 
+                    size={96} 
+                    rarity={selectedUser.items?.[0]?.item.rarity}
+                    className="border-4 border-[#0a0a0a]"
+                 />
                </div>
 
-               <h2 className="text-2xl font-bold text-white mb-1">{selectedUser.name || selectedUser.username}</h2>
-               <p className="text-emerald-400 mb-4">@{selectedUser.username}</p>
+               <h2 className="text-2xl font-bold text-white mb-1 text-center">{selectedUser.name || selectedUser.username}</h2>
+               <p className="text-emerald-400 mb-4 text-center">@{selectedUser.username}</p>
 
                <div className="grid grid-cols-3 gap-4 mb-6 text-center">
                   <div className="p-3 rounded-xl bg-white/5 border border-white/5">

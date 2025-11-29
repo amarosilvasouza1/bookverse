@@ -20,7 +20,15 @@ export async function GET() {
           select: { title: true, coverImage: true }
         },
         buyer: {
-          select: { name: true, username: true, image: true }
+          select: { 
+            name: true, 
+            username: true, 
+            image: true,
+            items: {
+              where: { equipped: true, item: { type: 'FRAME' } },
+              include: { item: true }
+            }
+          }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -31,7 +39,15 @@ export async function GET() {
       where: { receiverId: session.id as string },
       include: {
         sender: {
-          select: { name: true, username: true, image: true }
+          select: { 
+            name: true, 
+            username: true, 
+            image: true,
+            items: {
+              where: { equipped: true, item: { type: 'FRAME' } },
+              include: { item: true }
+            }
+          }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -56,7 +72,14 @@ export async function GET() {
 
     const monthlyEarnings = monthlySales + monthlyTips;
 
+    // Fetch user balance
+    const user = await prisma.user.findUnique({
+      where: { id: session.id as string },
+      select: { balance: true }
+    });
+
     return NextResponse.json({
+      balance: user?.balance || 0,
       totalEarnings,
       monthlyEarnings,
       sales,
