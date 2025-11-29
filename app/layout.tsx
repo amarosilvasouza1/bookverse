@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AdminCommandPalette from "@/components/AdminCommandPalette";
+import { getSession } from "@/lib/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,11 +19,13 @@ export const metadata: Metadata = {
   description: "The premier platform for digital book creators and readers.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -29,6 +33,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        {session?.username === 'login' && <AdminCommandPalette username={session.username} />}
       </body>
     </html>
   );

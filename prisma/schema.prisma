@@ -27,6 +27,7 @@ model User {
   banner            String?           @db.LongText
   socialLinks       String?           @db.Text // JSON string for social links
   geminiApiKey      String?           @db.Text // User's Gemini API Key
+  balance           Float             @default(0) // User's wallet balance
 
   purchases         Purchase[]
   sales             Purchase[]         @relation("Seller")
