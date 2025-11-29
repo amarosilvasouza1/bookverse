@@ -5,6 +5,7 @@ import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { checkAndAwardAchievements } from '@/lib/gamification';
 import { logActivity } from '@/app/actions/activity';
+import { createStatus } from '@/app/actions/status';
 
 export async function createBook(data: {
   id?: string;
@@ -140,12 +141,11 @@ export async function createBook(data: {
         // But for now, let's assume if they hit save and it's published, we announce it.
         // To avoid spam, we might want to check if a status exists recently, but let's keep it simple.
         
-        const { createStatus } = await import('@/app/actions/status');
         await createStatus('BOOK_PUBLISH', {
           bookId: book.id,
           bookTitle: book.title,
           coverImage: book.coverImage,
-          authorName: session.name || session.username
+          authorName: (session.name || session.username) as string
         });
       }
 

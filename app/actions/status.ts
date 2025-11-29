@@ -11,6 +11,7 @@ export interface StatusData {
   chapterTitle?: string;
   chapterId?: string;
   authorName?: string;
+  releaseDate?: Date | string;
 }
 
 export async function createStatus(
