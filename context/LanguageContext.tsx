@@ -98,6 +98,31 @@ const translations = {
     // Editor Settings
     coverImage: 'Cover Image',
     uploadCover: 'Upload Cover',
+    // Overview Page
+    welcomeBack: 'Welcome back, {name}!',
+    premiumAuthorDashboard: 'Premium Author Dashboard',
+    readyToCreate: 'Ready to create your next masterpiece? You have {books} books published and {communities} communities active.',
+    writeNewBook: 'Write New Book',
+    totalBooksPublished: 'Total Books Published',
+    communitiesJoined: 'Communities Joined',
+    active: 'Active',
+    totalRevenue: 'Total Revenue',
+    recentProjects: 'Recent Projects',
+    viewAll: 'View All',
+    noBooksCreated: 'No books created yet. Start your journey today!',
+    published: 'PUBLISHED',
+    draft: 'DRAFT',
+    quickActions: 'Quick Actions',
+    joinCommunity: 'Join Community',
+    connectWithOthers: 'Connect with others',
+    editProfile: 'Edit Profile',
+    updateBio: 'Update your bio',
+    wallet: 'Wallet',
+    manageEarnings: 'Manage earnings',
+    communityActivity: 'Community Activity',
+    proTip: 'Pro Tip',
+    proTipContent: 'Engaging with your community increases book sales by up to 40%.',
+    goToCommunities: 'Go to Communities',
     description: 'Description',
     descriptionPlaceholder: 'Write a catchy blurb...',
     genres: 'Genres',
@@ -240,18 +265,6 @@ const translations = {
     aiTab: 'IA',
     charsTab: 'Personagens',
     structure: 'Estrutura',
-    pagesCountLabel: 'Páginas',
-    addNewPage: 'Adicionar Página',
-    untitledPage: 'Página Sem Título',
-    pageIndex: 'Página',
-    // Editor Settings
-    coverImage: 'Imagem da Capa',
-    uploadCover: 'Enviar Capa',
-    description: 'Descrição',
-    descriptionPlaceholder: 'Escreva uma sinopse cativante...',
-    genres: 'Gêneros',
-    addGenre: 'Adicionar Gênero...',
-    premiumContent: 'Conteúdo Premium',
     monetizeBook: 'Monetize seu livro',
     priceLabel: 'Preço ($)',
     allowPdfDownload: 'Permitir Download de PDF',
@@ -396,6 +409,31 @@ const translations = {
     // Editor Settings
     coverImage: '表紙画像',
     uploadCover: '表紙をアップロード',
+    // Overview Page
+    welcomeBack: 'お帰りなさい、{name}さん！',
+    premiumAuthorDashboard: 'プレミアム著者ダッシュボード',
+    readyToCreate: '次の傑作を作る準備はできましたか？ {books}冊の本が出版され、{communities}つのコミュニティがアクティブです。',
+    writeNewBook: '新しい本を書く',
+    totalBooksPublished: '出版された本の総数',
+    communitiesJoined: '参加しているコミュニティ',
+    active: 'アクティブ',
+    totalRevenue: '総収益',
+    recentProjects: '最近のプロジェクト',
+    viewAll: 'すべて見る',
+    noBooksCreated: 'まだ本が作成されていません。今日から旅を始めましょう！',
+    published: '公開済み',
+    draft: '下書き',
+    quickActions: 'クイックアクション',
+    joinCommunity: 'コミュニティに参加',
+    connectWithOthers: '他の人とつながる',
+    editProfile: 'プロフィールを編集',
+    updateBio: '自己紹介を更新',
+    wallet: 'ウォレット',
+    manageEarnings: '収益を管理',
+    communityActivity: 'コミュニティ活動',
+    proTip: 'プロのヒント',
+    proTipContent: 'コミュニティと交流することで、本の売り上げが最大40％増加します。',
+    goToCommunities: 'コミュニティへ移動',
     description: '説明',
     descriptionPlaceholder: '魅力的な宣伝文句を書いてください...',
     genres: 'ジャンル',
@@ -479,7 +517,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: string, params?: Record<string, string | number>) => {
-    let text = translations[language][key as keyof typeof translations['en']] || key;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let text = (translations[language] as any)[key] || key;
     
     if (params) {
       Object.entries(params).forEach(([key, value]) => {

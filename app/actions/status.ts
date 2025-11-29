@@ -10,6 +10,7 @@ export interface StatusData {
   coverImage?: string | null;
   chapterTitle?: string;
   chapterId?: string;
+  authorName?: string;
 }
 
 export async function createStatus(
