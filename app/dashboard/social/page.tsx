@@ -1,8 +1,8 @@
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import SocialMain from '@/components/SocialMain';
+import SocialMain, { Status } from '@/components/SocialMain';
 
-async function getSocialData(userId: string) {
+async function getSocialData() {
   const [communities, statuses] = await Promise.all([
     prisma.community.findMany({
       take: 10,
@@ -30,7 +30,7 @@ export default async function SocialPage() {
   const session = await getSession();
   if (!session) return null;
 
-  const { communities, statuses } = await getSocialData(session.id as string);
+  const { communities, statuses } = await getSocialData();
 
-  return <SocialMain communities={communities} statuses={statuses as unknown as any} />;
+  return <SocialMain communities={communities} statuses={statuses as unknown as Status[]} />;
 }
