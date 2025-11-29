@@ -165,7 +165,7 @@ export default function GrokBlackHoleFrame({ size }: GrokBlackHoleFrameProps) {
     let targetHover = 0;
 
     function render() {
-      if (!gl || !program) return;
+      if (!gl || !program || !canvas) return;
       
       const width = size * (window.devicePixelRatio || 1);
       const height = size * (window.devicePixelRatio || 1);

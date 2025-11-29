@@ -54,19 +54,21 @@ model User {
   messages        DirectMessage[]
 
   // Store & Inventory
-  items UserItem[]
+  items           UserItem[]
+  redemptionCodes RedemptionCode[]
 }
 
 model Item {
-  id          String     @id @default(cuid())
-  name        String
-  description String
-  price       Float
-  type        String // FRAME, BACKGROUND
-  rarity      String // COMMON, RARE, EPIC, LEGENDARY
-  data        Json? // { cssClass: string, animation: string }
-  createdAt   DateTime   @default(now())
-  users       UserItem[]
+  id              String           @id @default(cuid())
+  name            String
+  description     String
+  price           Float
+  type            String // FRAME, BACKGROUND
+  rarity          String // COMMON, RARE, EPIC, LEGENDARY
+  data            Json? // { cssClass: string, animation: string }
+  createdAt       DateTime         @default(now())
+  users           UserItem[]
+  redemptionCodes RedemptionCode[]
 }
 
 model UserItem {
@@ -499,4 +501,19 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model RedemptionCode {
+  id        String    @id @default(cuid())
+  code      String    @unique // The "ID" the user will type
+  itemId    String
+  item      Item      @relation(fields: [itemId], references: [id])
+  isUsed    Boolean   @default(false)
+  usedBy    String?
+  user      User?     @relation(fields: [usedBy], references: [id])
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+
+  @@index([itemId])
+  @@index([usedBy])
 }

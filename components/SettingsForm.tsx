@@ -316,6 +316,22 @@ export default function SettingsForm({ user }: SettingsFormProps) {
             </div>
           </div>
 
+          {/* Inventory Section */}
+          <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">
+              <div className="w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center text-[10px] font-bold text-black">IV</div>
+              Inventory
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {/* This would ideally be a separate component fetching data, but for now we'll just link to it or show a placeholder if data isn't passed */}
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                <p>Equipped items and collection will appear here.</p>
+                <p className="text-xs mt-2">Use command <code className="bg-white/10 px-1 rounded">@user md code</code> to redeem items.</p>
+              </div>
+            </div>
+          </div>
+
           {/* AI Settings */}
           <div className="glass-card p-4 md:p-6 rounded-2xl space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
             <h2 className="text-xl font-bold flex items-center gap-2 text-white/90">

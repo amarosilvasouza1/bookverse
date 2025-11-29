@@ -214,6 +214,57 @@ export async function executeAdminCommand(command: string) {
         return { success: true, message: `Granted Developer status to @${targetUsername}` };
       }
 
+      // Command: @username md <code>
+      if (action === 'md' && parts[2]) {
+        const code = parts[2].toUpperCase();
+        
+        // 1. Find Code
+        const redemptionCode = await prisma.redemptionCode.findUnique({
+          where: { code },
+          include: { item: true }
+        });
+
+        if (!redemptionCode) {
+          return { success: false, error: 'Invalid code' };
+        }
+
+        if (redemptionCode.isUsed) {
+          return { success: false, error: 'Code already redeemed' };
+        }
+
+        // 2. Grant Item to User
+        // Check if user already has this item
+        const existingItem = await prisma.userItem.findUnique({
+          where: {
+            userId_itemId: {
+              userId: targetUser.id,
+              itemId: redemptionCode.itemId
+            }
+          }
+        });
+
+        if (!existingItem) {
+          await prisma.userItem.create({
+            data: {
+              userId: targetUser.id,
+              itemId: redemptionCode.itemId
+            }
+          });
+        }
+
+        // 3. Mark Code as Used
+        await prisma.redemptionCode.update({
+          where: { id: redemptionCode.id },
+          data: {
+            isUsed: true,
+            usedBy: targetUser.id,
+            usedAt: new Date()
+          }
+        });
+
+        return { success: true, message: `Redeemed ${redemptionCode.item.name} for @${targetUsername}` };
+      }
+
       return { success: false, error: 'Unknown command' };
 
     } catch (error: unknown) {
