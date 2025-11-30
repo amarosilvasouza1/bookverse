@@ -6,6 +6,8 @@ import MagicBurstFrame from './MagicBurstFrame';
 import NeonBurstFrame from './NeonBurstFrame';
 import WaterDistortionFrame from './WaterDistortionFrame';
 import GrokBlackHoleFrame from './GrokBlackHoleFrame';
+import AutumnLeavesFrame from './AutumnLeavesFrame';
+import SakuraFrame from './SakuraFrame';
 
 interface UserAvatarProps {
   src: string | null;
@@ -169,6 +171,68 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
         {/* Grok Frame Overlay (appears on hover) */}
         <div className="absolute inset-0 z-20 overflow-hidden rounded-full">
            <GrokBlackHoleFrame size={size} />
+        </div>
+
+        {/* Avatar Image */}
+        <div 
+          className="relative rounded-full overflow-hidden z-10"
+          style={{ width: size, height: size }}
+        >
+          {src ? (
+            <Image src={src} alt={alt} fill className="object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
+              {alt.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Autumn Leaves Frame
+  if (rarity === 'AUTUMN_LEAVES') {
+    return (
+      <div 
+        className={cn("relative shrink-0 flex items-center justify-center rounded-full", className)}
+        style={{ width: size, height: size }}
+      >
+        {/* Frame Overlay */}
+        <div className="absolute inset-0 z-20 overflow-visible pointer-events-none">
+           <div className="w-full h-full pointer-events-auto">
+             <AutumnLeavesFrame size={size} />
+           </div>
+        </div>
+
+        {/* Avatar Image */}
+        <div 
+          className="relative rounded-full overflow-hidden z-10"
+          style={{ width: size, height: size }}
+        >
+          {src ? (
+            <Image src={src} alt={alt} fill className="object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
+              {alt.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Sakura Frame
+  if (rarity === 'SAKURA_BREEZE') {
+    return (
+      <div 
+        className={cn("relative shrink-0 flex items-center justify-center rounded-full", className)}
+        style={{ width: size, height: size }}
+      >
+        {/* Frame Overlay */}
+        <div className="absolute inset-0 z-20 overflow-visible pointer-events-none">
+           <div className="w-full h-full pointer-events-auto">
+             <SakuraFrame size={size} />
+           </div>
         </div>
 
         {/* Avatar Image */}

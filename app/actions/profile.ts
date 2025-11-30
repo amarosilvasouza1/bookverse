@@ -26,7 +26,11 @@ export async function getMiniProfile(userId: string) {
       followers: currentUserId ? {
         where: { followerId: currentUserId },
         select: { followerId: true }
-      } : false
+      } : false,
+      items: {
+        where: { equipped: true, item: { type: 'FRAME' } },
+        select: { item: { select: { rarity: true } } }
+      }
     }
   });
 

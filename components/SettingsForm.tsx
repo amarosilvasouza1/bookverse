@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { updateProfile } from '@/app/actions/user';
 import AdminCommandPalette from '@/components/AdminCommandPalette';
+import UserAvatar from '@/components/UserAvatar';
 import { equipItem, unequipItem } from '@/app/actions/store';
 
 interface ItemData {
@@ -221,14 +222,14 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 
               {/* Avatar & Info */}
               <div className="px-6 pb-6 -mt-12 relative">
-                <div className="w-24 h-24 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4 relative">
-                  {formData.image ? (
-                    <Image src={formData.image} alt="Avatar" fill className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20">
-                      <User className="w-12 h-12" />
-                    </div>
-                  )}
+                <div className="w-24 h-24 rounded-full border-4 border-black bg-gray-800 overflow-visible shadow-xl mb-4 relative">
+                  <UserAvatar 
+                    src={formData.image} 
+                    alt={formData.name || formData.username} 
+                    rarity={user.items?.find(i => i.equipped && i.item.type === 'FRAME')?.item.rarity}
+                    className="w-full h-full"
+                    size={96}
+                  />
                 </div>
 
                 <h2 className="text-2xl font-bold text-white mb-1">
@@ -465,8 +466,8 @@ export default function SettingsForm({ user }: SettingsFormProps) {
         )}
 
         {/* Right Column: Live Preview (Desktop Only) */}
-        <div className="hidden lg:block space-y-6">
-          <div className="sticky top-8">
+        <div className="hidden lg:block h-full">
+          <div className="sticky top-24 space-y-6">
             <h2 className="text-sm font-bold mb-6 text-muted-foreground uppercase tracking-wider">{t('livePreview')}</h2>
             
             {/* Profile Card Preview */}
@@ -484,14 +485,14 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 
               {/* Avatar & Info */}
               <div className="px-6 md:px-8 pb-8 -mt-12 md:-mt-16 relative">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-black bg-gray-800 overflow-hidden shadow-xl mb-4 relative">
-                  {formData.image ? (
-                    <Image src={formData.image} alt="Avatar" fill className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20">
-                      <User className="w-12 h-12" />
-                    </div>
-                  )}
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-black bg-gray-800 overflow-visible shadow-xl mb-4 relative">
+                  <UserAvatar 
+                    src={formData.image} 
+                    alt={formData.name || formData.username} 
+                    rarity={user.items?.find(i => i.equipped && i.item.type === 'FRAME')?.item.rarity}
+                    className="w-full h-full"
+                    size={128}
+                  />
                 </div>
 
                 <h2 className="text-3xl font-bold text-white mb-1">

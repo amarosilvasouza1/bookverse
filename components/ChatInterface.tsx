@@ -2,17 +2,18 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight } from 'lucide-react';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead } from '@/app/actions/chat';
 import { toast } from 'sonner';
 import MiniProfile from './MiniProfile';
+import UserAvatar from '@/components/UserAvatar';
 
 interface User {
   id: string;
   name: string | null;
   image: string | null;
   username: string;
+  items?: { item: { rarity: string } }[];
 }
 
 interface Message {
@@ -221,14 +222,13 @@ export default function ChatInterface() {
                 )}
               >
                 <div className="relative">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10">
-                    {conv.otherUser?.image ? (
-                      <Image src={conv.otherUser.image} alt={conv.otherUser.name || ''} fill className="object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
-                        {(conv.otherUser?.name || '?')[0]}
-                      </div>
-                    )}
+                  <div className="relative w-12 h-12 rounded-full overflow-visible border border-white/10">
+                    <UserAvatar 
+                      src={conv.otherUser?.image || null} 
+                      alt={conv.otherUser?.name || '?'} 
+                      rarity={conv.otherUser?.items?.[0]?.item.rarity}
+                      className="w-full h-full"
+                    />
                   </div>
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-zinc-900"></div>
                 </div>
@@ -268,15 +268,14 @@ export default function ChatInterface() {
                 </button>
                 <button 
                   onClick={() => setMiniProfileId(activeConvData?.otherUser?.id || null)}
-                  className="relative w-10 h-10 rounded-full overflow-hidden border border-white/10 hover:border-primary/50 transition-colors"
+                  className="relative w-10 h-10 rounded-full overflow-visible border border-white/10 hover:border-primary/50 transition-colors"
                 >
-                   {activeConvData?.otherUser?.image ? (
-                      <Image src={activeConvData.otherUser.image} alt="" fill className="object-cover" />
-                   ) : (
-                      <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
-                        {(activeConvData?.otherUser?.name || '?')[0]}
-                      </div>
-                   )}
+                   <UserAvatar 
+                      src={activeConvData?.otherUser?.image || null} 
+                      alt={activeConvData?.otherUser?.name || '?'} 
+                      rarity={activeConvData?.otherUser?.items?.[0]?.item.rarity}
+                      className="w-full h-full"
+                    />
                 </button>
                 <button onClick={() => setMiniProfileId(activeConvData?.otherUser?.id || null)} className="text-left">
                   <h3 className="font-bold text-white hover:underline">{activeConvData?.otherUser?.name}</h3>
@@ -400,14 +399,13 @@ export default function ChatInterface() {
                       onClick={() => startChat(user.id)}
                       className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl transition-colors text-left group"
                     >
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10">
-                        {user.image ? (
-                          <Image src={user.image} alt="" fill className="object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
-                            {user.name ? user.name[0] : '?'}
-                          </div>
-                        )}
+                      <div className="relative w-12 h-12 rounded-full overflow-visible border border-white/10">
+                        <UserAvatar 
+                          src={user.image} 
+                          alt={user.name || '?'} 
+                          rarity={user.items?.[0]?.item.rarity}
+                          className="w-full h-full"
+                        />
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-white group-hover:text-primary transition-colors">{user.name}</p>
@@ -429,14 +427,13 @@ export default function ChatInterface() {
                       key={user.id}
                       className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl transition-colors text-left group"
                     >
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10">
-                        {user.image ? (
-                          <Image src={user.image} alt="" fill className="object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-white font-bold">
-                            {user.name ? user.name[0] : '?'}
-                          </div>
-                        )}
+                      <div className="relative w-12 h-12 rounded-full overflow-visible border border-white/10">
+                        <UserAvatar 
+                          src={user.image} 
+                          alt={user.name || '?'} 
+                          rarity={user.items?.[0]?.item.rarity}
+                          className="w-full h-full"
+                        />
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-white">{user.name}</p>

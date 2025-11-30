@@ -22,7 +22,16 @@ export async function getConversations() {
       participants: {
         include: {
           user: {
-            select: { id: true, name: true, image: true, username: true }
+            select: { 
+              id: true, 
+              name: true, 
+              image: true, 
+              username: true,
+              items: {
+                where: { equipped: true, item: { type: 'FRAME' } },
+                select: { item: { select: { rarity: true } } }
+              }
+            }
           }
         }
       },
@@ -95,7 +104,16 @@ export async function getMutualFollowersForChat() {
         { following: { some: { followingId: userId } } } // They follow me
       ]
     },
-    select: { id: true, name: true, image: true, username: true }
+    select: { 
+      id: true, 
+      name: true, 
+      image: true, 
+      username: true,
+      items: {
+        where: { equipped: true, item: { type: 'FRAME' } },
+        select: { item: { select: { rarity: true } } }
+      }
+    }
   });
 
   return mutualFollows;
@@ -116,7 +134,16 @@ export async function getNonMutualFollowings() {
         following: { some: { followingId: userId } } // They follow me
       }
     },
-    select: { id: true, name: true, image: true, username: true }
+    select: { 
+      id: true, 
+      name: true, 
+      image: true, 
+      username: true,
+      items: {
+        where: { equipped: true, item: { type: 'FRAME' } },
+        select: { item: { select: { rarity: true } } }
+      }
+    }
   });
   
   return nonMutuals;
@@ -228,7 +255,17 @@ export async function getMessages(conversationId: string) {
     where: { conversationId },
     orderBy: { createdAt: 'asc' },
     include: {
-      sender: { select: { id: true, name: true, image: true } }
+      sender: { 
+        select: { 
+          id: true, 
+          name: true, 
+          image: true,
+          items: {
+            where: { equipped: true, item: { type: 'FRAME' } },
+            select: { item: { select: { rarity: true } } }
+          }
+        } 
+      }
     }
   });
 }

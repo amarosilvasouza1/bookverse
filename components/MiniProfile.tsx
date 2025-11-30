@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { X } from 'lucide-react';
 import { getMiniProfile } from '@/app/actions/profile';
 
+import UserAvatar from '@/components/UserAvatar';
+
 interface MiniProfileProps {
   userId: string | null;
   isOpen: boolean;
@@ -25,6 +27,7 @@ interface ProfileData {
     books: number;
   };
   isFollowing: boolean;
+  items?: { item: { rarity: string } }[];
 }
 
 export default function MiniProfile({ userId, isOpen, onClose }: MiniProfileProps) {
@@ -82,14 +85,13 @@ export default function MiniProfile({ userId, isOpen, onClose }: MiniProfileProp
 
             {/* Avatar */}
             <div className="relative px-6 -mt-12 mb-4">
-              <div className="relative w-24 h-24 rounded-full border-4 border-zinc-900 overflow-hidden bg-zinc-800 shadow-lg">
-                {data.image ? (
-                  <Image src={data.image} alt={data.name || ''} fill className="object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white">
-                    {data.name?.[0]}
-                  </div>
-                )}
+              <div className="relative w-24 h-24 rounded-full border-4 border-zinc-900 overflow-visible bg-zinc-800 shadow-lg">
+                <UserAvatar 
+                  src={data.image} 
+                  alt={data.name || ''} 
+                  rarity={data.items?.[0]?.item.rarity}
+                  className="w-full h-full"
+                />
               </div>
             </div>
 
