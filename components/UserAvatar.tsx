@@ -200,7 +200,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
         {/* Frame Overlay */}
         <div className="absolute inset-0 z-20 overflow-visible pointer-events-none">
            <div className="w-full h-full pointer-events-auto">
-             <AutumnLeavesFrame size={size} />
+             <AutumnLeavesFrame />
            </div>
         </div>
 
@@ -231,7 +231,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
         {/* Frame Overlay */}
         <div className="absolute inset-0 z-20 overflow-visible pointer-events-none">
            <div className="w-full h-full pointer-events-auto">
-             <SakuraFrame size={size} />
+             <SakuraFrame />
            </div>
         </div>
 
