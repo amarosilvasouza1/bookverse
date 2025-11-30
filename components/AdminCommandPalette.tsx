@@ -109,7 +109,9 @@ export default function AdminCommandPalette({ username, isOpen, onClose }: Admin
             @username add money 100<br/>
             @username set name New Name<br/>
             @username follow me<br/>
-            @username delete
+            @username delete<br/>
+            -award-frames-24h (Award frames to recent authors)<br/>
+            -award-frames-all (Award frames to ALL authors)
           </div>
           
           {output.map((log, i) => (

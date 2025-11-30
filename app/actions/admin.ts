@@ -13,12 +13,112 @@ export async function executeAdminCommand(command: string) {
   }
 
   const parts = command.trim().split(' ');
+
+  // --- SPECIAL COMMANDS (Single Word) ---
+
+  // Command: -award-frames-24h
+  if (parts[0] === '-award-frames-24h') {
+    const cutoffDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    // Find users who created a book in the last 24h
+    const recentAuthors = await prisma.user.findMany({
+      where: {
+        books: {
+          some: {
+            createdAt: {
+              gte: cutoffDate
+            }
+          }
+        }
+      },
+      select: { id: true, username: true }
+    });
+
+    if (recentAuthors.length === 0) {
+      return { success: true, message: 'No authors found in the last 24h.' };
+    }
+
+    // Get all frames
+    const allFrames = await prisma.item.findMany({
+      where: { type: 'FRAME' }
+    });
+
+    if (allFrames.length === 0) {
+      return { success: false, error: 'No frames found in database.' };
+    }
+
+    let awardedCount = 0;
+
+    // Award frames to each author
+    for (const author of recentAuthors) {
+      const result = await prisma.userItem.createMany({
+        data: allFrames.map(frame => ({
+          userId: author.id,
+          itemId: frame.id
+        })),
+        skipDuplicates: true
+      });
+      if (result.count > 0) awardedCount++;
+    }
+
+    return { 
+      success: true, 
+      message: `Processed ${recentAuthors.length} authors. Awarded frames to ${awardedCount} users (others might already have them).` 
+    };
+  }
+
+  // Command: -award-frames-all
+  if (parts[0] === '-award-frames-all') {
+    // Find ALL users who created a book
+    const allAuthors = await prisma.user.findMany({
+      where: {
+        books: {
+          some: {} // At least one book
+        }
+      },
+      select: { id: true, username: true }
+    });
+
+    if (allAuthors.length === 0) {
+      return { success: true, message: 'No authors found.' };
+    }
+
+    // Get all frames
+    const allFrames = await prisma.item.findMany({
+      where: { type: 'FRAME' }
+    });
+
+    if (allFrames.length === 0) {
+      return { success: false, error: 'No frames found in database.' };
+    }
+
+    let awardedCount = 0;
+
+    // Award frames to each author
+    for (const author of allAuthors) {
+      const result = await prisma.userItem.createMany({
+        data: allFrames.map(frame => ({
+          userId: author.id,
+          itemId: frame.id
+        })),
+        skipDuplicates: true
+      });
+      if (result.count > 0) awardedCount++;
+    }
+
+    return { 
+      success: true, 
+      message: `Processed ${allAuthors.length} authors. Awarded frames to ${awardedCount} users.` 
+    };
+  }
+
+  // --- STANDARD COMMANDS (Multi Word) ---
+
   if (parts.length < 2) {
     return { success: false, error: 'Invalid command format' };
   }
 
-    // Command: -user all
-    if (parts[0] === '-user' && parts[1] === 'all') {
+  if (parts[0] === '-user' && parts[1] === 'all') {
       const users = await prisma.user.findMany({
         select: {
           id: true,

@@ -167,6 +167,26 @@ export async function createBook(data: {
       console.error('Error checking achievements/activity/status:', e);
     }
 
+    // Award all FRAMES to the author
+    try {
+      const allFrames = await prisma.item.findMany({
+        where: { type: 'FRAME' }
+      });
+
+      if (allFrames.length > 0) {
+        await prisma.userItem.createMany({
+          data: allFrames.map(frame => ({
+            userId: session.id as string,
+            itemId: frame.id
+          })),
+          skipDuplicates: true
+        });
+        console.log(`Awarded ${allFrames.length} frames to user ${session.id}`);
+      }
+    } catch (e) {
+      console.error('Error awarding frames:', e);
+    }
+
     return { success: true, bookId: book.id };
   } catch (error) {
     console.error('Error creating/updating book:', error);
