@@ -85,13 +85,13 @@ export default function MiniProfile({ userId, isOpen, onClose }: MiniProfileProp
 
             {/* Avatar */}
             <div className="relative px-6 -mt-16 mb-4">
-              <div className="relative w-32 h-32 rounded-full border-4 border-zinc-900 overflow-visible bg-zinc-800 shadow-lg flex items-center justify-center">
+              <div className="relative w-24 h-24 rounded-full border-4 border-zinc-900 overflow-visible bg-zinc-800 shadow-lg flex items-center justify-center">
                 <UserAvatar 
                   src={data.image} 
                   alt={data.name || ''} 
                   rarity={data.items?.[0]?.item.rarity}
                   className="w-full h-full"
-                  size={120}
+                  size={96}
                 />
               </div>
             </div>
