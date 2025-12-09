@@ -36,7 +36,8 @@ export async function createPost(formData: FormData) {
   }
 
   try {
-    await prisma.post.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (prisma.post as any).create({
       data: {
         content: content || '',
         communityId,
