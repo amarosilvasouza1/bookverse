@@ -41,7 +41,6 @@ export async function createPost(formData: FormData) {
         content: content || '',
         communityId,
         authorId: session.id as string,
-        // @ts-expect-error - Prisma client generation failed, fields exist in schema
         mediaUrl,
         mediaType,
       },
