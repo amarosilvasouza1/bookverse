@@ -303,7 +303,6 @@ export async function updateLastSeen() {
     await prisma.user.update({
         where: { id: userId },
         data: { 
-            // @ts-expect-error - Prisma client sync issue
             lastSeen: new Date() 
         }
     });
