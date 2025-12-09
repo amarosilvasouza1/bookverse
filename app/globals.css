@@ -21,6 +21,9 @@
   --color-input: hsl(240 3.7% 15.9%);
   --color-ring: hsl(240 4.9% 83.9%);
   --radius: 0.5rem;
+  
+  /* Custom breakpoint for narrow phones like Z Flip */
+  --breakpoint-xs: 375px;
 }
 
 /* Electric Frame Variables */
@@ -195,9 +198,37 @@
   * {
     @apply border-border;
   }
+  
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Prevent text overflow on narrow screens */
+  input, textarea, select {
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  /* Hide scrollbar but allow scrolling */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Force word wrap */
+  .break-anywhere {
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 }
 

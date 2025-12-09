@@ -139,23 +139,9 @@ export default function EditorMain({
           >
             {showPreview ? (
               <div className="prose prose-invert prose-lg max-w-none font-serif leading-loose text-zinc-300">
-                {currentPage.content.split('\n\n').map((paragraph, index) => {
-                  const parts = paragraph.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-                  return (
-                    <p key={index} className="mb-6">
-                      {parts.map((part, i) => {
-                        if (part.startsWith('**') && part.endsWith('**')) {
-                          return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
-                        }
-                        if (part.startsWith('*') && part.endsWith('*')) {
-                          return <em key={i} className="text-white/80 italic">{part.slice(1, -1)}</em>;
-                        }
-                        return part;
-                      })}
-                    </p>
-                  );
-                })}
-                {currentPage.content.length === 0 && (
+                {currentPage.content ? (
+                  <div dangerouslySetInnerHTML={{ __html: currentPage.content }} />
+                ) : (
                   <p className="text-zinc-600 italic">{t('nothingWritten')}</p>
                 )}
               </div>

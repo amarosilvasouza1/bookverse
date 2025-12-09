@@ -77,19 +77,26 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
     portrait: 'aspect-[2/3]',
   }[aspectRatio];
 
+  // Tamanhos responsivos para cada aspect ratio
+  const sizeClass = {
+    square: 'max-w-[120px] sm:max-w-[160px] md:max-w-none',
+    video: 'max-h-24 sm:max-h-32 md:max-h-none',
+    portrait: 'max-h-32 sm:max-h-40 md:max-h-none',
+  }[aspectRatio];
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
+    <div className="space-y-1 sm:space-y-2">
+      <div className="flex items-center justify-between mb-1 sm:mb-2">
+        <label className="text-[10px] sm:text-xs font-bold text-zinc-400 uppercase tracking-widest">
           {label || t('uploadImage')}
         </label>
         {value && (
           <button
             onClick={clearImage}
-            className="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+            className="text-[10px] sm:text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-0.5 sm:gap-1"
             disabled={disabled}
           >
-            <X className="w-3 h-3" />
+            <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             {t('removeImage')}
           </button>
         )}
@@ -98,7 +105,7 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
       <div 
         onClick={() => !disabled && fileInputRef.current?.click()}
         className={`
-          relative w-full ${aspectClass} rounded-lg border-2 border-dashed border-white/10 
+          relative w-full ${aspectClass} ${sizeClass} rounded-lg border-2 border-dashed border-white/10 
           ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:border-primary/50 hover:bg-white/5 cursor-pointer group'}
           transition-all flex flex-col items-center justify-center overflow-hidden
         `}
@@ -113,26 +120,26 @@ export default function ImageUpload({ value, onChange, label, aspectRatio = 'squ
         />
 
         {isUploading ? (
-          <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="text-xs">{t('processingImage')}</span>
+          <div className="flex flex-col items-center gap-1 sm:gap-2 text-muted-foreground">
+            <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 animate-spin text-primary" />
+            <span className="text-[10px] sm:text-xs">{t('processingImage')}</span>
           </div>
         ) : value ? (
           <>
             <Image src={value} alt="Upload" fill className="object-cover" />
             <button 
               onClick={clearImage}
-              className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-red-500/80 rounded-full text-white transition-colors backdrop-blur-md opacity-0 group-hover:opacity-100"
+              className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 sm:p-1.5 bg-black/50 hover:bg-red-500/80 rounded-full text-white transition-colors backdrop-blur-md opacity-0 group-hover:opacity-100"
               disabled={disabled}
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </>
         ) : (
-          <div className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors p-4 text-center">
-            <Upload className="w-8 h-8" />
-            <span className="text-sm font-medium">{t('clickToUploadImage')}</span>
-            <span className="text-xs text-white/40">{t('maxFileSize')}</span>
+          <div className="flex flex-col items-center gap-1 sm:gap-2 text-muted-foreground group-hover:text-primary transition-colors p-2 sm:p-4 text-center">
+            <Upload className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+            <span className="text-[10px] sm:text-xs md:text-sm font-medium">{t('clickToUploadImage')}</span>
+            <span className="text-[8px] sm:text-[10px] md:text-xs text-white/40">{t('maxFileSize')}</span>
           </div>
         )}
       </div>

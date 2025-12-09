@@ -84,7 +84,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} suppressHydrationWarning={true}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-lg hover:bg-white/10 transition-colors"

@@ -125,50 +125,50 @@ export default function ShareQuoteModal({ isOpen, onClose, quote, bookTitle, aut
 
         {/* Preview Area */}
         <div className="p-8 bg-[#09090b] flex items-center justify-center overflow-y-auto min-h-[300px]">
-          <div 
-            ref={cardRef}
-            className="relative w-full aspect-square sm:aspect-[4/5] p-8 sm:p-12 rounded-xl shadow-2xl flex flex-col justify-between overflow-hidden transition-all duration-300"
-            style={{
-              background: themes[theme].background,
-              color: themes[theme].color,
-              border: `1px solid ${themes[theme].borderColor || 'transparent'}`,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-            }}
-          >
-            {/* Stickers Layer */}
-            {stickers.map((sticker) => (
-              <motion.div
-                key={sticker.id}
-                drag
-                dragMomentum={false}
-                dragConstraints={cardRef}
-                className="absolute z-10 cursor-move text-5xl select-none"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ 
-                  textShadow: '0 2px 4px rgba(0,0,0,0.2)' 
-                }}
-              >
-                {sticker.content}
-                <button 
-                  onClick={(e) => { e.stopPropagation(); removeSticker(sticker.id); }}
-                  className="absolute -top-3 -right-3 w-6 h-6 rounded-full flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity shadow-lg"
-                  style={{ backgroundColor: '#ef4444' }}
+            <div 
+              ref={cardRef}
+              className="relative w-full aspect-square sm:aspect-4/5 p-8 sm:p-12 rounded-xl shadow-2xl flex flex-col justify-between overflow-hidden transition-all duration-300"
+              style={{
+                background: themes[theme].background,
+                color: themes[theme].color,
+                border: `1px solid ${themes[theme].borderColor || 'transparent'}`,
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+              }}
+            >
+              {/* Stickers Layer */}
+              {stickers.map((sticker) => (
+                <motion.div
+                  key={sticker.id}
+                  drag
+                  dragMomentum={false}
+                  dragConstraints={cardRef}
+                  className="absolute z-10 cursor-move text-5xl select-none"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{ 
+                    textShadow: '0 2px 4px rgba(0,0,0,0.2)' 
+                  }}
                 >
-                  <X className="w-3 h-3" />
-                </button>
-              </motion.div>
-            ))}
-
-            <div className="absolute top-6 right-6 opacity-30 pointer-events-none">
-              <Quote className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" />
-            </div>
-            
-            <div className="flex-1 flex items-center justify-center my-4 pointer-events-none z-0 w-full">
-              <p 
-                className="font-serif leading-relaxed text-center italic font-medium w-full break-words whitespace-pre-wrap px-2"
+                  {sticker.content}
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); removeSticker(sticker.id); }}
+                    className="absolute -top-3 -right-3 w-6 h-6 rounded-full flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity shadow-lg"
+                    style={{ backgroundColor: '#ef4444' }}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </motion.div>
+              ))}
+  
+              <div className="absolute top-6 right-6 opacity-30 pointer-events-none">
+                <Quote className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" />
+              </div>
+              
+              <div className="flex-1 flex items-center justify-center my-4 pointer-events-none z-0 w-full">
+                <p 
+                  className="font-serif leading-relaxed text-center italic font-medium w-full wrap-break-word whitespace-pre-wrap px-2"
                 style={{ 
                   textShadow: theme === 'light' || theme === 'paper' ? 'none' : '0 2px 4px rgba(0,0,0,0.3)',
                   fontSize: quote.length > 300 ? '1rem' : 

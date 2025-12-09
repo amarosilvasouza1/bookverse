@@ -51,7 +51,8 @@ export async function POST(request: Request) {
         creatorId: session.id as string,
         members: {
           create: {
-            userId: session.id as string
+            userId: session.id as string,
+            role: 'ADMIN'
           }
         }
       },

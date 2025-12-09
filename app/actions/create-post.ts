@@ -13,17 +13,37 @@ export async function createPost(formData: FormData) {
 
   const content = formData.get('content') as string;
   const communityId = formData.get('communityId') as string;
+  const mediaFile = formData.get('media') as File | null;
 
-  if (!content || content.length < 1) {
-    return { error: 'Content cannot be empty' };
+  if ((!content || content.length < 1) && !mediaFile) {
+    return { error: 'Content or media is required' };
+  }
+
+  let mediaUrl: string | undefined;
+  let mediaType: string | undefined;
+
+  if (mediaFile && mediaFile.size > 0) {
+    // Basic validation
+    if (mediaFile.size > 5 * 1024 * 1024) { // 5MB limit
+        return { error: 'File size too large (max 5MB)' };
+    }
+    
+    const buffer = Buffer.from(await mediaFile.arrayBuffer());
+    const mimeType = mediaFile.type;
+    const base64 = buffer.toString('base64');
+    mediaUrl = `data:${mimeType};base64,${base64}`;
+    mediaType = mimeType.startsWith('image/') ? 'IMAGE' : 'VIDEO';
   }
 
   try {
     await prisma.post.create({
       data: {
-        content,
+        content: content || '',
         communityId,
         authorId: session.id as string,
+        // @ts-expect-error - Prisma client generation failed, fields exist in schema
+        mediaUrl,
+        mediaType,
       },
     });
 

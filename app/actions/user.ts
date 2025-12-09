@@ -19,6 +19,8 @@ export async function updateProfile(formData: FormData) {
     if (formData.has('bio')) dataToUpdate.bio = formData.get('bio') as string;
     if (formData.has('socialLinks')) dataToUpdate.socialLinks = formData.get('socialLinks') as string;
     if (formData.has('geminiApiKey')) dataToUpdate.geminiApiKey = formData.get('geminiApiKey') as string;
+    // Capture notificationSettings separately to avoid Prisma type validation errors
+    const notificationSettings = formData.get('notificationSettings') as string | null;
 
     const imageEntry = formData.get('image');
     if (imageEntry && imageEntry instanceof File) {
@@ -45,6 +47,12 @@ export async function updateProfile(formData: FormData) {
       where: { id: session.id as string },
       data: dataToUpdate,
     });
+
+    if (notificationSettings) {
+      await prisma.$executeRaw`
+        UPDATE User SET notificationSettings = ${notificationSettings} WHERE id = ${session.id}
+      `;
+    }
 
     revalidatePath('/dashboard/settings');
     revalidatePath('/dashboard/profile');

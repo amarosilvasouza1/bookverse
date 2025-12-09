@@ -63,12 +63,28 @@ export async function POST(
       });
       return NextResponse.json({ liked: false });
     } else {
-      await prisma.like.create({
+      const like = await prisma.like.create({
         data: {
           bookId: id,
           userId: session.id as string
+        },
+        include: {
+          book: {
+            select: { title: true, authorId: true }
+          }
         }
       });
+
+      if (like.book.authorId !== (session.id as string)) {
+        await prisma.notification.create({
+          data: {
+            userId: like.book.authorId,
+            type: 'LIKE',
+            message: `${session.username || 'Someone'} liked your book "${like.book.title}"`,
+            link: `/dashboard/books/${id}`
+          }
+        });
+      }
       return NextResponse.json({ liked: true });
     }
   } catch (error) {

@@ -101,7 +101,7 @@ export default function DashboardContent({ userName, userImage, equippedFrame, s
             <div className="p-3 rounded-xl bg-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
               <BookOpen className="w-6 h-6" />
             </div>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/5 text-muted-foreground">+2 this month</span>
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/5 text-muted-foreground">+2 {t('thisMonth')}</span>
           </div>
           <div className="space-y-1">
             <h3 className="text-3xl font-bold text-white">{stats.booksCount}</h3>
@@ -197,7 +197,7 @@ export default function DashboardContent({ userName, userImage, equippedFrame, s
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">
-                      {book.description || 'No description'}
+                      {book.description || t('noDescription')}
                     </p>
                   </div>
                 </Link>
@@ -230,8 +230,8 @@ export default function DashboardContent({ userName, userImage, equippedFrame, s
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="font-bold text-white group-hover:text-pink-400 transition-colors">Item Store</div>
-                  <div className="text-xs text-muted-foreground">Buy frames & accessories</div>
+                  <div className="font-bold text-white group-hover:text-pink-400 transition-colors">{t('itemStore')}</div>
+                  <div className="text-xs text-muted-foreground">{t('buyFramesAccessories')}</div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
               </div>

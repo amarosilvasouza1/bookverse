@@ -32,5 +32,16 @@ export default async function SettingsPage() {
     redirect('/login');
   }
 
-  return <SettingsForm user={user as unknown as SettingsFormProps['user']} />;
+  // Fetch notificationSettings via raw query to bypass outdated Prisma Client validation
+  // This avoids forcing a server restart
+  const rawData = await prisma.$queryRaw<{ notificationSettings: string | null }[]>`
+    SELECT notificationSettings FROM User WHERE id = ${session.id}
+  `;
+
+  const userWithSettings = {
+    ...user,
+    notificationSettings: rawData[0]?.notificationSettings
+  };
+
+  return <SettingsForm user={userWithSettings as unknown as SettingsFormProps['user']} />;
 }

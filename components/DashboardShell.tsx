@@ -139,9 +139,15 @@ export default function DashboardShell({
         </div>
       </nav>
 
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-white/10 z-40 flex items-center justify-between px-4" suppressHydrationWarning>
+          <span className="font-bold text-lg bg-linear-to-r from-primary to-purple-600 bg-clip-text text-transparent">BookVerse</span>
+          <NotificationBell userId={userId} placement="bottom-right" />
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 min-h-screen pb-20 md:pb-0">
-        <div className="p-4 md:p-8">
+      <main className="flex-1 md:ml-64 min-h-screen pb-20 pt-16 md:pt-0 md:pb-0 overflow-x-hidden">
+        <div className="p-0 md:p-4 lg:p-8 overflow-x-hidden" suppressHydrationWarning={true}>
           {children}
         </div>
       </main>

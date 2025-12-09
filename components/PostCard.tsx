@@ -19,6 +19,8 @@ interface PostCardProps {
       username: string;
       image: string | null;
     };
+    mediaUrl?: string | null;
+    mediaType?: string | null;
     _count: {
       comments: number;
       likes: number;
@@ -93,6 +95,23 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
           <p className="text-gray-200 whitespace-pre-wrap mb-4 text-base leading-relaxed">
             {post.content}
           </p>
+
+          {post.mediaUrl && (
+            <div className="mb-4 rounded-lg overflow-hidden border border-white/5 bg-black/50">
+              {post.mediaType === 'VIDEO' ? (
+                <video src={post.mediaUrl} controls className="w-full max-h-[500px] object-contain" />
+              ) : (
+                <div className="relative w-full h-auto max-h-[500px] aspect-video">
+                    <Image 
+                        src={post.mediaUrl} 
+                        alt="Post media" 
+                        fill
+                        className="object-contain"
+                    />
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-6 pt-2 border-t border-white/5 mt-4">
             <button 

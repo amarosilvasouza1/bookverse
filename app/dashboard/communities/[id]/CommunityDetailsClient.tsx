@@ -1,6 +1,6 @@
 'use client';
 
-import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe, Sparkles } from 'lucide-react';
+import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe, Sparkles, Loader2 } from 'lucide-react';
 import CreatePostForm from '@/components/CreatePostForm';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,21 +8,86 @@ import PostCard from '@/components/PostCard';
 import DeleteCommunityButton from '@/components/DeleteCommunityButton';
 import { useLanguage } from '@/context/LanguageContext';
 import { joinCommunity } from '@/app/actions/join-community';
+import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+
+interface Creator {
+  username: string;
+  name: string | null;
+  image: string | null;
+}
+
+interface Post {
+  id: string;
+  content: string;
+  mediaUrl?: string | null;
+  mediaType?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  communityId: string;
+  authorId: string;
+  author: {
+    username: string;
+    name: string | null;
+    image: string | null;
+  };
+  _count: {
+    comments: number;
+    likes: number;
+  };
+  likes: { userId: string }[];
+}
+
+interface Community {
+  id: string;
+  name: string;
+  description: string | null;
+  privacy: 'OPEN' | 'CLOSED';
+  createdAt: Date | string;
+  creatorId: string;
+  isMember: boolean;
+  memberRole?: 'ADMIN' | 'MEMBER' | null;
+  memberStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+  _count: {
+    members: number;
+    posts: number;
+  };
+  posts: Post[];
+  creator: Creator;
+}
+
+interface Session {
+  id: string;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+}
 
 interface CommunityDetailsClientProps {
-  community: any;
-  session: any;
+  community: Community;
+  session: Session | null;
 }
 
 export default function CommunityDetailsClient({ community, session }: CommunityDetailsClientProps) {
   const { t } = useLanguage();
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  const handleJoin = async () => {
-    // This action is server-side, but we can call it from client if it's a server action.
-    // However, the original code used a form action.
-    // We can wrap it in a client-side handler or keep the form.
-    // Since joinCommunity is a server action, we can use it directly.
-    await joinCommunity(community.id);
+  const handleJoin = () => {
+    startTransition(async () => {
+      try {
+        const result = await joinCommunity(community.id);
+        if (result.success) {
+           router.refresh();
+        } else {
+           alert(result.error);
+        }
+      } catch (error) {
+        console.error('Failed to join community', error);
+      }
+    });
   };
 
   // Deterministic gradient based on name
@@ -113,14 +178,14 @@ export default function CommunityDetailsClient({ community, session }: Community
                       {t('requestPending')}
                     </div>
                   ) : (
-                    <form action={handleJoin}>
-                      <button 
-                        type="submit"
-                        className="bg-white text-black hover:bg-gray-100 px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-white/10 hover:scale-105 active:scale-95 text-lg"
-                      >
-                        {community.privacy === 'CLOSED' ? t('requestToJoin') : t('joinCommunityButton')}
-                      </button>
-                    </form>
+                    <button 
+                      onClick={handleJoin}
+                      disabled={isPending}
+                      className="bg-white text-black hover:bg-gray-100 px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-white/10 hover:scale-105 active:scale-95 text-lg flex items-center gap-2"
+                    >
+                      {isPending && <Loader2 className="w-5 h-5 animate-spin" />}
+                      {community.privacy === 'CLOSED' ? t('requestToJoin') : t('joinCommunityButton')}
+                    </button>
                   )}
                 </div>
               </div>
@@ -148,8 +213,8 @@ export default function CommunityDetailsClient({ community, session }: Community
             </div>
 
             <div className="space-y-6">
-              {community.posts.map((post: any) => (
-                <PostCard key={post.id} post={post} currentUserId={session?.id as string} />
+              {community.posts.map((post) => (
+                <PostCard key={post.id} post={post} currentUserId={session?.id || ''} />
               ))}
 
               {community.posts.length === 0 && (

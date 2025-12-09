@@ -147,6 +147,23 @@ export async function createBook(data: {
           coverImage: book.coverImage,
           authorName: (session.name || session.username) as string
         } as StatusData);
+
+        // Notify Followers
+        const followers = await prisma.follow.findMany({
+          where: { followingId: session.id as string },
+          select: { followerId: true }
+        });
+
+        if (followers.length > 0) {
+          await prisma.notification.createMany({
+            data: followers.map(f => ({
+              userId: f.followerId,
+              type: 'NEW_BOOK',
+              message: `${session.name || session.username} published a new book: ${book.title}`,
+              link: `/dashboard/books/${book.id}`
+            }))
+          });
+        }
       }
 
       // Check for scheduled chapters

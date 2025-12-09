@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle, Share2, Volume2, VolumeX, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle, Share2, Volume2, VolumeX, Calendar, Menu, Home } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import CharacterChat from './CharacterChat';
@@ -42,9 +42,11 @@ type FontFamily = 'serif' | 'sans' | 'mono';
 export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReaderProps) {
   // --- State: Content & Navigation ---
   const [currentPage, setCurrentPage] = useState(0);
-// ... existing code ...
+  const [showTopBar, setShowTopBar] = useState(true);
+  const [showBottomBar, setShowBottomBar] = useState(true);
+  const lastScrollY = useRef(0);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  
   // --- State: Reading Room ---
   const searchParams = useSearchParams();
   const roomId = searchParams.get('roomId');
@@ -66,6 +68,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
   const [showSettings, setShowSettings] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showTOC, setShowTOC] = useState(false);
 
   // --- State: Actions ---
   const [buying, setBuying] = useState(false);
@@ -80,35 +83,89 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
   const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null);
 
   // --- State: Swipe Gestures ---
-  const touchStart = useRef<number | null>(null);
-  const touchEnd = useRef<number | null>(null);
-  const minSwipeDistance = 50;
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const touchEnd = useRef<{ x: number; y: number } | null>(null);
+  const minSwipeDistance = 60;
+  const isScrolling = useRef(false);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchEnd.current = null;
-    touchStart.current = e.targetTouches[0].clientX;
+    touchStart.current = {
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    };
+    isScrolling.current = false;
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    touchEnd.current = e.targetTouches[0].clientX;
+    if (!touchStart.current) return;
+    
+    const currentX = e.targetTouches[0].clientX;
+    const currentY = e.targetTouches[0].clientY;
+    
+    // Detect if scrolling vertically (shouldn't trigger page change)
+    const deltaX = Math.abs(currentX - touchStart.current.x);
+    const deltaY = Math.abs(currentY - touchStart.current.y);
+    
+    if (deltaY > deltaX && deltaY > 10) {
+      isScrolling.current = true;
+    }
+    
+    touchEnd.current = { x: currentX, y: currentY };
   };
 
   const onTouchEnd = () => {
-    if (!touchStart.current || !touchEnd.current) return;
+    if (!touchStart.current || !touchEnd.current || isScrolling.current) return;
     
     // Don't swipe if text is selected
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) return;
     
-    const distance = touchStart.current - touchEnd.current;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const distanceX = touchStart.current.x - touchEnd.current.x;
+    const distanceY = Math.abs(touchStart.current.y - touchEnd.current.y);
+    
+    // Only horizontal swipes (ignore if too much vertical movement)
+    if (distanceY > 50) return;
+    
+    const isLeftSwipe = distanceX > minSwipeDistance;
+    const isRightSwipe = distanceX < -minSwipeDistance;
 
     if (isLeftSwipe) {
       handleNext();
     } else if (isRightSwipe) {
       handlePrev();
     }
+  };
+
+  // Hide bars on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setShowTopBar(false);
+        setShowBottomBar(false);
+      } else {
+        setShowTopBar(true);
+        setShowBottomBar(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Tap to show/hide bars on mobile
+  const handleContentTap = (e: React.MouseEvent) => {
+    // Only on mobile and not on buttons/links
+    if (window.innerWidth > 768) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('a')) return;
+    
+    setShowTopBar(prev => !prev);
+    setShowBottomBar(prev => !prev);
   };
 
   useEffect(() => {
@@ -127,7 +184,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
         setSelectedQuote(text);
         setSelectionPosition({
           x: rect.left + (rect.width / 2),
-          y: rect.top - 10 // Position above selection
+          y: rect.top - 10
         });
       } else {
         setSelectionPosition(null);
@@ -157,7 +214,6 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
               hostName: host.name || 'Host'
             };
 
-            // Deep comparison to prevent re-renders
             if (
               prev.isActive === newState.isActive &&
               prev.isHost === newState.isHost &&
@@ -169,9 +225,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
             return newState;
           });
 
-          // If participant (not host), sync page
           if (!isHost && status === 'ACTIVE') {
-            // Adjust for 0-index
             const targetPage = roomPage - 1;
             setCurrentPage(prev => {
               if (prev !== targetPage) return targetPage;
@@ -184,10 +238,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
       }
     };
 
-    // Initial sync
     syncRoom();
-
-    // Poll every 2 seconds
     const interval = setInterval(syncRoom, 2000);
     return () => clearInterval(interval);
   }, [roomId]);
@@ -199,12 +250,12 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
 
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
-      window.scrollTo(0, 0);
       
-      // Update progress
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
       updateReadingProgress(book.id, newPage + 1);
 
-      // Update room if host
       if (roomState.isActive && roomState.isHost && roomId) {
         updateRoomPage(roomId, newPage + 1);
       }
@@ -217,17 +268,23 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
 
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
-      window.scrollTo(0, 0);
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // Update progress
       updateReadingProgress(book.id, newPage + 1);
 
-      // Update room if host
       if (roomState.isActive && roomState.isHost && roomId) {
         updateRoomPage(roomId, newPage + 1);
       }
     }
   }, [currentPage, book.id, roomState.isActive, roomState.isHost, roomId]);
+
+  const goToPage = (pageIndex: number) => {
+    setCurrentPage(pageIndex);
+    setShowTOC(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateReadingProgress(book.id, pageIndex + 1);
+  };
 
   // --- Effects: Persistence & Keyboard ---
   const fetchLikes = useCallback(async () => {
@@ -303,8 +360,6 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
     }
   };
 
-
-
   const handleLike = async () => {
     if (likeLoading) return;
     const newIsLiked = !isLiked;
@@ -335,7 +390,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
 
   const themeStyles = {
     dark: 'bg-[#0a0a0a] text-zinc-300',
-    light: 'bg-[#f8f9fa] text-zinc-800',
+    light: 'bg-[#fafafa] text-zinc-800',
     sepia: 'bg-[#f4ecd8] text-[#5b4636]',
   };
 
@@ -345,13 +400,11 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
     mono: 'font-mono',
   };
 
-  // ... (PDF Export logic remains same) ...
   const handleDownloadPDF = async () => {
     try {
       const jsPDF = (await import('jspdf')).default;
       const doc = new jsPDF();
       
-      // Title Page
       doc.setFont('times', 'bold');
       doc.setFontSize(24);
       doc.text(book.title, 105, 100, { align: 'center' });
@@ -360,14 +413,12 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
       doc.setFont('times', 'normal');
       doc.text(`By ${book.author.name || book.author.username}`, 105, 115, { align: 'center' });
       
-      // Content
       let pageNum = 1;
       
       pages.forEach((page) => {
         doc.addPage();
         pageNum++;
         
-        // Chapter Title
         if (page.title) {
           doc.setFont('times', 'bold');
           doc.setFontSize(18);
@@ -376,17 +427,13 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
           doc.setFontSize(12);
         }
         
-        // Content splitting
         const splitText = doc.splitTextToSize(page.content, 170);
         const y = page.title ? 45 : 30;
         
-        // Simple pagination for content
-        // Note: This is a basic implementation. For production, better text wrapping/pagination is needed.
         if (splitText.length > 0) {
            doc.text(splitText, 20, y);
         }
         
-        // Page Number
         doc.setFontSize(10);
         doc.text(`Page ${pageNum}`, 105, 285, { align: 'center' });
       });
@@ -401,76 +448,122 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
   return (
     <div className={`min-h-screen transition-colors duration-300 ${themeStyles[theme]}`}>
       {/* Top Bar */}
-      <div className={`sticky top-0 z-50 border-b backdrop-blur-md transition-colors duration-300 px-4 py-3 flex items-center justify-between
-        ${theme === 'dark' ? 'bg-[#0a0a0a]/90 border-white/10' : 
-          theme === 'light' ? 'bg-white/90 border-zinc-200' : 
-          'bg-[#f4ecd8]/90 border-[#e3dccb]'}`}
+      <div className={`fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-xl transition-all duration-300
+        ${showTopBar ? 'translate-y-0' : '-translate-y-full'}
+        ${theme === 'dark' ? 'bg-[#0a0a0a]/95 border-white/10' : 
+          theme === 'light' ? 'bg-white/95 border-zinc-200' : 
+          'bg-[#f4ecd8]/95 border-[#e3dccb]'}`}
       >
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/browse" className={`text-sm flex items-center hover:opacity-70 transition-opacity
-             ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Back</span>
-          </Link>
-          <h1 className="font-bold truncate max-w-[150px] sm:max-w-md text-sm sm:text-base">
-            {book.title}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {canRead && (isAuthor || book.allowDownload) && (
+        <div className="max-w-4xl mx-auto px-3 md:px-4 py-2.5 md:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0">
+            <Link href="/dashboard/browse" className={`p-2 rounded-lg transition-colors shrink-0
+               ${theme === 'dark' ? 'text-zinc-400 hover:bg-white/10' : 'text-zinc-600 hover:bg-black/5'}`}>
+              <Home className="w-5 h-5" />
+            </Link>
+            
             <button 
-              onClick={handleDownloadPDF}
-              className={`items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hidden sm:flex
-                ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10 text-zinc-300' : 'bg-black/5 hover:bg-black/10 text-zinc-700'}`}
-              title="Download PDF"
+              onClick={() => setShowTOC(true)}
+              className={`p-2 rounded-lg transition-colors shrink-0 md:hidden
+                ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>PDF</span>
+              <Menu className="w-5 h-5" />
             </button>
-          )}
+            
+            <h1 className="font-semibold truncate text-sm md:text-base">
+              {book.title}
+            </h1>
+          </div>
 
-          <button 
-            onClick={handleLike}
-            disabled={likeLoading}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all
-              ${isLiked ? 'bg-red-500/10 text-red-500' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
-          >
-            <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-            <span>{likes}</span>
-          </button>
+          <div className="flex items-center gap-1 md:gap-2">
+            {canRead && (isAuthor || book.allowDownload) && (
+              <button 
+                onClick={handleDownloadPDF}
+                className={`items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hidden md:flex
+                  ${theme === 'dark' ? 'bg-white/5 hover:bg-white/10 text-zinc-300' : 'bg-black/5 hover:bg-black/10 text-zinc-700'}`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>PDF</span>
+              </button>
+            )}
 
-          <div className="h-4 w-px bg-current opacity-20 mx-1" />
+            <button 
+              onClick={handleLike}
+              disabled={likeLoading}
+              className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 rounded-full text-sm font-medium transition-all
+                ${isLiked ? 'bg-red-500/10 text-red-500' : `${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}`}
+            >
+              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              <span className="text-xs md:text-sm">{likes}</span>
+            </button>
 
-          <button
-            onClick={() => setShowChat(!showChat)}
-            className={`p-2 rounded-lg transition-colors ${showChat ? 'bg-black/10 dark:bg-white/10 text-primary' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
-          >
-            <MessageCircle className="w-5 h-5" />
-          </button>
+            <button
+              onClick={() => setShowChat(!showChat)}
+              className={`p-2 rounded-lg transition-colors hidden md:flex
+                ${showChat ? `${theme === 'dark' ? 'bg-white/10' : 'bg-black/10'} text-primary` : `${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}`}
+            >
+              <MessageCircle className="w-5 h-5" />
+            </button>
 
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors hidden sm:block"
-          >
-            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-          </button>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-2 rounded-lg transition-colors
+                ${showSettings ? `${theme === 'dark' ? 'bg-white/10' : 'bg-black/10'}` : `${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}`}
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            
+            <button
+              onClick={toggleFullscreen}
+              className={`p-2 rounded-lg transition-colors hidden md:block
+                ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+            >
+              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Table of Contents (Mobile) */}
+      {showTOC && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm" onClick={() => setShowTOC(false)}>
+          <div 
+            className={`absolute left-0 top-0 bottom-0 w-72 max-w-[80vw] p-4 overflow-y-auto animate-in slide-in-from-left
+              ${theme === 'dark' ? 'bg-zinc-900' : theme === 'light' ? 'bg-white' : 'bg-[#f4ecd8]'}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-lg">Chapters</h2>
+              <button onClick={() => setShowTOC(false)} className="p-2 hover:opacity-70">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-1">
+              {pages.map((page, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToPage(index)}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors
+                    ${currentPage === index 
+                      ? `${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-black/10 text-black'} font-medium`
+                      : `${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'} opacity-70`}`}
+                >
+                  <span className="opacity-50 mr-2">{index + 1}.</span>
+                  {page.title || `Page ${index + 1}`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Settings Panel */}
       {showSettings && (
-        <div className={`fixed top-[60px] right-4 z-50 w-72 rounded-xl shadow-2xl border p-4 animate-in fade-in slide-in-from-top-2
-          ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 
-            theme === 'light' ? 'bg-white border-zinc-200 text-zinc-800' : 
-            'bg-[#eaddcf] border-[#d3c4b1] text-[#5b4636]'}`}
+        <div 
+          className={`fixed top-14 md:top-[60px] right-2 md:right-4 z-50 w-[calc(100vw-1rem)] md:w-72 max-w-72 rounded-xl shadow-2xl border p-4 animate-in fade-in slide-in-from-top-2
+            ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 
+              theme === 'light' ? 'bg-white border-zinc-200 text-zinc-800' : 
+              'bg-[#eaddcf] border-[#d3c4b1] text-[#5b4636]'}`}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Reader Settings</h3>
@@ -479,7 +572,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Theme */}
             <div className="space-y-2">
               <label className="text-xs font-medium opacity-70 flex items-center gap-2">
@@ -490,7 +583,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
                   <button
                     key={t}
                     onClick={() => setTheme(t)}
-                    className={`h-8 rounded-lg border flex items-center justify-center transition-all
+                    className={`h-10 rounded-lg border flex items-center justify-center transition-all
                       ${theme === t ? 'ring-2 ring-indigo-500 border-transparent' : 'border-current opacity-50 hover:opacity-100'}
                       ${t === 'light' ? 'bg-white' : t === 'sepia' ? 'bg-[#f4ecd8]' : 'bg-[#0a0a0a]'}`}
                   >
@@ -507,13 +600,13 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
               <label className="text-xs font-medium opacity-70 flex items-center gap-2">
                 <Type className="w-3 h-3" /> Font
               </label>
-              <div className="flex p-1 rounded-lg bg-black/5 dark:bg-white/5">
+              <div className={`flex p-1 rounded-lg ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`}>
                 {(['serif', 'sans', 'mono'] as FontFamily[]).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFontFamily(f)}
-                    className={`flex-1 py-1.5 text-xs rounded-md transition-all
-                      ${fontFamily === f ? 'bg-white dark:bg-zinc-800 shadow-sm font-medium' : 'opacity-60 hover:opacity-100'}`}
+                    className={`flex-1 py-2 text-xs rounded-md transition-all
+                      ${fontFamily === f ? `${theme === 'dark' ? 'bg-zinc-800' : 'bg-white'} shadow-sm font-medium` : 'opacity-60 hover:opacity-100'}`}
                   >
                     {f === 'serif' ? 'Serif' : f === 'sans' ? 'Sans' : 'Mono'}
                   </button>
@@ -529,15 +622,15 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
               <input
                 type="range"
                 min="14"
-                max="32"
+                max="28"
                 step="2"
                 value={fontSize}
                 onChange={(e) => setFontSize(Number(e.target.value))}
-                className="w-full accent-indigo-500 h-2 bg-black/10 dark:bg-white/10 rounded-lg appearance-none cursor-pointer"
+                className={`w-full h-2 rounded-lg appearance-none cursor-pointer accent-indigo-500 ${theme === 'dark' ? 'bg-white/10' : 'bg-black/10'}`}
               />
               <div className="flex justify-between text-[10px] opacity-50 font-mono">
                 <span>14px</span>
-                <span>32px</span>
+                <span>28px</span>
               </div>
             </div>
           </div>
@@ -545,37 +638,41 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
       )}
 
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto px-6 py-12 md:py-20 min-h-[80vh]">
+      <div 
+        ref={contentRef}
+        className="pt-14 md:pt-16 pb-24 md:pb-20"
+        onClick={handleContentTap}
+      >
         <div 
-          className={`prose max-w-none leading-relaxed transition-all duration-300 ${fontStyles[fontFamily]} ${showOverlay ? 'select-none blur-[1px]' : 'select-auto touch-pan-y'}`}
-          style={{ fontSize: `${fontSize}px` }}
+          className={`max-w-2xl mx-auto px-5 md:px-8 py-8 md:py-12 min-h-[70vh] ${fontStyles[fontFamily]} ${showOverlay ? 'select-none blur-[1px]' : 'select-auto'}`}
+          style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
           {activePage.title && (
-            <h2 className={`text-2xl font-bold mb-8 opacity-90 ${fontFamily === 'serif' ? 'font-serif' : 'font-bold'}`}>
+            <h2 className={`text-xl md:text-2xl font-bold mb-6 md:mb-8 opacity-90`}>
               {activePage.title}
             </h2>
           )}
           
           <div 
-            className="prose prose-lg dark:prose-invert max-w-none leading-relaxed opacity-90 select-auto"
+            className="prose prose-lg dark:prose-invert max-w-none opacity-90"
             dangerouslySetInnerHTML={{ __html: activePage.content }}
           />
         </div>
 
         {/* Locked Overlay */}
         {showOverlay && (
-          <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl animate-in zoom-in-95">
+          <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 max-w-md w-full text-center shadow-2xl animate-in zoom-in-95">
               {isLockedSchedule ? (
                 <>
-                  <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/20">
-                    <Calendar className="w-8 h-8 text-indigo-500" />
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-5 border border-indigo-500/20">
+                    <Calendar className="w-7 h-7 md:w-8 md:h-8 text-indigo-500" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Coming Soon</h3>
-                  <p className="text-zinc-400 mb-8">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2">Coming Soon</h3>
+                  <p className="text-zinc-400 mb-6 text-sm md:text-base">
                     This chapter is scheduled to be released on:
                     <br />
                     <span className="text-white font-bold mt-2 block">
@@ -585,11 +682,11 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
                 </>
               ) : (
                 <>
-                  <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-500/20">
-                    <Lock className="w-8 h-8 text-amber-500" />
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-5 border border-amber-500/20">
+                    <Lock className="w-7 h-7 md:w-8 md:h-8 text-amber-500" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Premium Content</h3>
-                  <p className="text-zinc-400 mb-8">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2">Premium Content</h3>
+                  <p className="text-zinc-400 mb-6 text-sm md:text-base">
                     Purchase this book to unlock all chapters and support the author.
                   </p>
                   
@@ -602,7 +699,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
                   <button 
                     onClick={handleBuy}
                     disabled={buying}
-                    className="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 md:py-4 bg-white text-black font-bold rounded-xl hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm md:text-base"
                   >
                     {buying ? 'Processing...' : (
                       <>
@@ -617,41 +714,49 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
         )}
       </div>
 
-      {/* Footer / Progress */}
+      {/* Bottom Navigation Bar */}
       {!showOverlay && (
-        <div className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-lg z-40 transition-colors duration-300
-          ${theme === 'dark' ? 'bg-[#0a0a0a]/90 border-white/10' : 
-            theme === 'light' ? 'bg-white/90 border-zinc-200' : 
-            'bg-[#f4ecd8]/90 border-[#e3dccb]'}`}
+        <div className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-xl z-40 transition-all duration-300
+          ${showBottomBar ? 'translate-y-0' : 'translate-y-full'}
+          ${theme === 'dark' ? 'bg-[#0a0a0a]/95 border-white/10' : 
+            theme === 'light' ? 'bg-white/95 border-zinc-200' : 
+            'bg-[#f4ecd8]/95 border-[#e3dccb]'}`}
         >
-          <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-            <button
-              onClick={handlePrev}
-              disabled={currentPage === 0}
-              className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
+          <div className="max-w-3xl mx-auto px-3 md:px-4 py-3 md:py-4">
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={handlePrev}
+                disabled={currentPage === 0}
+                className={`p-3 rounded-xl transition-all disabled:opacity-20
+                  ${theme === 'dark' ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/5 active:bg-black/10'}`}
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
 
-            <div className="flex-1 max-w-md flex flex-col items-center gap-1">
-              <div className="w-full h-1 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-indigo-500 transition-all duration-300"
-                  style={{ width: `${((currentPage + 1) / pages.length) * 100}%` }}
-                />
+              <div className="flex-1 flex flex-col items-center gap-2">
+                {/* Progress Bar */}
+                <div className={`w-full h-1.5 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-white/10' : 'bg-black/10'}`}>
+                  <div 
+                    className="h-full bg-indigo-500 transition-all duration-500 ease-out rounded-full"
+                    style={{ width: `${((currentPage + 1) / pages.length) * 100}%` }}
+                  />
+                </div>
+                
+                {/* Page Info */}
+                <span className="text-xs font-medium opacity-60">
+                  {currentPage + 1} / {pages.length}
+                </span>
               </div>
-              <span className="text-xs font-medium opacity-50 font-mono">
-                Page {currentPage + 1} of {pages.length}
-              </span>
-            </div>
 
-            <button
-              onClick={handleNext}
-              disabled={currentPage === pages.length - 1}
-              className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 transition-colors"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
+              <button
+                onClick={handleNext}
+                disabled={currentPage === pages.length - 1}
+                className={`p-3 rounded-xl transition-all disabled:opacity-20
+                  ${theme === 'dark' ? 'hover:bg-white/10 active:bg-white/20' : 'hover:bg-black/5 active:bg-black/10'}`}
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -684,11 +789,11 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
           }}
           className="z-50 mb-2 bg-zinc-900 text-white px-3 py-1.5 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium animate-in zoom-in-95 hover:scale-105 transition-transform"
           onMouseDown={(e) => {
-            e.preventDefault(); // Prevent losing selection
+            e.preventDefault();
             setShowShareModal(true);
           }}
         >
-          <Share2 className="w-3 h-3" /> Share Quote
+          <Share2 className="w-3 h-3" /> Share
         </button>
       )}
 
@@ -703,60 +808,24 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
 
       {/* Ambience Player */}
       {book.ambience && (
-        <AmbiencePlayer type={book.ambience} />
-      )}
-
-      {/* Mobile Navigation Buttons (Floating) */}
-      {!showOverlay && (
-        <>
-          {/* Prev Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePrev();
-            }}
-            disabled={currentPage === 0}
-            className={`fixed left-2 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full shadow-lg backdrop-blur-sm transition-all md:hidden
-              ${currentPage === 0 ? 'opacity-0 pointer-events-none' : 'opacity-70 hover:opacity-100 active:scale-95'}
-              ${theme === 'dark' ? 'bg-black/40 text-white border border-white/10' : 'bg-white/40 text-black border border-black/10'}`}
-            aria-label="Previous Page"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-
-          {/* Next Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleNext();
-            }}
-            disabled={currentPage === pages.length - 1}
-            className={`fixed right-2 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full shadow-lg backdrop-blur-sm transition-all md:hidden
-              ${currentPage === pages.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-70 hover:opacity-100 active:scale-95'}
-              ${theme === 'dark' ? 'bg-black/40 text-white border border-white/10' : 'bg-white/40 text-black border border-black/10'}`}
-            aria-label="Next Page"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </>
+        <AmbiencePlayer type={book.ambience} theme={theme} showBottomBar={showBottomBar} />
       )}
     </div>
   );
 }
 
-function AmbiencePlayer({ type }: { type: string }) {
+function AmbiencePlayer({ type, theme, showBottomBar }: { type: string; theme: Theme; showBottomBar: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Sound mapping (using placeholder URLs for now - replace with real assets)
   const sounds: Record<string, string> = {
-    rain: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', // Rain
-    fireplace: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', // Fire
-    forest: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_822ca886b2.mp3', // Forest
-    cafe: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_596f6d8424.mp3', // Cafe
-    space: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3', // Space (reuse rain for now as placeholder)
-    ocean: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', // Ocean (reuse rain for now)
+    rain: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
+    fireplace: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    forest: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_822ca886b2.mp3',
+    cafe: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_596f6d8424.mp3',
+    space: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3',
+    ocean: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3',
   };
 
   useEffect(() => {
@@ -773,12 +842,16 @@ function AmbiencePlayer({ type }: { type: string }) {
   if (!sounds[type]) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-white/10 p-2 rounded-full animate-in slide-in-from-bottom-5">
+    <div 
+      className={`fixed right-3 z-50 flex items-center gap-2 backdrop-blur-xl border p-2 rounded-full animate-in slide-in-from-bottom-5 transition-all duration-300
+        ${showBottomBar ? 'bottom-20 md:bottom-24' : 'bottom-4'}
+        ${theme === 'dark' ? 'bg-black/80 border-white/10' : 'bg-white/80 border-black/10'}`}
+    >
       <audio ref={audioRef} src={sounds[type]} loop />
       
       <button
         onClick={() => setIsPlaying(!isPlaying)}
-        className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-indigo-500 text-white' : 'bg-white/10 text-zinc-400 hover:text-white'}`}
+        className={`p-2 rounded-full transition-colors ${isPlaying ? 'bg-indigo-500 text-white' : `${theme === 'dark' ? 'bg-white/10 text-zinc-400' : 'bg-black/10 text-zinc-600'} hover:opacity-80`}`}
       >
         {isPlaying ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
       </button>
@@ -791,7 +864,7 @@ function AmbiencePlayer({ type }: { type: string }) {
           step="0.1"
           value={volume}
           onChange={(e) => setVolume(parseFloat(e.target.value))}
-          className="w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+          className="w-16 h-1 bg-current opacity-20 rounded-lg appearance-none cursor-pointer accent-indigo-500"
         />
       )}
     </div>

@@ -5,8 +5,22 @@ import Link from 'next/link';
 import CommunityCard from '@/components/CommunityCard';
 import { useLanguage } from '@/context/LanguageContext';
 
+interface Community {
+  id: string;
+  name: string;
+  description: string | null;
+  privacy: string;
+  createdAt: Date;
+  creatorId: string;
+  _count: {
+    members: number;
+    posts: number;
+  };
+  isMember: boolean;
+}
+
 interface CommunitiesClientProps {
-  communities: any[];
+  communities: Community[];
 }
 
 export default function CommunitiesClient({ communities }: CommunitiesClientProps) {

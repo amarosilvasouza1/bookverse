@@ -208,6 +208,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
         <div 
           className="relative rounded-full overflow-hidden z-10"
           style={{ width: size, height: size }}
+          suppressHydrationWarning
         >
           {src ? (
             <Image src={src} alt={alt} fill className="object-cover" />
