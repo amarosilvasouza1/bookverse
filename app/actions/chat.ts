@@ -334,7 +334,8 @@ export async function getMessages(conversationId: string, cursor?: string, limit
             select: { item: { select: { rarity: true } } }
           }
         } 
-      }
+      },
+      gift: true
     }
   });
 

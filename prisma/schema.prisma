@@ -60,6 +60,10 @@ model User {
 
   pushSubscription Json? // For web push notifications
 
+  // Gifts
+  sentGifts     Gift[] @relation("SentGifts")
+  receivedGifts Gift[] @relation("ReceivedGifts")
+
   lastSeen DateTime? @default(now())
 }
 
@@ -140,6 +144,10 @@ model DirectMessage {
 
   mediaUrl  String? @db.LongText
   mediaType String? // IMAGE, VIDEO
+
+  // Gift Relation
+  giftId String?
+  gift   Gift?   @relation(fields: [giftId], references: [id])
 
   @@index([conversationId])
   @@index([senderId])
@@ -531,4 +539,22 @@ model RedemptionCode {
 
   @@index([itemId])
   @@index([usedBy])
+}
+
+model Gift {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  type       String // MONEY, FRAME, CUSTOM, SUBSCRIPTION
+  data       Json // { amount: number, note: string, etc. }
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, RETURNED
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime // Auto-return after 3 days
+
+  sender   User            @relation("SentGifts", fields: [senderId], references: [id])
+  receiver User            @relation("ReceivedGifts", fields: [receiverId], references: [id])
+  message  DirectMessage[]
+
+  @@index([senderId])
+  @@index([receiverId])
 }

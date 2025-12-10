@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, Image as ImageIcon, X } from 'lucide-react';
+import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, Image as ImageIcon, X, Gift } from 'lucide-react';
 import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
 import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead, setTyping } from '@/app/actions/chat';
+import { sendGift, getUserInventory } from '@/app/actions/gift';
+import GiftCard from './GiftCard';
 import { toast } from 'sonner';
 import MiniProfile from './MiniProfile';
 import UserAvatar from '@/components/UserAvatar';
@@ -20,6 +22,15 @@ interface User {
   items?: { item: { rarity: string } }[];
 }
 
+interface InventoryItem {
+  item: {
+    id: string;
+    name: string;
+    type: string;
+    rarity: string;
+  };
+}
+
 interface Message {
   id: string;
   content: string;
@@ -28,6 +39,13 @@ interface Message {
   sender?: { id: string; name?: string | null; image?: string | null };
   mediaUrl?: string | null;
   mediaType?: 'IMAGE' | 'VIDEO' | string | null;
+  gift?: {
+    id: string;
+    type: string;
+    data: any;
+    status: string;
+    expiresAt: Date | string;
+  }; 
 }
 
 interface Conversation {
@@ -49,6 +67,15 @@ export default function ChatInterface() {
   const [nonMutualFollowings, setNonMutualFollowings] = useState<User[]>([]);
   const [modalTab, setModalTab] = useState<'mutual' | 'request'>('mutual');
   const [miniProfileId, setMiniProfileId] = useState<string | null>(null);
+
+  // Gift State
+  const [showGiftModal, setShowGiftModal] = useState(false);
+  const [giftAmount, setGiftAmount] = useState('');
+  const [sendingGift, setSendingGift] = useState(false);
+  const [giftTab, setGiftTab] = useState<'MONEY' | 'ITEMS'>('MONEY');
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [loadingInventory, setLoadingInventory] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   const [media, setMedia] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -301,6 +328,64 @@ export default function ChatInterface() {
     }
   }
 
+  async function handleSendGift(e: React.FormEvent) {
+    e.preventDefault();
+    if (!giftAmount || isNaN(Number(giftAmount)) || Number(giftAmount) <= 0 || !activeConversation) return;
+
+    setSendingGift(true);
+    if (!activeConvData?.otherUser?.id) return;
+    const result = await sendGift(activeConvData.otherUser.id, 'MONEY', { amount: Number(giftAmount) });
+    
+    if (result.success) {
+      toast.success('Gift sent!');
+      setShowGiftModal(false);
+      setGiftAmount('');
+      loadMessages(activeConversation);
+    } else {
+      toast.error(result.error);
+    }
+    setSendingGift(false);
+  }
+
+  async function handleSendItemGift() {
+     if (!selectedItem || !activeConversation) return;
+     
+     setSendingGift(true);
+     if (!activeConvData?.otherUser?.id) return;
+     // Send item gift
+     const result = await sendGift(activeConvData.otherUser.id, selectedItem.item.type, { 
+         itemId: selectedItem.item.id,
+         name: selectedItem.item.name,
+         rarity: selectedItem.item.rarity
+     });
+
+     if (result.success) {
+      toast.success('Gift sent!');
+      setShowGiftModal(false);
+      setSelectedItem(null);
+      loadMessages(activeConversation);
+    } else {
+      toast.error(result.error);
+    }
+    setSendingGift(false);
+  }
+
+  async function openGiftModal() {
+      setShowGiftModal(true);
+      setGiftTab('MONEY');
+      // Prefetch inventory? Or lazy load
+  }
+
+  useEffect(() => {
+      if (showGiftModal && giftTab === 'ITEMS' && inventory.length === 0) {
+          setLoadingInventory(true);
+          getUserInventory().then(items => {
+              setInventory(items);
+              setLoadingInventory(false);
+          });
+      }
+  }, [showGiftModal, giftTab, inventory.length]);
+
   // Debounced typing indicator
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -509,7 +594,7 @@ export default function ChatInterface() {
                   </div>
               )}
               {messages.map((msg) => {
-                const isMe = msg.senderId === 'me' || (msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
+                const isMe = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
                 return (
                   <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
                     <div className={cn(
@@ -544,6 +629,21 @@ export default function ChatInterface() {
                             )}
                         </div>
                       )}
+                      
+                      {/* Render Gift Card */}
+                      {msg.gift && (
+                        <div className="mb-2">
+                            <GiftCard 
+                                giftId={msg.gift.id}
+                                type={msg.gift.type}
+                                data={msg.gift.data}
+                                status={msg.gift.status}
+                                expiresAt={msg.gift.expiresAt}
+                                isMe={isMe}
+                            />
+                        </div>
+                      )}
+
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                       <span className={cn(
                         "text-[10px] absolute -bottom-5 min-w-[60px]",
@@ -587,6 +687,15 @@ export default function ChatInterface() {
                     title="Attach Media"
                 >
                     <ImageIcon className="w-5 h-5" />
+                </button>
+
+                <button
+                    type="button"
+                    onClick={openGiftModal}
+                    className="p-1.5 text-muted-foreground hover:text-white transition-colors"
+                    title="Send Gift"
+                >
+                    <Gift className="w-5 h-5" />
                 </button>
                 <input 
                   type="text" 
@@ -759,6 +868,113 @@ export default function ChatInterface() {
           </p>
         </div>
       )}
+      {/* Gift Modal */}
+      {showGiftModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl p-6">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-white text-lg">Send a Gift</h3>
+                <button onClick={() => setShowGiftModal(false)} className="text-muted-foreground hover:text-white"><X className="w-5 h-5"/></button>
+            </div>
+            
+
+            
+            <div className="flex p-1 bg-black/40 rounded-xl mb-4">
+                <button 
+                    onClick={() => setGiftTab('MONEY')}
+                    className={cn(
+                        "flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors",
+                        giftTab === 'MONEY' ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                    )}
+                >
+                    Money
+                </button>
+                <button 
+                    onClick={() => setGiftTab('ITEMS')}
+                    className={cn(
+                        "flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors",
+                        giftTab === 'ITEMS' ? "bg-primary text-white" : "text-muted-foreground hover:text-white"
+                    )}
+                >
+                    Items
+                </button>
+            </div>
+
+            {giftTab === 'MONEY' ? (
+                <div className="space-y-4">
+                    <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                        <label className="text-xs text-muted-foreground uppercase font-bold mb-2 block">Amount ($)</label>
+                        <input 
+                            type="number" 
+                            value={giftAmount}
+                            onChange={(e) => setGiftAmount(e.target.value)}
+                            placeholder="0.00"
+                            className="w-full bg-transparent text-2xl font-bold text-white focus:outline-none"
+                        />
+                    </div>
+                    
+                    <button 
+                        onClick={handleSendGift}
+                        disabled={sendingGift || !giftAmount}
+                        className="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+                    >
+                        {sendingGift ? 'Sending...' : 'Send Cash'}
+                    </button>
+                </div>
+            ) : (
+                <div className="flex-1 flex flex-col min-h-[300px]">
+                     {loadingInventory ? (
+                         <div className="flex-1 flex items-center justify-center">
+                             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                         </div>
+                     ) : inventory.length === 0 ? (
+                         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+                             <p>No giftable items found.</p>
+                             <p className="text-xs">Buy items from the store first!</p>
+                         </div>
+                     ) : (
+                         <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[300px] pr-1">
+                             {inventory.map((ui) => (
+                                 <button
+                                     key={ui.id}
+                                     onClick={() => setSelectedItem(ui)}
+                                     className={cn(
+                                         "p-2 rounded-xl border flex flex-col items-center gap-2 transition-all",
+                                         selectedItem?.id === ui.id 
+                                            ? "bg-primary/20 border-primary" 
+                                            : "bg-white/5 border-white/10 hover:bg-white/10"
+                                     )}
+                                 >
+                                     <div className={cn(
+                                         "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-lg",
+                                         ui.item.rarity === 'LEGENDARY' ? "bg-yellow-500 shadow-yellow-500/50" :
+                                         ui.item.rarity === 'EPIC' ? "bg-purple-500 shadow-purple-500/50" :
+                                         ui.item.rarity === 'RARE' ? "bg-blue-500 shadow-blue-500/50" :
+                                         "bg-gray-500"
+                                     )}>
+                                         {ui.item.name[0]}
+                                     </div>
+                                     <div className="text-center">
+                                         <p className="text-xs font-bold text-white truncate w-[100px]">{ui.item.name}</p>
+                                         <p className="text-[10px] text-muted-foreground">{ui.item.type}</p>
+                                     </div>
+                                 </button>
+                             ))}
+                         </div>
+                     )}
+                     <button 
+                        onClick={handleSendItemGift}
+                        disabled={sendingGift || !selectedItem}
+                        className="mt-4 w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+                    >
+                        {sendingGift ? 'Sending...' : 'Send Item'}
+                    </button>
+                </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
