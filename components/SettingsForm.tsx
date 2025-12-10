@@ -345,15 +345,18 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 
             {activeTab === 'inventory' && (
               <div className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="glass-card p-2.5 sm:p-3 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl space-y-3 sm:space-y-4 md:space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm sm:text-lg md:text-xl font-bold flex items-center gap-1.5 sm:gap-2 text-white/90">
-                      <Box className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 shrink-0" />
-                      Your Inventory
+                <div className="glass-card p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl space-y-4 sm:space-y-6 border border-white/10 bg-linear-to-br from-zinc-900/80 to-black/60 backdrop-blur-xl">
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold flex items-center gap-2 sm:gap-3 text-white">
+                      <div className="p-2 sm:p-2.5 rounded-xl bg-linear-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                        <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
+                      </div>
+                      Seu Inventário
                     </h2>
-                    <span className="text-[10px] sm:text-sm text-muted-foreground px-2 sm:px-3 py-0.5 sm:py-1 bg-white/5 rounded-full border border-white/5 shrink-0">
-                      {user.items?.length || 0} Items
-                    </span>
+                    <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-linear-to-r from-primary/20 to-purple-600/20 rounded-full border border-primary/30">
+                      <Box className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                      <span className="text-xs sm:text-sm font-bold text-white">{user.items?.length || 0} itens</span>
+                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -369,23 +372,35 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                         
                         if (types.length === 0) {
                             return (
-                                <div className="col-span-full flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground border-2 border-dashed border-white/5 rounded-xl sm:rounded-3xl bg-black/20">
-                                    <Box className="w-8 h-8 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-20" />
-                                    <p className="font-medium text-sm sm:text-base">Your inventory is empty</p>
-                                    <p className="text-[10px] sm:text-xs mt-1 sm:mt-2 opacity-50 text-center px-4">Collect items from achievements and the store.</p>
+                                <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-linear-to-br from-zinc-800/50 to-zinc-900/50 flex items-center justify-center mb-6 border border-white/5">
+                                        <Box className="w-10 h-10 sm:w-12 sm:h-12 text-zinc-600" />
+                                    </div>
+                                    <p className="font-bold text-lg sm:text-xl text-white/80 mb-2">Inventário Vazio</p>
+                                    <p className="text-sm text-zinc-500 max-w-xs">Colecione itens de conquistas e da loja para personalizar seu perfil!</p>
                                 </div>
                             );
                         }
 
                         return types.map(type => (
-                            <div key={type} className="space-y-3">
-                                <h3 className="text-md font-bold text-white/80 capitalize border-b border-white/10 pb-2 flex items-center gap-2">
-                                    {type === 'FRAME' && '🖼️ Frames'}
-                                    {type === 'BUBBLE' && '💬 Chat Bubbles'}
-                                    {type === 'BACKGROUND' && '🌄 Backgrounds'}
-                                    {type !== 'FRAME' && type !== 'BUBBLE' && type !== 'BACKGROUND' && type}
-                                </h3>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2 md:gap-4">
+                            <div key={type} className="space-y-4">
+                                <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-linear-to-r from-zinc-800/50 to-zinc-900/50 border border-white/5">
+                                    <span className="text-xl sm:text-2xl">
+                                        {type === 'FRAME' && '🖼️'}
+                                        {type === 'BUBBLE' && '💬'}
+                                        {type === 'BACKGROUND' && '🌄'}
+                                    </span>
+                                    <h3 className="text-base sm:text-lg font-bold text-white">
+                                        {type === 'FRAME' && 'Molduras'}
+                                        {type === 'BUBBLE' && 'Balões de Chat'}
+                                        {type === 'BACKGROUND' && 'Fundos'}
+                                        {type !== 'FRAME' && type !== 'BUBBLE' && type !== 'BACKGROUND' && type}
+                                    </h3>
+                                    <span className="ml-auto text-xs sm:text-sm text-white/50 bg-black/30 px-2 py-1 rounded-full">
+                                        {itemsByType[type].length}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                                     {itemsByType[type].map((userItem) => (
                                         <div key={userItem.item.id} className={`group bg-black/40 border rounded-xl p-2 sm:p-3 flex flex-col items-center text-center gap-1.5 sm:gap-2 transition-all hover:scale-[1.02] ${
                                             userItem.equipped ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-white/10 hover:border-white/20 hover:bg-white/5'
@@ -434,13 +449,13 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                                             <button
                                                 onClick={() => handleEquip(userItem.item.id, userItem.equipped)}
                                                 disabled={saving}
-                                                className={`w-full text-[10px] sm:text-xs py-1.5 sm:py-2 rounded-lg font-bold transition-all mt-auto ${
+                                                className={`w-full text-xs sm:text-sm py-2 sm:py-2.5 rounded-xl font-bold transition-all mt-auto ${
                                                 userItem.equipped 
-                                                    ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' 
-                                                    : 'bg-white text-black hover:bg-gray-200'
-                                                }`}
+                                                    ? 'bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 border border-zinc-700' 
+                                                    : 'bg-linear-to-r from-primary to-purple-600 text-white hover:from-primary/90 hover:to-purple-500 shadow-lg shadow-primary/20'
+                                                } disabled:opacity-50`}
                                             >
-                                                {userItem.equipped ? 'Unequip' : 'Equip'}
+                                                {saving ? '...' : userItem.equipped ? 'Desequipar' : 'Equipar'}
                                             </button>
                                         </div>
                                     ))}

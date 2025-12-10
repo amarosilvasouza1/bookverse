@@ -149,8 +149,15 @@ model DirectMessage {
   giftId String?
   gift   Gift?   @relation(fields: [giftId], references: [id])
 
+  // Reply & Edit Support
+  editedAt  DateTime?
+  replyToId String?
+  replyTo   DirectMessage?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   DirectMessage[] @relation("ReplyTo")
+
   @@index([conversationId])
   @@index([senderId])
+  @@index([replyToId])
 }
 
 model PostLike {

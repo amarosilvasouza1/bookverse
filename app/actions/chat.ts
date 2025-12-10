@@ -185,8 +185,53 @@ export async function getNonMutualFollowings() {
   return nonMutuals;
 }
 
+// Update a message (Edit)
+export async function editMessage(messageId: string, newContent: string) {
+  const session = await getSession();
+  if (!session) return { error: 'Unauthorized' };
+
+  const userId = session.id as string;
+
+  // Fetch message to check ownership and time limit
+  const message = await prisma.directMessage.findUnique({
+    where: { id: messageId }
+  });
+
+  if (!message) return { error: 'Message not found' };
+
+  if (message.senderId !== userId) return { error: 'You can only edit your own messages' };
+
+  // Check 12h limit
+  const hoursSinceCreation = (Date.now() - new Date(message.createdAt).getTime()) / (1000 * 60 * 60);
+  if (hoursSinceCreation > 12) {
+      return { error: 'Time limit for editing (12h) has expired.' };
+  }
+
+  try {
+    await prisma.directMessage.update({
+      where: { id: messageId },
+      data: {
+        content: newContent,
+        editedAt: new Date()
+      }
+    });
+
+    revalidatePath('/dashboard/social');
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to edit message:", error);
+    return { error: 'Failed to edit message' };
+  }
+}
+
 // Send a message (Enforce Mutual Follow)
-export async function sendMessage(recipientId: string, content: string, mediaUrl?: string, mediaType?: 'IMAGE' | 'VIDEO') {
+export async function sendMessage(
+    recipientId: string, 
+    content: string, 
+    mediaUrl?: string, 
+    mediaType?: 'IMAGE' | 'VIDEO',
+    replyToId?: string
+) {
   const session = await getSession();
   if (!session) return { error: 'Unauthorized' };
 
@@ -238,7 +283,8 @@ export async function sendMessage(recipientId: string, content: string, mediaUrl
         senderId: userId,
         conversationId: conversation.id,
         mediaUrl,
-        mediaType
+        mediaType,
+        replyToId // Link reply
       }
     });
 
@@ -335,7 +381,16 @@ export async function getMessages(conversationId: string, cursor?: string, limit
           }
         } 
       },
-      gift: true
+      gift: true,
+      replyTo: { // Include reply context
+          select: {
+              id: true,
+              content: true,
+              sender: { select: { username: true } },
+              mediaUrl: true,
+              mediaType: true
+          }
+      }
     }
   });
 

@@ -14,6 +14,9 @@ import { compressImage } from '@/lib/compression';
 import { updateLastSeen } from '@/app/actions/chat';
 
 import ChatBubble from './ChatBubble';
+import ContextMenu from './ContextMenu';
+import ReplyPreview from './ReplyPreview';
+import { editMessage } from '@/app/actions/chat';
 
 interface ItemData {
   cssClass?: string;
@@ -39,6 +42,7 @@ interface User {
 
 interface InventoryItem {
   id: string; // UserItem ID needed for keys
+  equipped: boolean;
   item: {
     id: string;
     name: string;
@@ -53,10 +57,12 @@ interface Message {
   content: string;
   senderId: string;
   createdAt: Date | string;
+  editedAt?: Date | string | null;
   sender?: { 
     id: string; 
     name?: string | null; 
     image?: string | null; 
+    username?: string;
     items?: { item: { type: string; rarity: string | null; data?: ItemData | null } }[] 
   };
   mediaUrl?: string | null;
@@ -68,6 +74,11 @@ interface Message {
     status: string;
     expiresAt: Date | string;
   }; 
+  replyTo?: {
+    id: string;
+    content: string;
+    sender?: { username?: string; name?: string | null };
+  };
 }
 
 interface Conversation {
@@ -97,7 +108,19 @@ export default function ChatInterface() {
   const [giftTab, setGiftTab] = useState<'MONEY' | 'ITEMS'>('MONEY');
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loadingInventory, setLoadingInventory] = useState(false);
+
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+
+  // Edit & Reply State
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; content: string; username: string } | null>(null);
+  const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
+  
+  // Long Press Logic
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const mousePositionRef = useRef({ x: 0, y: 0 });
+
+
 
   const [media, setMedia] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -119,6 +142,13 @@ export default function ChatInterface() {
     updateLastSeen();
     const interval = setInterval(() => updateLastSeen(), 5 * 60 * 1000); // Every 5 minutes
     return () => clearInterval(interval);
+  }, []);
+
+  // Load user inventory on mount (for bubble styling)
+  useEffect(() => {
+    getUserInventory().then(items => {
+      setInventory(items);
+    });
   }, []);
 
   // Check online status check (Active if seen in last 5 mins)
@@ -282,6 +312,21 @@ export default function ChatInterface() {
     e.preventDefault();
     if ((!newMessage.trim() && !media) || !activeConversation) return;
 
+    // Handle Edit
+    if (editingMessage) {
+        const result = await editMessage(editingMessage.id, newMessage);
+        if (result.success) {
+            // Optimistic update
+            setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, content: newMessage, editedAt: new Date() } : m));
+            setEditingMessage(null);
+            setNewMessage('');
+            toast.success('Message edited');
+        } else {
+            toast.error(result.error || 'Failed to edit');
+        }
+        return;
+    }
+
     // Clear typing status
     setTyping(activeConversation, false);
 
@@ -331,13 +376,19 @@ export default function ChatInterface() {
       createdAt: new Date(),
       sender: { id: 'me' }, // Placeholder
       mediaUrl,
-      mediaType
+      mediaType,
+      // Include reply info for optimistic display
+      replyTo: replyingTo ? { id: replyingTo.id, content: replyingTo.content, sender: { username: replyingTo.username } } : undefined
     };
     setMessages(prev => [...prev, tempMsg]);
     setNewMessage('');
     removeMedia();
+    
+    // Store replyToId and clear state BEFORE await
+    const replyToId = replyingTo?.id;
+    setReplyingTo(null); // Clear reply preview immediately
 
-    const result = await sendMessage(conversation.otherUser.id, tempMsg.content, mediaUrl, mediaType);
+    const result = await sendMessage(conversation.otherUser.id, tempMsg.content, mediaUrl, mediaType, replyToId);
     if (result.error) {
        toast.error(result.error);
        // Remove optimistic message on failure
@@ -474,10 +525,10 @@ export default function ChatInterface() {
 
 
   return (
-    <div className="flex h-[85vh] md:h-[600px] bg-white/5 backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-2xl overflow-hidden shadow-2xl">
+    <div className="flex h-[85vh] md:h-[600px] bg-linear-to-br from-zinc-900/95 via-zinc-900/90 to-zinc-950/95 backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
       {/* Sidebar */}
-      <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col", activeConversation ? "hidden md:flex" : "flex")}>
-        <div className="p-4 border-b border-white/10 flex justify-between items-center">
+      <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col bg-linear-to-b from-white/5 to-transparent", activeConversation ? "hidden md:flex" : "flex")}>
+        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
           <div className="relative flex-1 mr-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input 
@@ -523,11 +574,11 @@ export default function ChatInterface() {
                   </div>
                   {/* Online/Offline indicator */}
                   <div className={cn(
-                    "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-zinc-900",
+                    "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-zinc-900 shadow-md",
                     (conv.isTyping || isOnline(conv.otherUser?.lastSeen)) 
-                      ? "bg-green-500" 
-                      : "bg-gray-500"
-                  )}></div>
+                      ? "bg-green-500 animate-pulse shadow-green-500/50" 
+                      : "bg-zinc-500"
+                  )} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
@@ -558,13 +609,13 @@ export default function ChatInterface() {
       </div>
 
       {/* Chat Area */}
-      <div className={cn("flex-1 flex flex-col bg-black/20", !activeConversation ? "hidden md:flex" : "flex")}>
+      <div className={cn("flex-1 flex flex-col bg-linear-to-br from-zinc-900/50 to-black/30", !activeConversation ? "hidden md:flex" : "flex")}>
         {activeConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5 backdrop-blur-md">
+            <div className="p-4 border-b border-white/10 flex items-center justify-between bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-lg shadow-lg">
               <div className="flex items-center gap-3">
-                <button onClick={() => setActiveConversation(null)} className="md:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors -ml-2">
+                <button onClick={() => setActiveConversation(null)} className="md:hidden text-white p-2 hover:bg-white/10 rounded-full transition-all hover:scale-105 -ml-2">
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <button 
@@ -617,29 +668,108 @@ export default function ChatInterface() {
                   const isMe = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
                 
                 // Determine Bubble Style
-                // Extract variant from cssClass if present
                 let variant: 'snow' | 'halloween' | 'starry' | 'sky' | 'sakura' | 'spring' | 'default' = 'default';
                 
-                // If message has sender info with items (Bubble)
-                const senderBubble = msg.sender?.items?.find(i => i.item.type === 'BUBBLE');
-                if (senderBubble && senderBubble.item.data?.cssClass) {
-                   // We assume the cssClass stores the variant name now, or we map it. 
-                   // Based on seed: 'bubble-snow', 'bubble-halloween', etc.
-                   const cssClass = senderBubble.item.data.cssClass as string;
-                   if (cssClass.includes('snow')) variant = 'snow';
-                   else if (cssClass.includes('halloween')) variant = 'halloween';
-                   else if (cssClass.includes('starry')) variant = 'starry';
-                   else if (cssClass.includes('sky')) variant = 'sky';
-                   else if (cssClass.includes('sakura')) variant = 'sakura';
-                   else if (cssClass.includes('spring')) variant = 'spring';
+                // For MY messages, check local inventory first (works for optimistic updates)
+                if (isMe) {
+                    // InventoryItem has structure: { id, equipped, item: { type, data, ... } }
+                    const myEquippedBubble = inventory.find(i => i.item.type === 'BUBBLE' && i.equipped);
+                    if (myEquippedBubble?.item.data?.cssClass) {
+                        const cssClass = myEquippedBubble.item.data.cssClass as string;
+                        if (cssClass.includes('snow')) variant = 'snow';
+                        else if (cssClass.includes('halloween')) variant = 'halloween';
+                        else if (cssClass.includes('starry')) variant = 'starry';
+                        else if (cssClass.includes('sky')) variant = 'sky';
+                        else if (cssClass.includes('sakura')) variant = 'sakura';
+                        else if (cssClass.includes('spring')) variant = 'spring';
+                    }
+                } else {
+                    // For other user's messages, check sender info
+                    const senderBubble = msg.sender?.items?.find(i => i.item.type === 'BUBBLE');
+                    if (senderBubble && senderBubble.item.data?.cssClass) {
+                       const cssClass = senderBubble.item.data.cssClass as string;
+                       if (cssClass.includes('snow')) variant = 'snow';
+                       else if (cssClass.includes('halloween')) variant = 'halloween';
+                       else if (cssClass.includes('starry')) variant = 'starry';
+                       else if (cssClass.includes('sky')) variant = 'sky';
+                       else if (cssClass.includes('sakura')) variant = 'sakura';
+                       else if (cssClass.includes('spring')) variant = 'spring';
+                    }
                 }
 
+                // Interaction Handlers
+                const openMenu = (x: number, y: number) => {
+                    setContextMenu({ x, y, messageId: msg.id });
+                };
+
+                // Detect if touch device
+                const isTouchDevice = () => 'ontouchstart' in window;
+
+                // Single click opens menu on desktop
+                const handleClick = (e: React.MouseEvent) => {
+                    if (!isTouchDevice()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openMenu(e.clientX, e.clientY);
+                    }
+                };
+
+                // Right-click also opens menu (desktop)
+                const handleContextMenu = (e: React.MouseEvent) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openMenu(e.clientX, e.clientY);
+                };
+
+                // === TOUCH EVENTS (Mobile) - Long press only ===
+                const handleTouchStart = (e: React.TouchEvent) => {
+                    const touch = e.touches[0];
+                    mousePositionRef.current = { x: touch.clientX, y: touch.clientY };
+                    longPressTimerRef.current = setTimeout(() => {
+                        openMenu(mousePositionRef.current.x, mousePositionRef.current.y);
+                    }, 600);
+                };
+
+                const handleTouchEnd = () => {
+                    if (longPressTimerRef.current) {
+                        clearTimeout(longPressTimerRef.current);
+                        longPressTimerRef.current = null;
+                    }
+                };
+
+                 // Check if message is a reply
+                const replyContext = msg.replyTo;
+
                 return (
-                  <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
+                  <div 
+                    key={msg.id} 
+                    className={cn("flex w-full flex-col mb-4 cursor-pointer", isMe ? "items-end" : "items-start")}
+                    onClick={handleClick}
+                    onContextMenu={handleContextMenu}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchEnd}
+                  >
+                     {/* Reply Indicator */}
+                     {replyContext && (
+                         <div className={cn(
+                             "text-xs mb-1 opacity-70 flex items-center gap-1",
+                             isMe ? "bg-white/5 rounded-lg px-2 py-1 mr-1" : "bg-white/5 rounded-lg px-2 py-1 ml-1"
+                         )}>
+                             <div className="w-0.5 h-3 bg-indigo-500 rounded-full" />
+                             <span className="font-semibold">{replyContext.sender?.username || 'User'}:</span>
+                             <span className="truncate max-w-[150px]">{replyContext.content}</span>
+                         </div>
+                     )}
+
                     <ChatBubble 
                       variant={variant}
                       isMe={isMe}
                       className="relative group hover:scale-[1.01]"
+                      onClick={handleClick}
+                      onContextMenu={handleContextMenu}
+                      onTouchStart={handleTouchStart}
+                      onTouchEnd={handleTouchEnd}
                     >
                       {msg.mediaUrl && (
                         <div className="mb-2 rounded-lg overflow-hidden bg-black/20">
@@ -684,39 +814,61 @@ export default function ChatInterface() {
 
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                       <span className={cn(
-                        "text-[10px] absolute -bottom-5 min-w-[60px]",
+                        "text-[10px] absolute -bottom-5 min-w-[60px] flex items-center gap-1",
                         isMe ? "right-0 text-right text-white/50" : "left-0 text-white/50"
                       )}>
                         {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </span>
-                      <span className={cn(
-                        "text-[10px] absolute -bottom-5 min-w-[60px]",
-                        isMe ? "right-0 text-right text-white/50" : "left-0 text-white/50"
-                      )}>
-                        {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {msg.editedAt && <span className="italic opacity-70">(editado)</span>}
                       </span>
                     </ChatBubble>
                   </div>
                 );
               })}
-              <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
             </div>
 
+             {/* Reply Preview */}
+             <ReplyPreview 
+               replyingTo={replyingTo} 
+               onCancel={() => setReplyingTo(null)} 
+             />
+
+             {/* Edit Mode Indicator */}
+             {editingMessage && (
+               <div className="flex items-center justify-between px-4 py-2 bg-green-900/30 border-t border-green-500/30 backdrop-blur-md">
+                 <div className="flex items-center gap-3 overflow-hidden">
+                   <div className="w-4 h-4 shrink-0">✏️</div>
+                   <div className="flex flex-col text-sm truncate">
+                     <span className="text-green-400 font-medium text-xs">Editando mensagem</span>
+                     <span className="text-zinc-400 truncate max-w-[200px] md:max-w-md">
+                       {editingMessage.content}
+                     </span>
+                   </div>
+                 </div>
+                 <button 
+                   onClick={() => { setEditingMessage(null); setNewMessage(''); }}
+                   className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                 >
+                   <X className="w-4 h-4 text-zinc-400" />
+                 </button>
+               </div>
+             )}
+
             {/* Input Area */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-white/5 backdrop-blur-md">
+            <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-linear-to-t from-black/50 to-transparent backdrop-blur-lg">
               {preview && (
-                  <div className="mb-2 relative inline-block">
-                    <div className="relative rounded-lg overflow-hidden bg-black/40 max-h-[100px] border border-white/10">
+                  <div className="mb-3 relative inline-block">
+                    <div className="relative rounded-xl overflow-hidden bg-black/60 max-h-[100px] border border-white/20 shadow-lg">
                          {media?.type.startsWith('video/') ? (
                              <video src={preview} className="h-[100px] w-auto" />
                          ) : (
                              <NextImage src={preview} alt="Preview" width={200} height={100} className="h-[100px] w-auto object-contain" unoptimized />
                          )}
-                         <button type="button" onClick={removeMedia} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 hover:bg-black/80 text-white"><X className="w-3 h-3"/></button>
+                         <button type="button" onClick={removeMedia} className="absolute top-2 right-2 bg-red-500/80 rounded-full p-1 hover:bg-red-500 text-white transition-all hover:scale-110"><X className="w-3 h-3"/></button>
                     </div>
                   </div>
               )}
-              <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-4 py-2 focus-within:border-primary/50 transition-colors shadow-inner">
+              <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus-within:border-primary/50 focus-within:shadow-lg focus-within:shadow-primary/10 transition-all duration-300">
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -727,7 +879,7 @@ export default function ChatInterface() {
                 <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-1.5 text-muted-foreground hover:text-white transition-colors"
+                    className="p-2 text-zinc-400 hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-200"
                     title="Attach Media"
                 >
                     <ImageIcon className="w-5 h-5" />
@@ -736,7 +888,7 @@ export default function ChatInterface() {
                 <button
                     type="button"
                     onClick={openGiftModal}
-                    className="p-1.5 text-muted-foreground hover:text-white transition-colors"
+                    className="p-2 text-zinc-400 hover:text-yellow-400 hover:bg-yellow-400/10 rounded-full transition-all duration-200"
                     title="Send Gift"
                 >
                     <Gift className="w-5 h-5" />
@@ -749,12 +901,12 @@ export default function ChatInterface() {
                     handleTyping();
                   }}
                   placeholder="Digite uma mensagem..." 
-                  className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-base md:text-sm"
+                  className="flex-1 bg-transparent text-white placeholder-zinc-500 focus:outline-none text-base"
                 />
                 <button 
                   type="submit"
                   disabled={!newMessage.trim() && !media}
-                  className="p-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+                  className="p-3 bg-linear-to-r from-primary to-purple-600 text-white rounded-xl hover:from-primary/90 hover:to-purple-500 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-lg shadow-primary/25 disabled:shadow-none"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -763,16 +915,16 @@ export default function ChatInterface() {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6 animate-pulse">
-              <UserPlus className="w-12 h-12 opacity-50" />
+            <div className="w-28 h-28 rounded-full bg-linear-to-br from-primary/20 to-purple-600/20 flex items-center justify-center mb-6 border border-primary/20 shadow-lg shadow-primary/10">
+              <UserPlus className="w-14 h-14 text-primary/70" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-3">Start a Conversation</h3>
-            <p className="max-w-xs text-lg">Connect with your mutual friends or request to chat with others.</p>
+            <h3 className="text-2xl font-bold text-white mb-3">Iniciar Conversa</h3>
+            <p className="max-w-xs text-zinc-400">Conecte-se com seus amigos mútuos ou solicite chat com outros.</p>
             <button 
               onClick={openNewChatModal}
-              className="mt-8 px-8 py-3 bg-white text-black rounded-full font-bold hover:bg-gray-200 transition-all transform hover:scale-105 shadow-xl"
+              className="mt-8 px-8 py-3 bg-linear-to-r from-primary to-purple-600 text-white rounded-full font-bold hover:from-primary/90 hover:to-purple-500 transition-all transform hover:scale-105 shadow-xl shadow-primary/25"
             >
-              Find Friends
+              Encontrar Amigos
             </button>
           </div>
         )}
@@ -1019,6 +1171,38 @@ export default function ChatInterface() {
         </div>
       )}
 
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu 
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onClose={() => setContextMenu(null)}
+            onEdit={() => {
+                const msg = messages.find(m => m.id === contextMenu.messageId);
+                if (msg) {
+                    setEditingMessage({ id: msg.id, content: msg.content });
+                    setNewMessage(msg.content);
+                }
+            }}
+            onReply={() => {
+                const msg = messages.find(m => m.id === contextMenu.messageId);
+                if (msg) {
+                    setReplyingTo({ 
+                        id: msg.id, 
+                        content: msg.content, 
+                        username: msg.sender?.username || msg.sender?.name || 'User' 
+                    });
+                }
+            }}
+            canEdit={(() => {
+                const msg = messages.find(m => m.id === contextMenu.messageId);
+                if (!msg) return false;
+                // Can edit if it's your own message (senderId is 'me' or sender is not the other user)
+                const isMyMessage = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
+                return isMyMessage;
+            })()}
+        />
+      )}
     </div>
   );
 }

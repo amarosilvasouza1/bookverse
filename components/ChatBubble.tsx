@@ -2,16 +2,29 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Cloud, Sun, Snowflake, Star, Ghost, Flower2, Cherry } from 'lucide-react';
+import { Cloud, Sun, Snowflake, Star, Ghost, Flower2 } from 'lucide-react';
 
 interface ChatBubbleProps {
   variant?: 'snow' | 'halloween' | 'starry' | 'sky' | 'sakura' | 'spring' | 'default';
   isMe: boolean;
   children: React.ReactNode;
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
+  onTouchStart?: (e: React.TouchEvent) => void;
+  onTouchEnd?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-export default function ChatBubble({ variant = 'default', isMe, children, className }: ChatBubbleProps) {
+export default function ChatBubble({ 
+  variant = 'default', 
+  isMe, 
+  children, 
+  className,
+  onClick,
+  onTouchStart,
+  onTouchEnd,
+  onContextMenu
+}: ChatBubbleProps) {
   // Base classes for the bubble shape
   const baseClasses = cn(
     "relative max-w-[75%] p-4 text-base md:text-sm shadow-lg transition-all duration-300 hover:scale-[1.01] overflow-hidden",
@@ -40,9 +53,17 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
      })));
   }, []);
 
+  // Collect event handlers to spread on the main div
+  const eventProps = {
+    onClick,
+    onTouchStart,
+    onTouchEnd,
+    onContextMenu
+  };
+
   if (randomValues.length === 0) {
       return (
-        <div className={cn(baseClasses, defaultClasses)}>
+        <div className={cn(baseClasses, defaultClasses)} {...eventProps}>
           {children}
         </div>
       );
@@ -52,7 +73,7 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
   switch (variant) {
     case 'snow':
       return (
-        <div className={cn(baseClasses, "bg-linear-to-b from-slate-800 to-slate-900 border border-slate-700/50")}>
+        <div className={cn(baseClasses, "bg-linear-to-b from-slate-800 to-slate-900 border border-slate-700/50")} {...eventProps}>
           {/* Snowflakes */}
           {[...Array(6)].map((_, i) => (
             <div 
@@ -75,19 +96,19 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
 
     case 'halloween':
       return (
-        <div className={cn(baseClasses, "bg-linear-to-br from-orange-950 via-zinc-900 to-black border border-orange-500/30 shadow-orange-500/10")}>
+        <div className={cn(baseClasses, "bg-linear-to-br from-orange-950 via-zinc-900 to-black border border-orange-500/30 shadow-orange-500/10")} {...eventProps}>
            <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none animate-ghost-float" style={{ animationDuration: '4s' }}>
               <Ghost className="w-12 h-12 text-orange-500" />
            </div>
            {/* Spooky Fog at bottom */}
-           <div className="absolute -bottom-2 -left-2 w-full h-12 bg-gradient-to-t from-orange-900/20 to-transparent pointer-events-none" />
+           <div className="absolute -bottom-2 -left-2 w-full h-12 bg-linear-to-t from-orange-900/20 to-transparent pointer-events-none" />
            <div className="relative z-10">{children}</div>
         </div>
       );
 
     case 'starry':
       return (
-        <div className={cn(baseClasses, "bg-linear-to-b from-indigo-950 via-purple-950 to-black border border-indigo-500/30")}>
+        <div className={cn(baseClasses, "bg-linear-to-b from-indigo-950 via-purple-950 to-black border border-indigo-500/30")} {...eventProps}>
           {[...Array(10)].map((_, i) => (
             <div
               key={i}
@@ -110,7 +131,7 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
 
     case 'sky':
       return (
-        <div className={cn(baseClasses, "bg-linear-to-br from-sky-400 to-blue-500 border border-sky-300/50")}>
+        <div className={cn(baseClasses, "bg-linear-to-br from-sky-400 to-blue-500 border border-sky-300/50")} {...eventProps}>
             <div className="absolute -top-2 -right-2 animate-pulse" style={{ animationDuration: '5s' }}>
               <Sun className="w-10 h-10 text-yellow-300 fill-yellow-300 opacity-60 blur-sm" />
             </div>
@@ -131,7 +152,7 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
     case 'sakura':
        // Pixelated Sakura Theme
       return (
-        <div className={cn(baseClasses, "bg-linear-to-br from-pink-900/90 to-rose-950 border border-pink-500/30 overflow-hidden font-mono")}>
+        <div className={cn(baseClasses, "bg-linear-to-br from-pink-900/90 to-rose-950 border border-pink-500/30 overflow-hidden font-mono")} {...eventProps}>
             {/* Pixel Tree Construction */}
             <div className="absolute -right-1 bottom-0 opacity-40 pointer-events-none scale-150 origin-bottom-right">
                 {/* Trunk */}
@@ -167,7 +188,7 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
     case 'spring':
         // Flashy Floral
         return (
-            <div className={cn(baseClasses, "bg-linear-to-r from-emerald-500 to-teal-500 border border-emerald-400/30")}>
+            <div className={cn(baseClasses, "bg-linear-to-r from-emerald-500 to-teal-500 border border-emerald-400/30")} {...eventProps}>
                  <div className="absolute -top-3 -right-3 opacity-20 rotate-12 animate-sway" style={{ transformOrigin: 'center' }}>
                      <Flower2 className="w-14 h-14 text-yellow-200 fill-yellow-200/20" />
                  </div>
@@ -192,7 +213,7 @@ export default function ChatBubble({ variant = 'default', isMe, children, classN
 
     default:
       return (
-        <div className={cn(baseClasses, defaultClasses)}>
+        <div className={cn(baseClasses, defaultClasses)} {...eventProps}>
           {children}
         </div>
       );
