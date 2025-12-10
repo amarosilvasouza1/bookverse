@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, Image as ImageIcon, X, Gift } from 'lucide-react';
+import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, ArrowLeft, Image as ImageIcon, X, Gift } from 'lucide-react';
 import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
 import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead, setTyping } from '@/app/actions/chat';
@@ -472,7 +472,7 @@ export default function ChatInterface() {
 
 
   return (
-    <div className="flex h-[calc(100vh-180px)] md:h-[600px] bg-white/5 backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-2xl overflow-hidden shadow-2xl">
+    <div className="flex h-[85vh] md:h-[600px] bg-white/5 backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-2xl overflow-hidden shadow-2xl">
       {/* Sidebar */}
       <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col", activeConversation ? "hidden md:flex" : "flex")}>
         <div className="p-4 border-b border-white/10 flex justify-between items-center">
@@ -562,8 +562,8 @@ export default function ChatInterface() {
             {/* Chat Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5 backdrop-blur-md">
               <div className="flex items-center gap-3">
-                <button onClick={() => setActiveConversation(null)} className="md:hidden text-white">
-                  ←
+                <button onClick={() => setActiveConversation(null)} className="md:hidden text-white p-2 hover:bg-white/10 rounded-full transition-colors -ml-2">
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
                 <button 
                   onClick={() => setMiniProfileId(activeConvData?.otherUser?.id || null)}

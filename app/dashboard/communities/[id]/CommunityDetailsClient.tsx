@@ -1,6 +1,6 @@
 'use client';
 
-import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe, Sparkles, Loader2 } from 'lucide-react';
+import { Users, MessageSquare, Calendar, Settings, Shield, Lock, Globe, Sparkles, Loader2, Clock, ArrowRight } from 'lucide-react';
 import CreatePostForm from '@/components/CreatePostForm';
 import Link from 'next/link';
 import Image from 'next/image';
