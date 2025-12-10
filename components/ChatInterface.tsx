@@ -13,6 +13,8 @@ import UserAvatar from '@/components/UserAvatar';
 import { compressImage } from '@/lib/compression';
 import { updateLastSeen } from '@/app/actions/chat';
 
+import ChatBubble from './ChatBubble';
+
 interface ItemData {
   cssClass?: string;
   [key: string]: unknown;
@@ -615,29 +617,30 @@ export default function ChatInterface() {
                   const isMe = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
                 
                 // Determine Bubble Style
-                let bubbleClass = isMe 
-                    ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white rounded-2xl rounded-tr-sm" 
-                    : "bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-2xl rounded-tl-sm";
-
-                // const sender = isMe ? { items: inventory.filter(i => i.item.type === 'BUBBLE' && (i as any).equipped) } : msg.sender;
+                // Extract variant from cssClass if present
+                let variant: 'snow' | 'halloween' | 'starry' | 'sky' | 'sakura' | 'spring' | 'default' = 'default';
                 
                 // If message has sender info with items (Bubble)
                 const senderBubble = msg.sender?.items?.find(i => i.item.type === 'BUBBLE');
                 if (senderBubble && senderBubble.item.data?.cssClass) {
-                   bubbleClass = senderBubble.item.data.cssClass + " text-white"; // Enforce text-white for now, or make configurable
+                   // We assume the cssClass stores the variant name now, or we map it. 
+                   // Based on seed: 'bubble-snow', 'bubble-halloween', etc.
+                   const cssClass = senderBubble.item.data.cssClass as string;
+                   if (cssClass.includes('snow')) variant = 'snow';
+                   else if (cssClass.includes('halloween')) variant = 'halloween';
+                   else if (cssClass.includes('starry')) variant = 'starry';
+                   else if (cssClass.includes('sky')) variant = 'sky';
+                   else if (cssClass.includes('sakura')) variant = 'sakura';
+                   else if (cssClass.includes('spring')) variant = 'spring';
                 }
-
-                // If it's me, check my local inventory for equipped bubble (optimistic/consistent)
-                // Note: The 'sender' object in 'msg' is populated from DB, so it should have it if my user update worked.
-                // However, for immediate feedback after equipping, we might want to check global state if available.
-                // For now sticking to message data.
 
                 return (
                   <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
-                    <div className={cn(
-                      "max-w-[75%] p-4 text-base md:text-sm shadow-lg relative group transition-all duration-300 hover:scale-[1.01]",
-                      bubbleClass
-                    )}>
+                    <ChatBubble 
+                      variant={variant}
+                      isMe={isMe}
+                      className="relative group hover:scale-[1.01]"
+                    >
                       {msg.mediaUrl && (
                         <div className="mb-2 rounded-lg overflow-hidden bg-black/20">
                             {msg.mediaType === 'VIDEO' ? (
@@ -686,7 +689,13 @@ export default function ChatInterface() {
                       )}>
                         {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </span>
-                    </div>
+                      <span className={cn(
+                        "text-[10px] absolute -bottom-5 min-w-[60px]",
+                        isMe ? "right-0 text-right text-white/50" : "left-0 text-white/50"
+                      )}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </span>
+                    </ChatBubble>
                   </div>
                 );
               })}

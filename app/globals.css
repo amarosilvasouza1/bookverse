@@ -265,6 +265,80 @@
   border-radius: 3px;
 }
 
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes fall {
+  0% { transform: translateY(-20px) translateX(0px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(150px) translateX(20px) rotate(360deg); opacity: 0; }
+}
+
+.animate-fall {
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes float-diagonal {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(-50px, 100px) rotate(90deg); opacity: 0; }
+}
+
+.animate-float-diagonal {
+  animation-name: float-diagonal;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes pixel-fall {
+  0% { transform: translateY(-10px) translateX(0px); opacity: 0; }
+  10% { opacity: 1; }
+  25% { transform: translateY(25px) translateX(10px); }
+  50% { transform: translateY(50px) translateX(-10px); }
+  75% { transform: translateY(75px) translateX(10px); }
+  100% { transform: translateY(100px) translateX(-5px); opacity: 0; }
+}
+
+.animate-pixel-fall {
+  animation-name: pixel-fall;
+  animation-timing-function: steps(10); /* Jerky pixel movement */
+  animation-iteration-count: infinite;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.animate-sway {
+  animation-name: sway;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes ghost-float {
+  0%, 100% { transform: translateY(0) rotate(12deg); }
+  50% { transform: translateY(-10px) rotate(8deg); }
+}
+
+.animate-ghost-float {
+  animation-name: ghost-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes cloud-move {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
+}
+
+.animate-cloud-move {
+  animation-name: cloud-move;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
