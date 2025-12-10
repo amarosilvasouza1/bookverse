@@ -71,5 +71,6 @@ export default async function CommunityPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  return <CommunityDetailsClient community={community} session={session} />;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <CommunityDetailsClient community={community as any} session={session as any} />;
 }
