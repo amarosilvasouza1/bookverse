@@ -356,60 +356,98 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2 md:gap-4">
-                    {user.items && user.items.length > 0 ? (
-                      user.items.map((userItem: UserItem) => (
-                        <div key={userItem.item.id} className={`group bg-black/40 border rounded-xl p-2 sm:p-3 flex flex-col items-center text-center gap-1.5 sm:gap-2 transition-all hover:scale-[1.02] ${
-                          userItem.equipped ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-white/10 hover:border-white/20 hover:bg-white/5'
-                        }`}>
-                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 flex items-center justify-center bg-gray-900/50 relative overflow-hidden shrink-0 ${
-                            userItem.item.rarity === 'LEGENDARY' ? 'border-orange-500 shadow-orange-500/20' :
-                            userItem.item.rarity === 'EPIC' ? 'border-purple-500 shadow-purple-500/20' :
-                            userItem.item.rarity === 'RARE' ? 'border-blue-500 shadow-blue-500/20' :
-                            'border-gray-600'
-                          }`}>
-                            <span className="text-xs sm:text-sm font-bold text-white/30 group-hover:text-white/50 transition-colors">
-                              {userItem.item.name.substring(0, 2).toUpperCase()}
-                            </span>
-                            {/* Glow effect based on rarity */}
-                            <div className={`absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity ${
-                               userItem.item.rarity === 'LEGENDARY' ? 'bg-orange-500' :
-                               userItem.item.rarity === 'EPIC' ? 'bg-purple-500' :
-                               userItem.item.rarity === 'RARE' ? 'bg-blue-500' :
-                               'bg-transparent'
-                            }`} />
-                          </div>
-                          
-                          <div className="w-full min-w-0 overflow-hidden">
-                            <h3 className="text-[10px] sm:text-xs font-bold text-white truncate">{userItem.item.name}</h3>
-                            <p className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider ${
-                               userItem.item.rarity === 'LEGENDARY' ? 'text-orange-400' :
-                               userItem.item.rarity === 'EPIC' ? 'text-purple-400' :
-                               userItem.item.rarity === 'RARE' ? 'text-blue-400' :
-                               'text-gray-400'
-                            }`}>{userItem.item.rarity}</p>
-                          </div>
-                          
-                          <button
-                            onClick={() => handleEquip(userItem.item.id, userItem.equipped)}
-                            disabled={saving}
-                            className={`w-full text-[10px] sm:text-xs py-1.5 sm:py-2 rounded-lg font-bold transition-all mt-auto ${
-                              userItem.equipped 
-                                ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' 
-                                : 'bg-white text-black hover:bg-gray-200'
-                            }`}
-                          >
-                            {userItem.equipped ? 'Unequip' : 'Equip'}
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="col-span-full flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground border-2 border-dashed border-white/5 rounded-xl sm:rounded-3xl bg-black/20">
-                        <Box className="w-8 h-8 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-20" />
-                        <p className="font-medium text-sm sm:text-base">Your inventory is empty</p>
-                        <p className="text-[10px] sm:text-xs mt-1 sm:mt-2 opacity-50 text-center px-4">Collect items from achievements and the store.</p>
-                      </div>
-                    )}
+                  <div className="space-y-6">
+                    {(() => {
+                        const itemsByType = (user.items || []).reduce((acc, item) => {
+                            const type = item.item.type || 'OTHER';
+                            if (!acc[type]) acc[type] = [];
+                            acc[type].push(item);
+                            return acc;
+                        }, {} as Record<string, UserItem[]>);
+                        
+                        const types = Object.keys(itemsByType);
+                        
+                        if (types.length === 0) {
+                            return (
+                                <div className="col-span-full flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground border-2 border-dashed border-white/5 rounded-xl sm:rounded-3xl bg-black/20">
+                                    <Box className="w-8 h-8 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-20" />
+                                    <p className="font-medium text-sm sm:text-base">Your inventory is empty</p>
+                                    <p className="text-[10px] sm:text-xs mt-1 sm:mt-2 opacity-50 text-center px-4">Collect items from achievements and the store.</p>
+                                </div>
+                            );
+                        }
+
+                        return types.map(type => (
+                            <div key={type} className="space-y-3">
+                                <h3 className="text-md font-bold text-white/80 capitalize border-b border-white/10 pb-2 flex items-center gap-2">
+                                    {type === 'FRAME' && '🖼️ Frames'}
+                                    {type === 'BUBBLE' && '💬 Chat Bubbles'}
+                                    {type === 'BACKGROUND' && '🌄 Backgrounds'}
+                                    {type !== 'FRAME' && type !== 'BUBBLE' && type !== 'BACKGROUND' && type}
+                                </h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2 md:gap-4">
+                                    {itemsByType[type].map((userItem) => (
+                                        <div key={userItem.item.id} className={`group bg-black/40 border rounded-xl p-2 sm:p-3 flex flex-col items-center text-center gap-1.5 sm:gap-2 transition-all hover:scale-[1.02] ${
+                                            userItem.equipped ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-white/10 hover:border-white/20 hover:bg-white/5'
+                                        }`}>
+                                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl border-2 flex items-center justify-center bg-gray-900/50 relative overflow-hidden shrink-0 ${
+                                                userItem.item.rarity === 'LEGENDARY' ? 'border-orange-500 shadow-orange-500/20' :
+                                                userItem.item.rarity === 'EPIC' ? 'border-purple-500 shadow-purple-500/20' :
+                                                userItem.item.rarity === 'RARE' ? 'border-blue-500 shadow-blue-500/20' :
+                                                'border-gray-600'
+                                            }`}>
+                                                
+                                                {/* Visual Preview based on Type */}
+                                                {type === 'FRAME' && (
+                                                     <span className="text-xs sm:text-sm font-bold text-white/30 group-hover:text-white/50 transition-colors">
+                                                        {userItem.item.name.substring(0, 2).toUpperCase()}
+                                                     </span>
+                                                )}
+
+                                                {type === 'BUBBLE' && (
+                                                     <div className={`w-3/4 h-3/4 bg-white/20 rounded-lg ${userItem.item.data?.cssClass as string || ''}`}></div>
+                                                )}
+
+                                                {type === 'BACKGROUND' && (
+                                                     <div className="w-full h-full bg-cover bg-center opacity-50" style={{ backgroundImage: `url(${userItem.item.image})` }}></div>
+                                                )}
+                                                
+                                                {/* Glow effect based on rarity */}
+                                                <div className={`absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity ${
+                                                    userItem.item.rarity === 'LEGENDARY' ? 'bg-orange-500' :
+                                                    userItem.item.rarity === 'EPIC' ? 'bg-purple-500' :
+                                                    userItem.item.rarity === 'RARE' ? 'bg-blue-500' :
+                                                    'bg-transparent'
+                                                }`} />
+                                            </div>
+                                            
+                                            <div className="w-full min-w-0 overflow-hidden">
+                                                <h3 className="text-[10px] sm:text-xs font-bold text-white truncate">{userItem.item.name}</h3>
+                                                <p className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider ${
+                                                    userItem.item.rarity === 'LEGENDARY' ? 'text-orange-400' :
+                                                    userItem.item.rarity === 'EPIC' ? 'text-purple-400' :
+                                                    userItem.item.rarity === 'RARE' ? 'text-blue-400' :
+                                                    'text-gray-400'
+                                                }`}>{userItem.item.rarity}</p>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={() => handleEquip(userItem.item.id, userItem.equipped)}
+                                                disabled={saving}
+                                                className={`w-full text-[10px] sm:text-xs py-1.5 sm:py-2 rounded-lg font-bold transition-all mt-auto ${
+                                                userItem.equipped 
+                                                    ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' 
+                                                    : 'bg-white text-black hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                {userItem.equipped ? 'Unequip' : 'Equip'}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ));
+                    })()}
                   </div>
                 </div>
               </div>

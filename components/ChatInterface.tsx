@@ -13,21 +13,36 @@ import UserAvatar from '@/components/UserAvatar';
 import { compressImage } from '@/lib/compression';
 import { updateLastSeen } from '@/app/actions/chat';
 
+interface ItemData {
+  cssClass?: string;
+  [key: string]: unknown;
+}
+
+interface GiftData {
+  amount?: number;
+  itemId?: string;
+  name?: string;
+  rarity?: string;
+  [key: string]: unknown;
+}
+
 interface User {
   id: string;
   name: string | null;
   image: string | null;
   username: string;
   lastSeen?: Date | string | null;
-  items?: { item: { rarity: string } }[];
+  items?: { item: { type: string; rarity: string | null; data?: ItemData | null } }[];
 }
 
 interface InventoryItem {
+  id: string; // UserItem ID needed for keys
   item: {
     id: string;
     name: string;
     type: string;
     rarity: string;
+    data?: ItemData | null;
   };
 }
 
@@ -36,13 +51,18 @@ interface Message {
   content: string;
   senderId: string;
   createdAt: Date | string;
-  sender?: { id: string; name?: string | null; image?: string | null };
+  sender?: { 
+    id: string; 
+    name?: string | null; 
+    image?: string | null; 
+    items?: { item: { type: string; rarity: string | null; data?: ItemData | null } }[] 
+  };
   mediaUrl?: string | null;
   mediaType?: 'IMAGE' | 'VIDEO' | string | null;
   gift?: {
     id: string;
     type: string;
-    data: any;
+    data: GiftData;
     status: string;
     expiresAt: Date | string;
   }; 
@@ -123,14 +143,12 @@ export default function ChatInterface() {
       const data = await getMessages(convId, cursorToSend);
       
       if (isInitial) {
-        setMessages(data.messages);
-        setMessages(data.messages);
-        // Scroll to bottom on initial load
+        setMessages(data.messages as unknown as Message[]);
         // Scroll to bottom on initial load
         setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }), 100);
       } else {
         // Prepend messages
-        setMessages(prev => [...data.messages, ...prev]);
+        setMessages(prev => [...(data.messages as unknown as Message[]), ...prev]);
       }
 
       setNextCursor(data.nextCursor);
@@ -353,7 +371,7 @@ export default function ChatInterface() {
      setSendingGift(true);
      if (!activeConvData?.otherUser?.id) return;
      // Send item gift
-     const result = await sendGift(activeConvData.otherUser.id, selectedItem.item.type, { 
+     const result = await sendGift(activeConvData.otherUser.id, selectedItem.item.type as 'FRAME' | 'BUBBLE' | 'BACKGROUND', { 
          itemId: selectedItem.item.id,
          name: selectedItem.item.name,
          rarity: selectedItem.item.rarity
@@ -411,8 +429,8 @@ export default function ChatInterface() {
   async function openNewChatModal() {
     const mutuals = await getMutualFollowersForChat();
     const nonMutuals = await getNonMutualFollowings();
-    setMutualFollowers(mutuals);
-    setNonMutualFollowings(nonMutuals);
+    setMutualFollowers(mutuals as unknown as User[]);
+    setNonMutualFollowings(nonMutuals as unknown as User[]);
     setShowNewChatModal(true);
   }
 
@@ -594,14 +612,31 @@ export default function ChatInterface() {
                   </div>
               )}
               {messages.map((msg) => {
-                const isMe = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
+                  const isMe = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
+                
+                // Determine Bubble Style
+                let bubbleClass = isMe 
+                    ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white rounded-2xl rounded-tr-sm" 
+                    : "bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-2xl rounded-tl-sm";
+
+                // const sender = isMe ? { items: inventory.filter(i => i.item.type === 'BUBBLE' && (i as any).equipped) } : msg.sender;
+                
+                // If message has sender info with items (Bubble)
+                const senderBubble = msg.sender?.items?.find(i => i.item.type === 'BUBBLE');
+                if (senderBubble && senderBubble.item.data?.cssClass) {
+                   bubbleClass = senderBubble.item.data.cssClass + " text-white"; // Enforce text-white for now, or make configurable
+                }
+
+                // If it's me, check my local inventory for equipped bubble (optimistic/consistent)
+                // Note: The 'sender' object in 'msg' is populated from DB, so it should have it if my user update worked.
+                // However, for immediate feedback after equipping, we might want to check global state if available.
+                // For now sticking to message data.
+
                 return (
                   <div key={msg.id} className={cn("flex w-full", isMe ? "justify-end" : "justify-start")}>
                     <div className={cn(
                       "max-w-[75%] p-4 text-base md:text-sm shadow-lg relative group transition-all duration-300 hover:scale-[1.01]",
-                      isMe 
-                        ? "bg-linear-to-br from-indigo-600 to-violet-600 text-white rounded-2xl rounded-tr-sm" 
-                        : "bg-white/10 backdrop-blur-md text-white border border-white/10 rounded-2xl rounded-tl-sm"
+                      bubbleClass
                     )}>
                       {msg.mediaUrl && (
                         <div className="mb-2 rounded-lg overflow-hidden bg-black/20">
@@ -638,7 +673,7 @@ export default function ChatInterface() {
                                 type={msg.gift.type}
                                 data={msg.gift.data}
                                 status={msg.gift.status}
-                                expiresAt={msg.gift.expiresAt}
+                                expiresAt={typeof msg.gift.expiresAt === 'string' ? msg.gift.expiresAt : msg.gift.expiresAt.toISOString()}
                                 isMe={isMe}
                             />
                         </div>

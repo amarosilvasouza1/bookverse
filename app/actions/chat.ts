@@ -29,8 +29,8 @@ export async function getConversations() {
               image: true, 
               username: true,
               items: {
-                where: { equipped: true, item: { type: 'FRAME' } },
-                select: { item: { select: { rarity: true } } }
+                where: { equipped: true, item: { type: { in: ['FRAME', 'BUBBLE'] } } },
+                select: { item: { select: { type: true, rarity: true, data: true } } }
               }
             }
           }
@@ -146,8 +146,8 @@ export async function getMutualFollowersForChat() {
       image: true, 
       username: true,
       items: {
-        where: { equipped: true, item: { type: 'FRAME' } },
-        select: { item: { select: { rarity: true } } }
+        where: { equipped: true, item: { type: { in: ['FRAME', 'BUBBLE'] } } },
+        select: { item: { select: { type: true, rarity: true, data: true } } }
       }
     }
   });
@@ -176,8 +176,8 @@ export async function getNonMutualFollowings() {
       image: true, 
       username: true,
       items: {
-        where: { equipped: true, item: { type: 'FRAME' } },
-        select: { item: { select: { rarity: true } } }
+        where: { equipped: true, item: { type: { in: ['FRAME', 'BUBBLE'] } } },
+        select: { item: { select: { type: true, rarity: true, data: true } } }
       }
     }
   });
@@ -330,8 +330,8 @@ export async function getMessages(conversationId: string, cursor?: string, limit
           name: true, 
           image: true,
           items: {
-            where: { equipped: true, item: { type: 'FRAME' } },
-            select: { item: { select: { rarity: true } } }
+            where: { equipped: true, item: { type: { in: ['FRAME', 'BUBBLE'] } } },
+            select: { item: { select: { type: true, rarity: true, data: true } } }
           }
         } 
       },
