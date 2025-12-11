@@ -5,8 +5,9 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createComment, deleteComment, getComments } from '@/app/actions/community-interactions';
 import { formatDistanceToNow } from 'date-fns';
-import { Loader2, Send, Trash2 } from 'lucide-react';
+import { Loader2, Send, Trash2, Flag } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import ReportModal from './ReportModal';
 
 interface Comment {
   id: string;
@@ -27,6 +28,7 @@ export default function CommentSection({ postId }: { postId: string }) {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<string | null>(null);
 
   useEffect(() => {
     // Fetch comments and current user
@@ -127,7 +129,24 @@ export default function CommentSection({ postId }: { postId: string }) {
                   </Link>
                   <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
                 </div>
-                <p className="text-sm text-zinc-300">{comment.content}</p>
+                <div className="text-sm text-zinc-300">
+                  {comment.content.split(/(\s+)/).map((part, i) => {
+                    const match = part.match(/^@(\w+(\.\w+)*)$/);
+                    if (match) {
+                      return (
+                        <Link 
+                          key={i} 
+                          href={`/dashboard/profile/${match[1]}`}
+                          className="text-indigo-400 hover:text-indigo-300 hover:underline font-medium" 
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {part}
+                        </Link>
+                      );
+                    }
+                    return part;
+                  })}
+                </div>
               </div>
               
               {currentUserId === comment.author.id && (
@@ -140,10 +159,27 @@ export default function CommentSection({ postId }: { postId: string }) {
                   </button>
                 </div>
               )}
+              
+              {currentUserId !== comment.author.id && (
+                <button 
+                  onClick={() => setReportTarget(comment.id)}
+                  className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 mt-1 ml-2"
+                >
+                  <Flag className="w-3 h-3" /> Report
+                </button>
+              )}
             </div>
           </div>
         ))}
       </div>
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={!!reportTarget}
+        onClose={() => setReportTarget(null)}
+        contentType="COMMENT"
+        contentId={reportTarget || ''}
+      />
     </div>
   );
 }

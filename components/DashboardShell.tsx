@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookOpen, MessageCircle, Settings, LogOut, PlusCircle, Zap } from 'lucide-react';
+import { LayoutDashboard, BookOpen, MessageCircle, Settings, LogOut, PlusCircle, Zap, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/LanguageContext';
 import NotificationBell from './NotificationBell';
@@ -22,6 +22,7 @@ export default function DashboardShell({
     { name: t('browse'), href: '/dashboard/browse', icon: BookOpen },
     { name: t('myBooks'), href: '/dashboard/books', icon: BookOpen },
     { name: 'Social', href: '/dashboard/social', icon: MessageCircle },
+    { name: t('leaderboard'), href: '/dashboard/leaderboard', icon: Trophy },
     { name: t('settings'), href: '/dashboard/settings', icon: Settings },
     { name: 'Subscription', href: '/dashboard/subscription', icon: Zap },
   ];
@@ -105,7 +106,7 @@ export default function DashboardShell({
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-white/10 md:hidden z-50 pb-safe">
         <div className="flex items-center justify-around p-2">
-          {navigation.filter(item => !['Subscription'].includes(item.name)).map((item) => {
+          {navigation.filter(item => !['Subscription', t('leaderboard')].includes(item.name)).map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -142,7 +143,12 @@ export default function DashboardShell({
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-white/10 z-40 flex items-center justify-between px-4" suppressHydrationWarning>
           <span className="font-bold text-lg bg-linear-to-r from-primary to-purple-600 bg-clip-text text-transparent">BookVerse</span>
-          <NotificationBell userId={userId} placement="bottom-right" />
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/leaderboard" className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+              <Trophy className="w-5 h-5 text-yellow-400" />
+            </Link>
+            <NotificationBell userId={userId} placement="bottom-right" />
+          </div>
       </div>
 
       {/* Main Content */}

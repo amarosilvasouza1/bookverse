@@ -61,15 +61,15 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
     <>
       <div className="space-y-6">
         {/* Search, Filter, and View Toggle Bar */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-3 p-4 bg-linear-to-r from-white/5 to-white/[0.02] rounded-2xl border border-white/10 backdrop-blur-sm">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input 
               type="text" 
               placeholder={t('searchPlaceholder')} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
+              className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
             />
           </div>
           <div className="flex gap-2">
@@ -78,7 +78,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
               <select 
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="appearance-none bg-white/5 border border-white/10 rounded-xl pl-10 pr-8 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all [&>option]:bg-zinc-900 cursor-pointer min-w-[160px]"
+                className="appearance-none bg-black/40 border border-white/10 rounded-xl pl-10 pr-8 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all [&>option]:bg-zinc-900 cursor-pointer min-w-[160px]"
               >
                 <option value="all">{t('allStatus')}</option>
                 <option value="published">{t('publishedStatus')}</option>
@@ -86,17 +86,17 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
               </select>
             </div>
             
-            <div className="flex bg-white/5 border border-white/10 rounded-xl p-1">
+            <div className="flex bg-black/40 border border-white/10 rounded-xl p-1">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-400 hover:text-white'}`}
+                className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === 'grid' ? 'bg-primary/20 text-primary shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-white/10'}`}
                 title={t('gridView')}
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-400 hover:text-white'}`}
+                className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === 'list' ? 'bg-primary/20 text-primary shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-white/10'}`}
                 title={t('listView')}
               >
                 <List className="w-4 h-4" />
@@ -106,17 +106,17 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
         </div>
 
         {filteredBooks.length === 0 ? (
-          <div className="glass-card rounded-2xl p-8 md:p-12 text-center border border-dashed border-white/10">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+          <div className="rounded-3xl p-12 md:p-16 text-center border border-dashed border-white/10 bg-linear-to-br from-zinc-900/50 to-black/30">
+            <div className="w-20 h-20 bg-linear-to-br from-primary/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/20">
+              <BookOpen className="w-10 h-10 text-primary/70" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">{t('noBooksFound')}</h3>
-            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+            <h3 className="text-xl font-bold text-white mb-3">{t('noBooksFound')}</h3>
+            <p className="text-zinc-400 mb-6 max-w-sm mx-auto">
               {t('noBooksFoundDesc')}
             </p>
             <button 
               onClick={() => { setSearch(''); setFilter('all'); }}
-              className="text-primary hover:text-primary/80 font-medium hover:underline"
+              className="px-6 py-2.5 bg-linear-to-r from-primary to-purple-600 text-white rounded-xl font-bold hover:from-primary/90 hover:to-purple-500 transition-all shadow-lg shadow-primary/20"
             >
               {t('clearFilters')}
             </button>
@@ -125,7 +125,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
           viewMode === 'grid' ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {filteredBooks.map((book) => (
-                <div key={book.id} className="group glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 flex flex-col">
+                <div key={book.id} className="group bg-linear-to-br from-zinc-900/90 to-zinc-950/90 rounded-2xl overflow-hidden border border-white/5 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col hover:-translate-y-1">
                   {/* Cover Image Area */}
                   <div className="relative aspect-2/3 bg-gray-800 overflow-hidden">
                     {book.coverImage ? (

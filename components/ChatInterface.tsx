@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, ArrowLeft, Image as ImageIcon, X, Gift } from 'lucide-react';
 import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
-import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead, setTyping } from '@/app/actions/chat';
+import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead, setTyping, toggleMessageReaction } from '@/app/actions/chat';
 import { sendGift, getUserInventory } from '@/app/actions/gift';
 import GiftCard from './GiftCard';
 import { toast } from 'sonner';
@@ -79,6 +79,7 @@ interface Message {
     content: string;
     sender?: { username?: string; name?: string | null };
   };
+  reactions?: { user: { id: string; username: string; name?: string | null } }[];
 }
 
 interface Conversation {
@@ -292,7 +293,7 @@ export default function ChatInterface() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File too large (max 5MB)');
+        toast.error('Arquivo muito grande (máx 5MB)');
         return;
       }
       setMedia(file);
@@ -320,9 +321,9 @@ export default function ChatInterface() {
             setMessages(prev => prev.map(m => m.id === editingMessage.id ? { ...m, content: newMessage, editedAt: new Date() } : m));
             setEditingMessage(null);
             setNewMessage('');
-            toast.success('Message edited');
+            toast.success('Mensagem editada');
         } else {
-            toast.error(result.error || 'Failed to edit');
+            toast.error(result.error || 'Falha ao editar');
         }
         return;
     }
@@ -363,7 +364,7 @@ export default function ChatInterface() {
              mediaType = fileToProcess.type.startsWith('image/') ? 'IMAGE' : 'VIDEO';
          } catch (err) {
              console.error("Failed to process media", err);
-             toast.error("Failed to process media");
+             toast.error("Falha ao processar mídia");
              return;
          }
     }
@@ -408,7 +409,7 @@ export default function ChatInterface() {
     const result = await sendGift(activeConvData.otherUser.id, 'MONEY', { amount: Number(giftAmount) });
     
     if (result.success) {
-      toast.success('Gift sent!');
+      toast.success('Presente enviado!');
       setShowGiftModal(false);
       setGiftAmount('');
       loadMessages(activeConversation);
@@ -431,7 +432,7 @@ export default function ChatInterface() {
      });
 
      if (result.success) {
-      toast.success('Gift sent!');
+      toast.success('Presente enviado!');
       setShowGiftModal(false);
       setSelectedItem(null);
       loadMessages(activeConversation);
@@ -517,7 +518,7 @@ export default function ChatInterface() {
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Request sent!");
+      toast.success("Solicitação enviada!");
       // Optionally remove from list or show sent state
     }
   }
@@ -813,13 +814,49 @@ export default function ChatInterface() {
                       )}
 
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                      <span className={cn(
-                        "text-[10px] absolute -bottom-5 min-w-[60px] flex items-center gap-1",
-                        isMe ? "right-0 text-right text-white/50" : "left-0 text-white/50"
-                      )}>
-                        {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        {msg.editedAt && <span className="italic opacity-70">(editado)</span>}
-                      </span>
+                      <div className="flex flex-col gap-1 items-end">
+                          <span className={cn("text-[10px] opacity-70 px-1", isMe ? "text-right" : "text-left")}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {msg.editedAt && <span className="ml-1 italic">(editado)</span>}
+                          </span>
+                      </div>
+                      
+                      {/* Reactions Display */}
+                      {msg.reactions && msg.reactions.length > 0 && (
+                          <div className={cn("flex flex-wrap gap-1 mt-1 max-w-[200px]", isMe ? "justify-end" : "justify-start")}>
+                              {/* Group reactions by type could be complex since we don't have type in the include... wait, 
+                                  Check Chat Action getMessages: I included `reactions: { include: { user: ... } }`.
+                                  Prisma `reactions` is `MessageReaction[]`. `MessageReaction` HAS `type`.
+                                  I need to make sure my Message interface reflects that.
+                                  Wait, the `reactions` relation in getMessages does not explicitly select `type`.
+                                  Default include includes scalars? Yes. So `type` should be there.
+                              */}
+                               {(() => {
+                                  // Group by type
+                                  const groups: Record<string, number> = {};
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  msg.reactions?.forEach((r: any) => {
+                                      groups[r.type] = (groups[r.type] || 0) + 1;
+                                  });
+                                  
+                                  const reactionEmojis: Record<string, string> = {
+                                    HEART: '❤️',
+                                    LAUGH: '😂',
+                                    CRY: '😢',
+                                    FIRE: '🔥',
+                                    LIT: '💯'
+                                  };
+
+                                  return Object.entries(groups).map(([type, count]) => (
+                                      <div key={type} className="bg-black/30 rounded-full px-1.5 py-0.5 text-[10px] text-white flex items-center gap-1 border border-white/5 shadow-xs">
+                                          <span>{reactionEmojis[type] || '❤️'}</span>
+                                          {count > 1 && <span>{count}</span>}
+                                      </div>
+                                  ));
+                               })()}
+                          </div>
+                      )}
+
                     </ChatBubble>
                   </div>
                 );
@@ -855,7 +892,10 @@ export default function ChatInterface() {
              )}
 
             {/* Input Area */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-linear-to-t from-black/50 to-transparent backdrop-blur-lg">
+            <form 
+              onSubmit={handleSendMessage}
+              className="p-4 border-t border-white/10 bg-white/5 backdrop-blur-md"
+            >
               {preview && (
                   <div className="mb-3 relative inline-block">
                     <div className="relative rounded-xl overflow-hidden bg-black/60 max-h-[100px] border border-white/20 shadow-lg">
@@ -1194,6 +1234,19 @@ export default function ChatInterface() {
                     });
                 }
             }}
+            onReact={async (type) => {
+              // Optimistic update? Maybe complex for reaction count.
+              // Let's just call server and reload for now, or simple optimistic add
+              const msgId = contextMenu.messageId;
+              const result = await toggleMessageReaction(msgId, type);
+              if (result.success) {
+                  // Reload messages to get updated reactions
+                  loadMessages(activeConversation!); 
+              } else {
+                  toast.error('Failed to react');
+              }
+              setContextMenu(null); // Close context menu after reacting
+          }}
             canEdit={(() => {
                 const msg = messages.find(m => m.id === contextMenu.messageId);
                 if (!msg) return false;

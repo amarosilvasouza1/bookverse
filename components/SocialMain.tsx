@@ -276,11 +276,11 @@ function SuggestedUserCard({ user }: { user: SuggestedUser }) {
         setIsFollowing(false);
         toast.error(result.error);
       } else {
-        toast.success(`Following ${user.name || user.username}`);
+        toast.success(`Seguindo ${user.name || user.username}`);
       }
     } catch {
       setIsFollowing(false);
-      toast.error('Failed to update follow status');
+      toast.error('Falha ao atualizar status de seguir');
     } finally {
       setLoading(false);
     }

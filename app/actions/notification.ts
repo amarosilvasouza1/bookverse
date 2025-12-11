@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function createNotification(
   userId: string,
-  type: 'LIKE' | 'COMMENT' | 'FOLLOW' | 'SYSTEM',
+  type: 'LIKE' | 'COMMENT' | 'FOLLOW' | 'SYSTEM' | 'MENTION' | 'REACTION' | 'BOOK_UPDATE' | 'NEW_CHAPTER',
   message: string,
   link?: string
 ) {

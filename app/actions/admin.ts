@@ -314,6 +314,54 @@ export async function executeAdminCommand(command: string) {
         return { success: true, message: `Granted Developer status to @${targetUsername}` };
       }
 
+      // Command: @username add admin
+      if (action === 'add' && parts[2] === 'admin') {
+        // 1. Update role to ADMIN
+        await prisma.user.update({
+          where: { id: targetUser.id },
+          data: { role: 'ADMIN' }
+        });
+
+        // 2. Add ADMIN tag
+        const currentTags = targetUser.tags ? targetUser.tags.split(',') : [];
+        if (!currentTags.includes('ADMIN')) {
+          currentTags.push('ADMIN');
+          const newTags = currentTags.join(',');
+          
+          await prisma.user.update({
+            where: { id: targetUser.id },
+            data: { tags: newTags }
+          });
+        }
+
+        return { success: true, message: `Granted Admin privileges to @${targetUsername}` };
+      }
+
+      // Command: @username remove admin
+      if (action === 'remove' && parts[2] === 'admin') {
+        // Prevent removing admin from main admin
+        if (targetUsername === 'login') {
+          return { success: false, error: 'Cannot remove admin from the main admin account' };
+        }
+
+        // 1. Update role to USER
+        await prisma.user.update({
+          where: { id: targetUser.id },
+          data: { role: 'USER' }
+        });
+
+        // 2. Remove ADMIN tag
+        const currentTags = targetUser.tags ? targetUser.tags.split(',').filter(t => t !== 'ADMIN') : [];
+        const newTags = currentTags.join(',');
+        
+        await prisma.user.update({
+          where: { id: targetUser.id },
+          data: { tags: newTags || null }
+        });
+
+        return { success: true, message: `Removed Admin privileges from @${targetUsername}` };
+      }
+
       // Command: @username md <code>
       if (action === 'md' && parts[2]) {
         const code = parts[2].toUpperCase();

@@ -109,6 +109,9 @@ export default function AdminCommandPalette({ username, isOpen, onClose }: Admin
             @username add money 100<br/>
             @username set name New Name<br/>
             @username follow me<br/>
+            @username add admin (Grant admin)<br/>
+            @username remove admin (Revoke admin)<br/>
+            @username add beta / @username add dev<br/>
             @username delete<br/>
             -award-frames-24h (Award frames to recent authors)<br/>
             -award-frames-all (Award frames to ALL authors)

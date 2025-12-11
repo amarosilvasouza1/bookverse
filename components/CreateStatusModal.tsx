@@ -24,7 +24,7 @@ export default function CreateStatusModal({ onClose }: CreateStatusModalProps) {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast.error('File too large (max 10MB)');
+        toast.error('Arquivo muito grande (máx 10MB)');
         return;
       }
       setMedia(file);
@@ -43,7 +43,7 @@ export default function CreateStatusModal({ onClose }: CreateStatusModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!media) {
-        toast.error('Please select an image or video');
+        toast.error('Por favor, selecione uma imagem ou vídeo');
         return;
     }
     
@@ -78,13 +78,13 @@ export default function CreateStatusModal({ onClose }: CreateStatusModalProps) {
         if (result.error) {
             toast.error(result.error);
         } else {
-            toast.success('Story posted!');
+            toast.success('Story postado!');
             router.refresh();
             onClose();
         }
     } catch (error) {
         console.error(error);
-        toast.error('Failed to post story');
+        toast.error('Falha ao postar story');
     } finally {
         setLoading(false);
     }

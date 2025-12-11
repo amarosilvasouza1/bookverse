@@ -10,6 +10,7 @@ import ShareQuoteModal from './ShareQuoteModal';
 import { getRoomState, updateRoomPage } from '@/app/actions/reading-room';
 import { updateReadingProgress } from '@/app/actions/analytics';
 import { buyBook } from '@/app/actions/buy-book';
+import { startReadingSession, endReadingSession, addBookmark, removeBookmark, getBookmarks } from '@/app/actions/reading';
 
 interface BookReaderProps {
   book: {
@@ -81,6 +82,13 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
   const [selectedQuote, setSelectedQuote] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectionPosition, setSelectionPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // --- State: Reading Session & Bookmarks ---
+  const [readingSessionId, setReadingSessionId] = useState<string | null>(null);
+  const [bookmarks, setBookmarks] = useState<{ id: string; pageNumber: number; note: string | null }[]>([]);
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false);
+  const [bookmarkNote, setBookmarkNote] = useState('');
+  const pagesReadRef = useRef(0);
 
   // --- State: Swipe Gestures ---
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -194,6 +202,44 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
     document.addEventListener('selectionchange', handleSelection);
     return () => document.removeEventListener('selectionchange', handleSelection);
   }, []);
+
+  // --- Effects: Reading Session Tracking ---
+  useEffect(() => {
+    let sessionId: string | null = null;
+
+    const startSession = async () => {
+      const result = await startReadingSession(book.id);
+      if (result.success && result.sessionId) {
+        sessionId = result.sessionId;
+        setReadingSessionId(sessionId);
+      }
+    };
+
+    startSession();
+
+    // End session on unmount
+    return () => {
+      if (sessionId) {
+        endReadingSession(sessionId, pagesReadRef.current);
+      }
+    };
+  }, [book.id]);
+
+  // Track pages read
+  useEffect(() => {
+    pagesReadRef.current += 1;
+  }, [currentPage]);
+
+  // Load bookmarks on mount
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      const result = await getBookmarks(book.id);
+      if (result.success && result.data) {
+        setBookmarks(result.data);
+      }
+    };
+    loadBookmarks();
+  }, [book.id]);
 
   // --- Effects: Reading Room Sync ---
   useEffect(() => {
@@ -496,6 +542,22 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
               <span className="text-xs md:text-sm">{likes}</span>
             </button>
 
+            {/* Bookmark Button */}
+            <button
+              onClick={() => setShowBookmarkModal(true)}
+              className={`p-2 rounded-lg transition-colors relative
+                ${bookmarks.some(b => b.pageNumber === currentPage + 1) ? 'text-yellow-500' : ''}
+                ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+              title="Bookmarks"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill={bookmarks.some(b => b.pageNumber === currentPage + 1) ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              {bookmarks.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 text-[10px] bg-primary text-white rounded-full flex items-center justify-center">{bookmarks.length}</span>
+              )}
+            </button>
+
             <button
               onClick={() => setShowChat(!showChat)}
               className={`p-2 rounded-lg transition-colors hidden md:flex
@@ -522,6 +584,67 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
           </div>
         </div>
       </div>
+
+      {/* Bookmark Modal */}
+      {showBookmarkModal && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowBookmarkModal(false)}>
+          <div 
+            className={`w-full max-w-md rounded-2xl p-6 shadow-2xl ${theme === 'dark' ? 'bg-zinc-900 border border-white/10' : 'bg-white border border-zinc-200'}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold mb-4">📚 Bookmarks</h2>
+            
+            {/* Add Bookmark */}
+            <div className="mb-4 p-3 rounded-xl bg-white/5 border border-white/10">
+              <p className="text-sm mb-2">Page {currentPage + 1}</p>
+              <input 
+                type="text"
+                placeholder="Add a note (optional)..."
+                value={bookmarkNote}
+                onChange={(e) => setBookmarkNote(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm mb-2"
+              />
+              <button
+                onClick={async () => {
+                  const result = await addBookmark(book.id, currentPage + 1, bookmarkNote || undefined);
+                  if (result.success && result.bookmark) {
+                    setBookmarks(prev => [...prev, result.bookmark!]);
+                    setBookmarkNote('');
+                  }
+                }}
+                className="w-full bg-primary text-white py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Add Bookmark
+              </button>
+            </div>
+
+            {/* Bookmark List */}
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {bookmarks.length === 0 ? (
+                <p className="text-sm text-zinc-500 text-center py-4">No bookmarks yet</p>
+              ) : (
+                bookmarks.map(bm => (
+                  <div key={bm.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group">
+                    <button onClick={() => { goToPage(bm.pageNumber - 1); setShowBookmarkModal(false); }} className="flex-1 text-left">
+                      <span className="font-medium text-sm">Page {bm.pageNumber}</span>
+                      {bm.note && <p className="text-xs text-zinc-500 truncate">{bm.note}</p>}
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        await removeBookmark(bm.id);
+                        setBookmarks(prev => prev.filter(b => b.id !== bm.id));
+                      }}
+                      className="p-1.5 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Table of Contents (Mobile) */}
       {showTOC && (

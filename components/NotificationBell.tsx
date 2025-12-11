@@ -5,6 +5,7 @@ import { Bell, Check } from 'lucide-react';
 import Link from 'next/link';
 import { getNotifications, markAsRead, markAllAsRead } from '@/app/actions/notification';
 import { formatDistanceToNow } from 'date-fns';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Notification {
   id: string;
@@ -16,18 +17,34 @@ interface Notification {
 }
 
 export default function NotificationBell({ userId, placement = 'bottom-right' }: { userId: string; placement?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-center' }) {
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'social' | 'books' | 'system'>('all');
+  const prevCountRef = useRef(0);
 
   const fetchNotifications = useCallback(async () => {
     try {
       const result = await getNotifications(userId);
       if (result.success && result.data) {
         setNotifications(result.data);
-        setUnreadCount(result.unreadCount || 0);
+        const newUnreadCount = result.unreadCount || 0;
+        
+        // Play sound if new notification arrived
+        if (newUnreadCount > prevCountRef.current) {
+          try {
+            const audio = new Audio('/notification.mp3'); // Assuming file exists or will exist. If not, it just won't play.
+            audio.volume = 0.5;
+            audio.play().catch(() => {}); // catch errors if autoplay is blocked
+          } catch (_e) {
+            // ignore audio errors
+          }
+        }
+        prevCountRef.current = newUnreadCount;
+        setUnreadCount(newUnreadCount);
       }
     } catch (error) {
       console.error('Failed to fetch notifications', error);
@@ -57,6 +74,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
     // Optimistic update
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     setUnreadCount(prev => Math.max(0, prev - 1));
+    prevCountRef.current = Math.max(0, prevCountRef.current - 1);
     
     await markAsRead(id);
   };
@@ -65,6 +83,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
     // Optimistic update
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     setUnreadCount(0);
+    prevCountRef.current = 0;
     
     await markAllAsRead(userId);
   };
@@ -83,6 +102,14 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
     }
   };
 
+  const filteredNotifications = notifications.filter(n => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'social') return ['LIKE', 'COMMENT', 'FOLLOW', 'MENTION', 'REACTION'].includes(n.type); // Added MENTION, REACTION
+    if (activeTab === 'books') return ['BOOK_UPDATE', 'NEW_CHAPTER'].includes(n.type);
+    if (activeTab === 'system') return ['SYSTEM'].includes(n.type);
+    return true;
+  });
+
   return (
     <div className="relative" ref={dropdownRef} suppressHydrationWarning={true}>
       <button
@@ -96,27 +123,40 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
       </button>
 
       {isOpen && (
-        <div className={`absolute ${getPlacementClasses()} w-80 md:w-96 max-w-[90vw] bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95`}>
-          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
-            <h3 className="font-semibold text-white">Notifications</h3>
+        <div className={`absolute ${getPlacementClasses()} w-80 md:w-96 max-w-[90vw] bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 flex flex-col`}>
+          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
+            <h3 className="font-semibold text-white">{t('notifications')}</h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
                 className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
               >
-                Mark all as read
+                {t('markAllAsRead')}
               </button>
             )}
           </div>
 
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide shrink-0">
+            {(['all', 'social', 'books', 'system'] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap
+                  ${activeTab === tab ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <div className="max-h-[50vh] overflow-y-auto">
             {loading ? (
-              <div className="p-8 text-center text-zinc-500 text-sm">Loading...</div>
-            ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500 text-sm">No notifications yet</div>
+              <div className="p-8 text-center text-zinc-500 text-sm">{t('loadingNotifications')}</div>
+            ) : filteredNotifications.length === 0 ? (
+              <div className="p-8 text-center text-zinc-500 text-sm">{t('noNotificationsYet')}</div>
             ) : (
               <div className="divide-y divide-white/5">
-                {notifications.map((notification) => (
+                {filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`p-4 hover:bg-white/5 transition-colors ${!notification.read ? 'bg-white/5' : ''}`}
@@ -135,7 +175,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
                             <button
                               onClick={() => handleMarkAsRead(notification.id)}
                               className="text-zinc-500 hover:text-white"
-                              title="Mark as read"
+                              title={t('markAsRead')}
                             >
                               <Check className="w-3 h-3" />
                             </button>
@@ -147,7 +187,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
                             onClick={() => handleMarkAsRead(notification.id)}
                             className="block mt-2 text-xs text-indigo-400 hover:text-indigo-300 font-medium"
                           >
-                            View details
+                            {t('viewDetails')}
                           </Link>
                         )}
                       </div>
@@ -162,3 +202,4 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
     </div>
   );
 }
+

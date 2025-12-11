@@ -5,7 +5,7 @@ import { getSession } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { createNotification } from './notification';
 
-export async function togglePostLike(postId: string) {
+export async function togglePostLike(postId: string, type: string = 'HEART') {
   const session = await getSession();
   if (!session?.id) {
     return { error: 'Unauthorized' };
@@ -22,16 +22,24 @@ export async function togglePostLike(postId: string) {
     });
 
     if (existingLike) {
-      await prisma.postLike.delete({
-        where: {
-          id: existingLike.id,
-        },
-      });
+      if (existingLike.type === type) {
+        // Toggle off if same type
+        await prisma.postLike.delete({
+            where: { id: existingLike.id },
+        });
+      } else {
+        // Change type
+        await prisma.postLike.update({
+            where: { id: existingLike.id },
+            data: { type },
+        });
+      }
     } else {
       const like = await prisma.postLike.create({
         data: {
           postId,
           userId: session.id as string,
+          type,
         },
         include: {
           post: true,
@@ -42,15 +50,15 @@ export async function togglePostLike(postId: string) {
       if (like.post.authorId !== session.id) {
         await createNotification(
           like.post.authorId,
-          'LIKE',
-          `${session.username} liked your post`,
+          type === 'HEART' ? 'LIKE' : 'REACTION',
+          `${session.username} reacted with ${type} to your post`,
           `/dashboard/communities/${like.post.communityId}`
         );
       }
     }
 
     revalidatePath('/dashboard/communities/[id]', 'page');
-    return { success: true, liked: !existingLike };
+    return { success: true };
   } catch (error) {
     console.error('Error toggling like:', error);
     return { error: 'Failed to toggle like' };
@@ -87,6 +95,29 @@ export async function createComment(postId: string, content: string) {
         `${session.username} commented on your post`,
         `/dashboard/communities/${comment.post.communityId}`
       );
+    }
+
+    // Handle Mentions
+    const mentionRegex = /@(\w+(\.\w+)*)/g;
+    const matches = content.match(mentionRegex);
+    
+    if (matches) {
+      const usernames = matches.map(m => m.substring(1)); // remove @
+      const mentionedUsers = await prisma.user.findMany({
+        where: { username: { in: usernames } },
+        select: { id: true, username: true }
+      });
+
+      for (const user of mentionedUsers) {
+        if (user.id !== session.id) {
+           await createNotification(
+             user.id,
+             'MENTION', // Make sure this typestring is valid in createNotification signature or update it
+             `${session.username} mentioned you in a comment`,
+             `/dashboard/communities/${comment.post.communityId}`
+           );
+        }
+      }
     }
 
     revalidatePath('/dashboard/communities/[id]', 'page');

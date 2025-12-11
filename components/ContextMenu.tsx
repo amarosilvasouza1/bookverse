@@ -10,10 +10,11 @@ interface ContextMenuProps {
   onClose: () => void;
   onEdit: () => void;
   onReply: () => void;
+  onReact: (type: string) => void;
   canEdit: boolean;
 }
 
-export default function ContextMenu({ x, y, onClose, onEdit, onReply, canEdit }: ContextMenuProps) {
+export default function ContextMenu({ x, y, onClose, onEdit, onReply, onReact, canEdit }: ContextMenuProps) {
   // Calculate position using useMemo to avoid setState in useEffect
   const position = useMemo(() => {
     if (typeof window === 'undefined') return { top: y, left: x };
@@ -67,6 +68,19 @@ export default function ContextMenu({ x, y, onClose, onEdit, onReply, canEdit }:
         }}
       >
         <div className="flex flex-col p-2 gap-1">
+          {/* Reaction Bar */}
+          <div className="flex items-center justify-between px-2 py-2 mb-1 border-b border-white/10">
+             {['❤️', '😂', '😢', '🔥', '💯'].map(emoji => (
+                <button
+                    key={emoji}
+                    onClick={(e) => { e.stopPropagation(); onReact(emoji === '❤️' ? 'HEART' : emoji === '😂' ? 'LAUGH' : emoji === '😢' ? 'CRY' : emoji === '🔥' ? 'FIRE' : 'LIT'); onClose(); }}
+                    className="w-8 h-8 flex items-center justify-center text-lg hover:bg-white/10 rounded-full transition-transform hover:scale-125"
+                >
+                    {emoji}
+                </button>
+             ))}
+          </div>
+
           <button
             onClick={(e) => { e.stopPropagation(); onReply(); onClose(); }}
             className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 rounded-lg transition-colors w-full text-left"

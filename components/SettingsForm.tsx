@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { updateProfile } from '@/app/actions/user';
 import AdminCommandPalette from '@/components/AdminCommandPalette';
 import { equipItem, unequipItem } from '@/app/actions/store';
+import PushNotificationToggle from '@/components/PushNotificationToggle';
 
 interface ItemData {
   cssClass?: string;
@@ -569,6 +570,18 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Push Notifications */}
+                <div className="glass-card p-2.5 sm:p-3 md:p-8 rounded-xl sm:rounded-2xl md:rounded-3xl space-y-3 sm:space-y-4 md:space-y-6 border border-white/10 bg-black/20 backdrop-blur-xl">
+                  <h2 className="text-sm sm:text-lg md:text-xl font-bold flex items-center gap-2 text-white/90">
+                    <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 shrink-0" />
+                    {t('pushNotifications')}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {t('pushDisabledDesc')}
+                  </p>
+                  <PushNotificationToggle />
                 </div>
               </div>
             )}

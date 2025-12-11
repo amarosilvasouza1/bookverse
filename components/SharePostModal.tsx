@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getMutualFollowersForChat, sendMessage } from '@/app/actions/chat';
-import { X, Search, Send, Check } from 'lucide-react';
+import { X, Search, Send } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 
@@ -31,34 +31,33 @@ export default function SharePostModal({ isOpen, onClose, post }: SharePostModal
   const [search, setSearch] = useState('');
   const [sendingTo, setSendingTo] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadFriends();
-    }
-  }, [isOpen]);
-
-  async function loadFriends() {
+  const loadFriends = async () => {
     setLoading(true);
     const data = await getMutualFollowersForChat();
     setUsers(data as unknown as User[]);
     setLoading(false);
-  }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line
+      void loadFriends();
+    }
+  }, [isOpen]);
 
   const handleSend = async (userId: string) => {
     setSendingTo(userId);
     
     // Construct the share message
-    // We use a special URL format that ChatInterface can recognize or just a clickable link
-    const postUrl = `${window.location.origin}/dashboard/community-post/${post.id}`; // Hypothetical deep link
-    const message = `Check out this post by @${post.author.username}: ${post.content.substring(0, 50)}...`;
+    const message = `Veja este post de @${post.author.username}: ${post.content.substring(0, 50)}...`;
 
     const result = await sendMessage(userId, message); // We might want to pass post metadata in future
     
     setSendingTo(null);
     if (!result.error) {
-       toast.success('Sent!');
+       toast.success('Enviado!');
     } else {
-       toast.error('Failed to send');
+       toast.error('Falha ao enviar');
     }
   };
 

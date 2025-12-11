@@ -34,9 +34,9 @@ export default function GiftCard({ giftId, type, data, status: initialStatus, is
     const result = await acceptGift(giftId);
     if (result.success) {
       setStatus('ACCEPTED');
-      toast.success('Gift accepted!');
+      toast.success('Presente aceito!');
     } else {
-      toast.error(result.error || 'Failed to accept gift');
+      toast.error(result.error || 'Falha ao aceitar presente');
     }
     setLoading(false);
   };

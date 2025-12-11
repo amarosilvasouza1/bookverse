@@ -390,6 +390,13 @@ export async function getMessages(conversationId: string, cursor?: string, limit
               mediaUrl: true,
               mediaType: true
           }
+      },
+      reactions: {
+        include: {
+          user: {
+            select: { id: true, name: true, username: true }
+          }
+        }
       }
     }
   });
@@ -405,4 +412,54 @@ export async function getMessages(conversationId: string, cursor?: string, limit
     messages: messages.reverse(),
     nextCursor
   };
+}
+// Toggle Reaction on a Message
+export async function toggleMessageReaction(messageId: string, type: string) {
+  const session = await getSession();
+  if (!session) return { error: 'Unauthorized' };
+
+  const userId = session.id as string;
+
+  try {
+    const existingReaction = await prisma.messageReaction.findUnique({
+      where: {
+        messageId_userId_type: {
+          messageId,
+          userId,
+          type
+        }
+      }
+    });
+
+    if (existingReaction) {
+      // Remove reaction
+      await prisma.messageReaction.delete({
+        where: { id: existingReaction.id }
+      });
+    } else {
+      // Add reaction
+      // Optional: Check if user already reacted with a DIFFERENT type?
+      // Usually chat apps allow multiple reactions or just one per user per msg.
+      // Schema has @@unique([messageId, userId, type]), allowing multiple types per user.
+      // But typically UI restricts to one. Let's start with allowing multiple for fun, or restrict.
+      // Let's restrict to simulate standard behavior: remove other types if adding new one?
+      // For now, let's keep it simple: independent toggles.
+      
+      await prisma.messageReaction.create({
+        data: {
+          messageId,
+          userId,
+          type
+        }
+      });
+      
+      // Notify sender? (Maybe too noisy for chat, but let's leave it for now)
+    }
+
+    revalidatePath('/dashboard/social');
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to toggle reaction:", error);
+    return { error: 'Failed to react' };
+  }
 }

@@ -65,6 +65,15 @@ model User {
   receivedGifts Gift[] @relation("ReceivedGifts")
 
   lastSeen DateTime? @default(now())
+
+  // Gamification
+  xp               Int               @default(0)
+  level            Int               @default(1)
+  messageReactions MessageReaction[]
+  commentReactions CommentReaction[]
+  readingSessions  ReadingSession[]
+  bookmarks        Bookmark[]
+  reports          Report[]
 }
 
 model Item {
@@ -155,15 +164,33 @@ model DirectMessage {
   replyTo   DirectMessage?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies   DirectMessage[] @relation("ReplyTo")
 
+  reactions MessageReaction[]
+
   @@index([conversationId])
   @@index([senderId])
   @@index([replyToId])
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  type      String // EMOJI: HEART, LAUGH, CRY, FIRE, THUMBSUP
+  createdAt DateTime @default(now())
+
+  message DirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, type])
+  @@index([messageId])
+  @@index([userId])
 }
 
 model PostLike {
   id        String   @id @default(cuid())
   postId    String
   userId    String
+  type      String   @default("HEART") // HEART, LAUGH, CRY, FIRE
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -241,6 +268,8 @@ model Book {
   characters      Character[]
   readingProgress ReadingProgress[]
   readingRooms    ReadingRoom[]
+  readingSessions ReadingSession[]
+  bookmarks       Bookmark[]
 
   @@index([authorId], map: "Book_authorId_fkey")
 }
@@ -391,16 +420,32 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  createdAt DateTime @default(now())
+  id        String            @id @default(cuid())
+  content   String            @db.Text
+  createdAt DateTime          @default(now())
   postId    String
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User              @relation(fields: [authorId], references: [id])
+  post      Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reactions CommentReaction[]
 
   @@index([authorId], map: "Comment_authorId_fkey")
   @@index([postId], map: "Comment_postId_fkey")
+}
+
+model CommentReaction {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  type      String // HEART, LAUGH, CRY, FIRE
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, type])
+  @@index([commentId])
+  @@index([userId])
 }
 
 model WeeklyFree {
@@ -475,7 +520,39 @@ model ReadingProgress {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
+  totalTimeRead Int @default(0) // in seconds
+
   @@unique([userId, bookId])
+  @@index([bookId])
+}
+
+model ReadingSession {
+  id        String    @id @default(cuid())
+  userId    String
+  bookId    String
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  pagesRead Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bookId])
+}
+
+model Bookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  bookId     String
+  pageNumber Int
+  note       String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
   @@index([bookId])
 }
 
@@ -564,4 +641,24 @@ model Gift {
 
   @@index([senderId])
   @@index([receiverId])
+}
+
+model Report {
+  id          String    @id @default(cuid())
+  reporterId  String
+  contentType String // POST, COMMENT, BOOK, MESSAGE, USER
+  contentId   String
+  reason      String // SPAM, HARASSMENT, INAPPROPRIATE, COPYRIGHT, OTHER
+  details     String?   @db.Text
+  status      String    @default("PENDING") // PENDING, RESOLVED, DISMISSED
+  action      String? // WARN, REMOVE, BAN
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  createdAt   DateTime  @default(now())
+
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([status])
+  @@index([contentType, contentId])
 }
