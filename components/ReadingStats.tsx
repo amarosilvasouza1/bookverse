@@ -8,9 +8,12 @@ import { useLanguage } from '@/context/LanguageContext';
 interface ReadingStatsData {
   totalSessions: number;
   totalPagesRead: number;
-  totalTimeMinutes: number;
+  totalMinutes?: number;
+  totalTimeMinutes?: number;
   booksRead: number;
-  recentActivity: {
+  recentPages?: number;
+  recentSessions?: number;
+  recentActivity?: {
     bookId: string;
     bookTitle: string;
     pagesRead: number;
@@ -28,7 +31,12 @@ export default function ReadingStats() {
     const loadStats = async () => {
       const result = await getReadingStats();
       if (result.success && result.data) {
-        setStats(result.data as ReadingStatsData);
+        const data = result.data;
+        setStats({
+          ...data,
+          totalTimeMinutes: data.totalMinutes || 0,
+          recentActivity: []
+        });
       }
       setLoading(false);
     };
@@ -67,7 +75,7 @@ export default function ReadingStats() {
     },
     { 
       icon: Clock, 
-      value: formatTime(stats.totalTimeMinutes), 
+      value: formatTime(stats.totalTimeMinutes || 0), 
       label: t('timeReading') || 'Time Reading',
       color: 'text-purple-400',
       bg: 'bg-purple-500/10'
@@ -108,11 +116,11 @@ export default function ReadingStats() {
         ))}
       </div>
 
-      {stats.recentActivity.length > 0 && (
+      {stats.recentActivity && stats.recentActivity.length > 0 && (
         <div className="mt-6">
           <h3 className="text-sm font-medium text-zinc-400 mb-3">{t('recentActivity') || 'Recent Activity'}</h3>
           <div className="space-y-2">
-            {stats.recentActivity.slice(0, 5).map((activity, i) => (
+            {stats.recentActivity?.slice(0, 5).map((activity, i) => (
               <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
                 <div className="flex items-center gap-3">
                   <BookOpen className="w-4 h-4 text-zinc-500" />

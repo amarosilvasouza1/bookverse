@@ -34,7 +34,6 @@ interface PostCardProps {
 
 export default function PostCard({ post, currentUserId }: PostCardProps) {
   const { t } = useLanguage();
-  const [isLiked, setIsLiked] = useState(post.likes.some(like => like.userId === currentUserId));
   const [likesCount, setLikesCount] = useState(post._count.likes);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -89,9 +88,10 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   };
 
   // State for current reaction type
-  const [currentReaction, setCurrentReaction] = useState<string | null>(
-      post.likes.some(like => like.userId === currentUserId) ? (post.likes.find(l => l.userId === currentUserId) as any)?.type || 'HEART' : null
-  );
+  const [currentReaction, setCurrentReaction] = useState<string | null>(() => {
+      const myLike = post.likes.find(l => l.userId === currentUserId);
+      return myLike ? ((myLike as { type?: string }).type || 'HEART') : null;
+  });
 
   const reactionEmojis = {
     HEART: '❤️',
