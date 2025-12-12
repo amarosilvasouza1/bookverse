@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
     });
 
     // 5. Set Cookie and Redirect
-    const response = NextResponse.redirect(`${NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/home`);
+    const response = NextResponse.redirect(`${NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`);
     
     response.cookies.set({
         name: 'session',

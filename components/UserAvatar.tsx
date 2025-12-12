@@ -1,5 +1,8 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+
+// Helper to check if image is from Google and should skip optimization
+const isGoogleImage = (src: string | null) => src?.includes('googleusercontent.com');
 import BlackHoleFrame from './BlackHoleFrame';
 import CherryBlossomFrame from './CherryBlossomFrame';
 import MagicBurstFrame from './MagicBurstFrame';
@@ -26,7 +29,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
         style={{ width: size, height: size }}
       >
         {src ? (
-          <Image src={src} alt={alt} fill className="object-cover" />
+            <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
             {alt.charAt(0).toUpperCase()}
@@ -54,7 +57,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           style={{ width: size, height: size }}
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -80,7 +83,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           style={{ width: size * 0.75, height: size * 0.75 }}
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -109,7 +112,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           style={{ width: size, height: size }}
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -138,7 +141,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           style={{ width: size, height: size }}
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -179,7 +182,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           style={{ width: size, height: size }}
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -211,7 +214,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           suppressHydrationWarning
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -242,7 +245,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
           style={{ width: size, height: size }}
         >
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
@@ -275,7 +278,7 @@ export default function UserAvatar({ src, alt, size = 40, rarity, className }: U
         {/* Avatar Image Container */}
         <div className="relative w-full h-full rounded-full overflow-hidden z-30 bg-zinc-900">
           {src ? (
-            <Image src={src} alt={alt} fill className="object-cover" />
+              <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
               {alt.charAt(0).toUpperCase()}
