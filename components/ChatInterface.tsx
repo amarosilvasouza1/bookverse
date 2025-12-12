@@ -626,7 +626,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
   };
 
   return (
-    <div className="flex h-[85vh] md:h-[600px] bg-linear-to-br from-zinc-900/95 via-zinc-900/90 to-zinc-950/95 md:backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
+    <div className="flex h-[85vh] md:h-[75vh] bg-linear-to-br from-zinc-900/95 via-zinc-900/90 to-zinc-950/95 md:backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
       {/* Sidebar */}
       <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col bg-linear-to-b from-white/5 to-transparent", activeConversation ? "hidden md:flex" : "flex")}>
         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5 gap-2">
@@ -1255,7 +1255,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
       {/* Image Lightbox Modal */}
       {lightboxImage && (
         <div 
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-200"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-200"
           onClick={() => setLightboxImage(null)}
         >
           <button 
@@ -1281,7 +1281,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
       )}
       {/* Gift Modal */}
       {showGiftModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl p-6">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-white text-lg">Send a Gift</h3>
