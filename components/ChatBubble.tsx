@@ -150,38 +150,50 @@ export default function ChatBubble({
       );
 
     case 'sakura':
-       // Pixelated Sakura Theme
+       // True Pixel Art Sakura Theme
       return (
-        <div className={cn(baseClasses, "bg-linear-to-br from-pink-900/90 to-rose-950 border border-pink-500/30 overflow-hidden font-mono")} {...eventProps}>
-            {/* Pixel Tree Construction */}
-            <div className="absolute -right-1 bottom-0 opacity-40 pointer-events-none scale-150 origin-bottom-right">
-                {/* Trunk */}
-                <div className="w-4 h-12 bg-amber-900/60 absolute bottom-0 right-4" />
-                <div className="w-6 h-2 bg-amber-900/60 absolute bottom-4 right-3" />
-                {/* Leaves/Blooms Blocks */}
-                <div className="w-8 h-8 bg-pink-400/40 absolute bottom-10 right-2" />
-                <div className="w-6 h-6 bg-pink-500/40 absolute bottom-12 right-6" />
-                <div className="w-8 h-6 bg-pink-400/40 absolute bottom-8 right-0" />
-                <div className="w-2 h-2 bg-pink-300/60 absolute bottom-14 right-4" />
+        <div className={cn(baseClasses, "bg-linear-to-br from-pink-900 via-rose-950 to-slate-900 border border-pink-500/30 overflow-hidden")} {...eventProps}>
+            {/* Pixel Tree Layout (Bottom Right) */}
+            <div className="absolute right-0 bottom-0 opacity-80 pointer-events-none scale-100 origin-bottom-right z-0">
+                {/* Pixel Trunk */}
+                <div className="w-4 h-16 bg-amber-900 absolute bottom-0 right-8" /> 
+                <div className="w-8 h-2 bg-amber-900 absolute bottom-6 right-6" /> {/* Branch Left */}
+                <div className="w-6 h-2 bg-amber-900 absolute bottom-10 right-4" /> {/* Branch Right */}
+                
+                {/* Pixel Foliage (Canopy) - built with squarish blocks */}
+                <div className="w-16 h-8 bg-pink-400 absolute bottom-12 right-0" />
+                <div className="w-12 h-12 bg-pink-500 absolute bottom-10 right-8" />
+                <div className="w-8 h-8 bg-pink-400 absolute bottom-16 right-4" />
+                <div className="w-4 h-4 bg-pink-300 absolute bottom-20 right-10" />
+                <div className="w-8 h-4 bg-pink-500 absolute bottom-8 right-14" />
+                <div className="w-2 h-2 bg-pink-300 absolute bottom-14 right-16" />
+                
+                {/* Floating "Pixel" Blooms */}
+                <div className="w-2 h-2 bg-pink-200 absolute bottom-18 right-6 animate-pulse" />
+                <div className="w-2 h-2 bg-pink-200 absolute bottom-12 right-2 animate-pulse" />
             </div>
 
-           {/* Falling Pixel Petals */}
-           {[...Array(6)].map((_, i) => (
+           {/* Full Bubble Pixel Petal Rain */}
+           {[...Array(12)].map((_, i) => (
             <div 
               key={i} 
               className="absolute animate-pixel-fall pointer-events-none"
               style={{
-                left: `${randomValues[i].left}%`,
-                top: `-10px`,
-                animationDuration: `${3 + randomValues[i].duration}s`,
-                animationDelay: `${randomValues[i].delay}s`,
+                left: `${randomValues[i]?.left || (i * 10)}%`, // Distribute across full width
+                top: `-20px`,
+                animationDuration: `${3 + (randomValues[i]?.duration || 1)}s`,
+                animationDelay: `${randomValues[i]?.delay || 0}s`,
+                opacity: 0.8
               }}
             >
-               {/* Square petal for pixel art look */}
-               <div className="w-1.5 h-1.5 bg-pink-300/80" /> 
+               {/* Square Pixel Petal */}
+               <div className={cn(
+                   "w-1.5 h-1.5", 
+                   i % 3 === 0 ? "bg-pink-300" : i % 3 === 1 ? "bg-rose-300" : "bg-white"
+               )} /> 
             </div>
           ))}
-           <div className="relative z-10 text-pink-50">{children}</div>
+           <div className="relative z-10 text-pink-50 font-medium tracking-wide drop-shadow-sm">{children}</div>
         </div>
       );
       
