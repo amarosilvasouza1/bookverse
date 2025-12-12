@@ -1,6 +1,20 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { sendWebPush } from '@/lib/web-push';
+
+// Notification type to title mapping
+const notificationTitles: Record<string, string> = {
+  LIKE: 'New Like',
+  COMMENT: 'New Comment',
+  FOLLOW: 'New Follower',
+  SYSTEM: 'System',
+  MENTION: 'You were mentioned',
+  REACTION: 'New Reaction',
+  BOOK_UPDATE: 'Book Update',
+  NEW_CHAPTER: 'New Chapter',
+};
+
 
 export async function createNotification(
   userId: string,
@@ -9,6 +23,7 @@ export async function createNotification(
   link?: string
 ) {
   try {
+    // Create notification in database
     await prisma.notification.create({
       data: {
         userId,
@@ -17,12 +32,19 @@ export async function createNotification(
         link,
       },
     });
-    // We don't revalidate path here because notifications are polled or fetched client-side usually
-    // But if we had a notifications page, we would.
+
+    // Send web push notification
+    await sendWebPush(userId, {
+      title: notificationTitles[type] || 'BookVerse',
+      message,
+      link,
+    });
   } catch (error) {
     console.error('Failed to create notification:', error);
   }
 }
+
+
 
 export async function getNotifications(userId: string) {
   try {
