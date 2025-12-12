@@ -12,7 +12,8 @@ export async function GET() {
     return NextResponse.json({ error: 'Google Client ID not found' }, { status: 500 });
   }
 
-  const redirectUri = `${NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/google/callback`;
+  const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,

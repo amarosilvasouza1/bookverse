@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const redirectUri = `${NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/google/callback`;
+    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+    const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
     // 1. Exchange code for access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
