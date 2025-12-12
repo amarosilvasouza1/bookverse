@@ -519,6 +519,10 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
          const isYoutube = part.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
          const isVimeo = part.match(/vimeo\.com\/(\d+)/);
          const isDirectVideo = part.match(/\.(mp4|webm|ogg)$/i);
+         const isTikTok = part.match(/(?:tiktok\.com\/@[\w.-]+\/video\/(\d+))|(?:vm\.tiktok\.com\/(\w+))/);
+         const isInstagram = part.match(/(?:instagram\.com\/(?:p|reel|tv)\/([a-zA-Z0-9_-]+))/);
+         const isFacebook = part.match(/(?:facebook\.com\/.*\/videos\/(\d+))|(?:fb\.watch\/(\w+))/);
+         const isKwai = part.match(/(?:kwai-video\.com\/[a-zA-Z0-9_-]+)|(?:kw\.ai\/[a-zA-Z0-9_-]+)/); // Kwai generic detection
 
          if (isYoutube) {
              return (
@@ -526,7 +530,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                      <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10">
                          <iframe width="100%" height="200" src={`https://www.youtube.com/embed/${isYoutube[1]}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="aspect-video" />
                      </div>
-                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block">
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
                          {part}
                      </a>
                  </div>
@@ -537,7 +541,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                      <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10">
                          <iframe src={`https://player.vimeo.com/video/${isVimeo[1]}`} width="100%" height="200" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen className="aspect-video" />
                      </div>
-                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block">
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
                          {part}
                      </a>
                  </div>
@@ -548,10 +552,65 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                      <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10">
                          <video src={part} controls className="w-full aspect-video bg-black" />
                      </div>
-                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block">
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
                          {part}
                      </a>
                  </div>
+             );
+         } else if (isTikTok) {
+             // Basic TikTok Embed (May require script for full functionality, using generic iframe wrapper for now)
+             const videoId = isTikTok[1]; 
+             return (
+                 <div key={index} className="flex flex-col">
+                     <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-black">
+                        <iframe src={`https://www.tiktok.com/embed/v2/${videoId}?lang=pt-BR`} width="100%" height="400" frameBorder="0" allowFullScreen className="w-full" style={{minHeight: '350px'}}></iframe>
+                     </div>
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
+                         {part}
+                     </a>
+                 </div>
+             );
+         } else if (isInstagram) {
+             const postId = isInstagram[1];
+             return (
+                 <div key={index} className="flex flex-col">
+                     <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-white">
+                        <iframe src={`https://www.instagram.com/p/${postId}/embed`} width="100%" height="400" frameBorder="0" allowFullScreen className="w-full" style={{minHeight: '400px'}}></iframe>
+                     </div>
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
+                         {part}
+                     </a>
+                 </div>
+             );
+         } else if (isFacebook) {
+             return (
+                 <div key={index} className="flex flex-col">
+                     <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10 bg-white">
+                        <iframe src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(part)}&show_text=false&t=0`} width="100%" height="250" frameBorder="0" allowFullScreen className="w-full aspect-video"></iframe>
+                     </div>
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
+                         {part}
+                     </a>
+                 </div>
+             );
+         } else if (isKwai) {
+             // Kwai does not have a standard public embed iframe API without scripts. 
+             // Displaying a rich link preview style fallback for now.
+             return (
+                <div key={index} className="flex flex-col">
+                    <a href={part} target="_blank" rel="noopener noreferrer" className="block w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-orange-500/30 bg-orange-900/20 hover:bg-orange-900/30 transition-all group">
+                        <div className="p-4 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">K</div>
+                            <div>
+                                <p className="font-bold text-orange-200 group-hover:text-white transition-colors">Assistir no Kwai</p>
+                                <p className="text-xs text-orange-400/70">Clique para abrir vídeo</p>
+                            </div>
+                        </div>
+                    </a>
+                    <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block max-w-[280px] truncate">
+                        {part}
+                    </a>
+                </div>
              );
          }
          return (

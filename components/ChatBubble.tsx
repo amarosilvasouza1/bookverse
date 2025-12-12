@@ -27,7 +27,7 @@ export default function ChatBubble({
 }: ChatBubbleProps) {
   // Base classes for the bubble shape
   const baseClasses = cn(
-    "relative max-w-[75%] p-4 text-base md:text-sm shadow-lg transition-all duration-300 hover:scale-[1.01] overflow-hidden",
+    "relative max-w-[75%] p-3 md:p-4 text-sm md:text-sm shadow-lg transition-all duration-300 hover:scale-[1.01] overflow-hidden",
     isMe 
       ? "rounded-2xl rounded-tr-sm text-white" 
       : "rounded-2xl rounded-tl-sm text-white",
