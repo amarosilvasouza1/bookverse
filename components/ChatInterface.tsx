@@ -90,7 +90,7 @@ interface Conversation {
   isTyping?: boolean;
 }
 
-export default function ChatInterface() {
+export default function ChatInterface({ onBack }: { onBack?: () => void }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -120,8 +120,6 @@ export default function ChatInterface() {
   // Long Press Logic
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const mousePositionRef = useRef({ x: 0, y: 0 });
-
-
 
   const [media, setMedia] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -214,13 +212,6 @@ export default function ChatInterface() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConversation]); // Intentionally omitting loadMessages to avoid infinite loop
-
-  // Poll for NEW messages (Optimized to not refetch all)
-  // For now, we'll keep it simple: just fetch latest if at bottom, or maybe disable full polling 
-  // and rely on a lightweight "check for new" in future.
-  // Current implementation of 'loadMessages' with pagination breaks simple polling.
-  // We will rely on "Typing" events and potential websockets or lightweight polling later for real-time.
-  // For this step, we'll disable the heavy polling to fix the "loading everything" issue.
   
   const handleScroll = async (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight } = e.currentTarget;
@@ -239,10 +230,6 @@ export default function ChatInterface() {
         });
     }
   };
-
-
-
-
 
   const activeConvData = conversations.find(c => c.id === activeConversation);
 
@@ -355,7 +342,7 @@ export default function ChatInterface() {
                    const result = reader.result as string;
                    // Result is already a data URL: "data:image/webp;base64,..."
                    resolve(result);
-                };
+               };
                 reader.onerror = reject;
                 reader.readAsDataURL(fileToProcess);
              });
@@ -523,13 +510,72 @@ export default function ChatInterface() {
     }
   }
 
+  // --- Video Embed Helper ---
+  const renderMessageContent = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, index) => {
+      if (part.match(urlRegex)) {
+         const isYoutube = part.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+         const isVimeo = part.match(/vimeo\.com\/(\d+)/);
+         const isDirectVideo = part.match(/\.(mp4|webm|ogg)$/i);
 
+         if (isYoutube) {
+             return (
+                 <div key={index} className="flex flex-col">
+                     <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                         <iframe width="100%" height="200" src={`https://www.youtube.com/embed/${isYoutube[1]}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="aspect-video" />
+                     </div>
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block">
+                         {part}
+                     </a>
+                 </div>
+             );
+         } else if (isVimeo) {
+             return (
+                 <div key={index} className="flex flex-col">
+                     <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                         <iframe src={`https://player.vimeo.com/video/${isVimeo[1]}`} width="100%" height="200" frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen className="aspect-video" />
+                     </div>
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block">
+                         {part}
+                     </a>
+                 </div>
+             );
+         } else if (isDirectVideo) {
+             return (
+                 <div key={index} className="flex flex-col">
+                     <div className="w-full max-w-[300px] mt-2 mb-2 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                         <video src={part} controls className="w-full aspect-video bg-black" />
+                     </div>
+                     <a href={part} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline break-all mb-2 opacity-80 pl-1 block">
+                         {part}
+                     </a>
+                 </div>
+             );
+         }
+         return (
+           <a key={index} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">
+             {part}
+           </a>
+         );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
 
   return (
-    <div className="flex h-[85vh] md:h-[600px] bg-linear-to-br from-zinc-900/95 via-zinc-900/90 to-zinc-950/95 backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
+    <div className="flex h-[85vh] md:h-[600px] bg-linear-to-br from-zinc-900/95 via-zinc-900/90 to-zinc-950/95 md:backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
       {/* Sidebar */}
       <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col bg-linear-to-b from-white/5 to-transparent", activeConversation ? "hidden md:flex" : "flex")}>
-        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5 gap-2">
+            {/* Mobile Back to Feed Button */}
+            <button 
+                onClick={onBack}
+                className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-white transition-colors"
+            >
+                <ArrowLeft className="w-5 h-5" />
+            </button>
           <div className="relative flex-1 mr-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input 
@@ -610,7 +656,8 @@ export default function ChatInterface() {
       </div>
 
       {/* Chat Area */}
-      <div className={cn("flex-1 flex flex-col bg-linear-to-br from-zinc-900/50 to-black/30", !activeConversation ? "hidden md:flex" : "flex")}>
+      <div className={cn("flex-1 flex flex-col bg-linear-to-br from-zinc-900/50 to-black/30", 
+        !activeConversation ? "hidden md:flex" : "fixed inset-0 z-100 md:static md:flex w-full h-dvh md:h-auto bg-zinc-950 md:bg-transparent")}>
         {activeConversation ? (
           <>
             {/* Chat Header */}
@@ -813,7 +860,7 @@ export default function ChatInterface() {
                         </div>
                       )}
 
-                      <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      <div className="leading-relaxed whitespace-pre-wrap">{renderMessageContent(msg.content)}</div>
                       <div className="flex flex-col gap-1 items-end">
                           <span className={cn("text-[10px] opacity-70 px-1", isMe ? "text-right" : "text-left")}>
                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, MessageCircle, Users, Clock, Layout } from 'lucide-react';
+import { Plus, MessageCircle, Users, Clock, Layout, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ChatInterface from '@/components/ChatInterface';
 
@@ -83,8 +83,8 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
         <CreateStatusModal onClose={() => setShowCreateStatus(false)} />
       )}
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header - Hidden on mobile when in Chat */}
+      <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-4", activeTab === 'chat' ? "hidden md:flex" : "flex")}>
         <div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 bg-linear-to-r from-white via-white/80 to-white/50 bg-clip-text text-transparent tracking-tight">
             Social Hub
@@ -254,7 +254,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
         {/* Chat Tab Content */}
         {activeTab === 'chat' && (
           <div className="animate-in fade-in zoom-in-95 duration-300 -mx-4 md:mx-0">
-             <ChatInterface />
+             <ChatInterface onBack={() => setActiveTab('feed')} />
           </div>
         )}
       </div>
