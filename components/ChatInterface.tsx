@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, ArrowLeft, Image as ImageIcon, X, Gift } from 'lucide-react';
 import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/context/LanguageContext';
 import { getConversations, getMessages, sendMessage, getMutualFollowersForChat, getNonMutualFollowings, requestFollowBack, markMessagesAsRead, setTyping, toggleMessageReaction } from '@/app/actions/chat';
 import { sendGift, getUserInventory } from '@/app/actions/gift';
 import GiftCard from './GiftCard';
@@ -91,6 +92,7 @@ interface Conversation {
 }
 
 export default function ChatInterface({ onBack }: { onBack?: () => void }) {
+  const { language } = useLanguage();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -176,7 +178,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
       if (isInitial) {
         setMessages(data.messages as unknown as Message[]);
         // Scroll to bottom on initial load
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }), 100);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }), 300);
       } else {
         // Prepend messages
         setMessages(prev => [...(data.messages as unknown as Message[]), ...prev]);
@@ -771,8 +773,67 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                        <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                   </div>
               )}
-              {messages.map((msg) => {
+              {messages.map((msg, index) => {
                   const isMe = msg.senderId === 'me' || !!(msg.sender && msg.sender.id !== activeConvData?.otherUser?.id);
+                  
+                  // Date Header Logic
+                  let showDateHeader = false;
+                  let dateLabel = '';
+                  const currentMsgDate = new Date(msg.createdAt);
+                  const prevMsgDate = index > 0 ? new Date(messages[index - 1].createdAt) : null;
+
+                  if (!prevMsgDate || 
+                      currentMsgDate.getDate() !== prevMsgDate.getDate() || 
+                      currentMsgDate.getMonth() !== prevMsgDate.getMonth() || 
+                      currentMsgDate.getFullYear() !== prevMsgDate.getFullYear()) {
+                      showDateHeader = true;
+                      
+                      const today = new Date();
+                      const yesterday = new Date();
+                      yesterday.setDate(yesterday.getDate() - 1);
+
+                      if (currentMsgDate.toDateString() === today.toDateString()) {
+                          const localeMap: Record<string, string> = {
+                              'en': 'en-US',
+                              'pt': 'pt-BR',
+                              'jp': 'ja'
+                          };
+                          const locale = localeMap[language] || 'en-US';
+
+                           const diffTime = currentMsgDate.getTime() - today.setHours(0,0,0,0);
+                           const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                           
+                           if (diffDays === 0) {
+                               // "Today"
+                               dateLabel = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day'); 
+                               dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+                           } else if (diffDays === -1) {
+                               // "Yesterday"
+                               dateLabel = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(-1, 'day');
+                               dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+                           } else if (diffDays > -7) {
+                               dateLabel = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(currentMsgDate);
+                           } else {
+                               dateLabel = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(currentMsgDate);
+                           }
+                      } else if (currentMsgDate.toDateString() === new Date(Date.now() - 86400000).toDateString()) {
+                           const localeMap: Record<string, string> = { 'en': 'en-US', 'pt': 'pt-BR', 'jp': 'ja' };
+                           const locale = localeMap[language] || 'en-US';
+                           dateLabel = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(-1, 'day');
+                           dateLabel = dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1);
+                      } else {
+                          const localeMap: Record<string, string> = { 'en': 'en-US', 'pt': 'pt-BR', 'jp': 'ja' };
+                          const locale = localeMap[language] || 'en-US';
+                          // Check if within a week
+                          const diff = Date.now() - currentMsgDate.getTime();
+                          const oneWeek = 7 * 24 * 60 * 60 * 1000;
+                          if (diff < oneWeek) {
+                              dateLabel = new Intl.DateTimeFormat(locale, { weekday: 'long' }).format(currentMsgDate);
+                          } else {
+                              dateLabel = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(currentMsgDate);
+                          }
+                      }
+                  }
                 
                 // Determine Bubble Style
                 let variant: 'snow' | 'halloween' | 'starry' | 'sky' | 'sakura' | 'spring' | 'default' = 'default';
@@ -848,8 +909,15 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                 const replyContext = msg.replyTo;
 
                 return (
+                  <Fragment key={msg.id}>
+                    {showDateHeader && (
+                        <div className="flex justify-center my-4 pointer-events-none">
+                            <span className="bg-zinc-800/80 backdrop-blur-md text-zinc-300 text-xs py-1 px-3 rounded-full shadow-lg border border-white/5 font-medium uppercase tracking-wide">
+                                {dateLabel}
+                            </span>
+                        </div>
+                    )}
                   <div 
-                    key={msg.id} 
                     className={cn("flex w-full flex-col mb-4 cursor-pointer", isMe ? "items-end" : "items-start")}
                     onClick={handleClick}
                     onContextMenu={handleContextMenu}
@@ -965,6 +1033,7 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
 
                     </ChatBubble>
                   </div>
+                  </Fragment>
                 );
               })}
             <div ref={messagesEndRef} />
