@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BookVerse - Discover & Create Digital Worlds",
   description: "The premier platform for digital book creators and readers.",
+  manifest: "/manifest.json",
 };
 
 export default async function RootLayout({

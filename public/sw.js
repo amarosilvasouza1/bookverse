@@ -1,6 +1,14 @@
 // This is the service worker for web push notifications
 // It will be registered in the browser to receive push events
 
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
+
 self.addEventListener('push', function(event) {
   if (!event.data) return;
 

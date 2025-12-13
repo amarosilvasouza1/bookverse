@@ -9,6 +9,12 @@ import { useLanguage } from '@/context/LanguageContext';
 // VAPID public key - you need to generate this and set it in your environment
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 
+console.log('VAPID Key Status:', {
+  hasKey: !!VAPID_PUBLIC_KEY,
+  keyLength: VAPID_PUBLIC_KEY?.length,
+  env: process.env.NODE_ENV
+});
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
@@ -46,6 +52,13 @@ export default function PushNotificationToggle() {
   }, []);
 
   const handleToggle = async () => {
+    console.log('Toggle clicked');
+    if (!VAPID_PUBLIC_KEY) {
+      console.error('VAPID public key is missing');
+      toast.error('Push notifications are not configured (missing VAPID key)');
+      return;
+    }
+
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       toast.error('Push notifications are not supported in this browser');
       return;
@@ -55,32 +68,54 @@ export default function PushNotificationToggle() {
 
     try {
       if (isSubscribed) {
-        // Unsubscribe
+        console.log('Unsubscribing...');
         const result = await unsubscribeFromPush();
+        console.log('Unsubscribe result:', result);
         if (result.success) {
           setIsSubscribed(false);
           toast.success(t('pushDisabled'));
         }
       } else {
-        // Subscribe
+        console.log('Requesting permission...');
         const permission = await Notification.requestPermission();
+        console.log('Permission:', permission);
         if (permission !== 'granted') {
           toast.error('Notification permission denied');
           setProcessing(false);
           return;
         }
 
-        // Register service worker
+        console.log('Registering SW...');
         const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('SW Registered:', registration);
+        
+        console.log('Waiting for SW ready...');
         await navigator.serviceWorker.ready;
+        console.log('SW Ready');
 
-        // Subscribe to push
+        console.log('Checking for existing subscription...');
+        const existingSub = await registration.pushManager.getSubscription();
+        if (existingSub) {
+          console.log('Unsubscribing from existing push subscription...');
+          await existingSub.unsubscribe();
+        }
+
+        console.log('Subscribing to PushManager...');
+        const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        console.log('Key info:', {
+          length: applicationServerKey.length,
+          firstByte: applicationServerKey[0], // Should be 4
+          lastByte: applicationServerKey[applicationServerKey.length - 1]
+        });
+        
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          applicationServerKey
         });
+        console.log('Subscribed object:', subscription);
 
         const subJson = subscription.toJSON();
+        console.log('Sending to server...');
         const result = await subscribeToPush({
           endpoint: subJson.endpoint!,
           keys: {
@@ -88,6 +123,7 @@ export default function PushNotificationToggle() {
             auth: subJson.keys!.auth
           }
         });
+        console.log('Server response:', result);
 
         if (result.success) {
           setIsSubscribed(true);
@@ -97,7 +133,7 @@ export default function PushNotificationToggle() {
         }
       }
     } catch (error) {
-      console.error('Push toggle error:', error);
+      console.error('Push toggle error detailed:', error);
       toast.error('Failed to update notification settings');
     }
 
