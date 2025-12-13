@@ -463,3 +463,30 @@ export async function toggleMessageReaction(messageId: string, type: string) {
     return { error: 'Failed to react' };
   }
 }
+
+// Get total unread message count for the current user
+export async function getTotalUnreadMessageCount() {
+  const session = await getSession();
+  if (!session) return 0;
+
+  const userId = session.id as string;
+
+  try {
+    const unreadCount = await prisma.directMessage.count({
+      where: {
+        conversation: {
+          participants: {
+             some: { userId }
+          }
+        },
+        senderId: { not: userId },
+        read: false
+      }
+    });
+
+    return unreadCount;
+  } catch (error) {
+    console.error('Failed to get unread message count:', error);
+    return 0;
+  }
+}

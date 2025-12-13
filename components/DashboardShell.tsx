@@ -6,6 +6,8 @@ import { LayoutDashboard, BookOpen, MessageCircle, Settings, LogOut, PlusCircle,
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/LanguageContext';
 import NotificationBell from './NotificationBell';
+import { getTotalUnreadMessageCount } from '@/app/actions/chat';
+import { useState, useEffect } from 'react';
 
 export default function DashboardShell({ 
   children, 
@@ -16,12 +18,28 @@ export default function DashboardShell({
 }) {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const count = await getTotalUnreadMessageCount();
+        setUnreadMessages(count);
+      } catch (error) {
+        console.error('Failed to fetch unread messages', error);
+      }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   const navigation = [
     { name: t('overview'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('browse'), href: '/dashboard/browse', icon: BookOpen },
     { name: t('myBooks'), href: '/dashboard/books', icon: BookOpen },
-    { name: 'Social', href: '/dashboard/social', icon: MessageCircle },
+    { name: 'Social', href: '/dashboard/social', icon: MessageCircle, badge: unreadMessages },
     { name: t('leaderboard'), href: '/dashboard/leaderboard', icon: Trophy },
     { name: t('settings'), href: '/dashboard/settings', icon: Settings },
     { name: 'Subscription', href: '/dashboard/subscription', icon: Zap },
@@ -79,7 +97,12 @@ export default function DashboardShell({
                   "w-5 h-5 mr-3 transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground group-hover:text-white"
                 )} />
-                {item.name}
+                <span className="flex-1">{item.name}</span>
+                {item.badge && item.badge > 0 ? (
+                    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                        {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                ) : null}
               </Link>
             );
           })}
@@ -119,17 +142,13 @@ export default function DashboardShell({
               >
                 <item.icon className={cn("w-6 h-6 mb-1", isActive && "fill-current")} />
                 <span className="text-[10px] font-medium truncate max-w-[64px]">{item.name}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full" />
+                )}
               </Link>
             );
           })}
           
-          {/* Mobile Notification Bell - Removed to make space for Settings
-          <div className="flex flex-col items-center justify-center p-2 min-w-[60px]">
-             <NotificationBell userId={userId} placement="top-center" />
-             <span className="text-[10px] font-medium text-muted-foreground mt-1">Alerts</span>
-          </div>
-          */}
-
           <Link
             href="/dashboard/create-book"
             className="flex flex-col items-center justify-center p-2 text-primary min-w-[60px]"
