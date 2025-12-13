@@ -1,5 +1,6 @@
 import { Eye, EyeOff, Save, Loader2, Maximize2, Minimize2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import DOMPurify from 'isomorphic-dompurify';
 import RichEditor from './RichEditor';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -140,7 +141,7 @@ export default function EditorMain({
             {showPreview ? (
               <div className="prose prose-invert prose-lg max-w-none font-serif leading-loose text-zinc-300">
                 {currentPage.content ? (
-                  <div dangerouslySetInnerHTML={{ __html: currentPage.content }} />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentPage.content) }} />
                 ) : (
                   <p className="text-zinc-600 italic">{t('nothingWritten')}</p>
                 )}

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Lock, BookOpen, Heart, Settings, Maximize, Minimize, Type, Palette, Monitor, X, MessageCircle, Share2, Volume2, VolumeX, Calendar, Menu, Home } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import DOMPurify from 'isomorphic-dompurify';
 import CharacterChat from './CharacterChat';
 import ReadingRoomControl from './ReadingRoomControl';
 import ShareQuoteModal from './ShareQuoteModal';
@@ -781,7 +782,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor }: BookReader
           
           <div 
             className="prose prose-lg dark:prose-invert max-w-none opacity-90"
-            dangerouslySetInnerHTML={{ __html: activePage.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activePage.content) }}
           />
         </div>
 
