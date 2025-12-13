@@ -44,6 +44,7 @@ interface Book {
   pages?: Page[];
   content?: string;
   collaborators?: Collaborator[];
+  tags?: string;
 }
 
 interface CreateBookClientProps {
@@ -66,6 +67,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   const [description, setDescription] = useState(initialBook?.description || '');
   const [coverImage, setCoverImage] = useState(initialBook?.coverImage || '');
   const [genre, setGenre] = useState(initialBook?.genre || '');
+  const [tags, setTags] = useState(initialBook?.tags || ''); // Added tags state
   const [isPremium, setIsPremium] = useState(initialBook?.isPremium || false);
   const [allowDownload, setAllowDownload] = useState(initialBook?.allowDownload || false);
   const [ambience, setAmbience] = useState(initialBook?.ambience || '');
@@ -205,6 +207,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
         description,
         coverImage,
         genre,
+        tags, // Added tags here
         isPremium,
         allowDownload,
         ambience,
@@ -389,6 +392,8 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 setDescription={setDescription}
                 genre={genre}
                 setGenre={setGenre}
+                tags={tags}
+                setTags={setTags}
                 isPremium={isPremium}
                 setIsPremium={setIsPremium}
                 price={price}

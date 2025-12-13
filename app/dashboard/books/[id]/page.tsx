@@ -53,6 +53,14 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const canRead = !book.isPremium || isAuthor || hasPurchased || hasSubscription;
 
+  const listsContainingBook = session ? await prisma.readingList.findMany({
+    where: {
+      userId: session.id as string,
+      books: { some: { bookId: id } }
+    },
+    select: { id: true }
+  }).then(lists => lists.map(l => l.id)) : [];
+
   return (
     <div className="max-w-4xl mx-auto pb-20">
       <BookReader 
@@ -66,6 +74,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         canRead={!!canRead} 
         isAuthor={isAuthor}
         isSubscriber={!!hasSubscription}
+        listsContainingBook={listsContainingBook}
       />
       
       <div className="px-6 space-y-8">

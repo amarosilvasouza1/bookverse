@@ -37,8 +37,10 @@ export default function DashboardShell({
 
   const navigation = [
     { name: t('overview'), href: '/dashboard', icon: LayoutDashboard },
+    // { name: t('search'), href: '/dashboard/search', icon: SearchIcon }, // Removed per user request
     { name: t('browse'), href: '/dashboard/browse', icon: BookOpen },
     { name: t('myBooks'), href: '/dashboard/books', icon: BookOpen },
+
     { name: 'Social', href: '/dashboard/social', icon: MessageCircle, badge: unreadMessages },
     { name: t('leaderboard'), href: '/dashboard/leaderboard', icon: Trophy },
     { name: t('settings'), href: '/dashboard/settings', icon: Settings },
@@ -58,7 +60,7 @@ export default function DashboardShell({
     <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30" suppressHydrationWarning>
       {/* Desktop Sidebar */}
       <aside className="fixed h-screen w-64 border-r border-white/10 hidden md:flex flex-col bg-background z-50">
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+        <div className="p-6 border-b border-white/10 flex flex-col gap-4">
           <Link href="/dashboard/browse" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform duration-300">
               <BookOpen className="w-6 h-6 text-white" />
@@ -67,6 +69,7 @@ export default function DashboardShell({
               BookVerse
             </span>
           </Link>
+          {/* <GlobalSearchInput /> Removed per user request */}
         </div>
 
         <div className="px-4 py-2">
@@ -128,40 +131,58 @@ export default function DashboardShell({
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-white/10 md:hidden z-50 pb-safe">
-        <div className="flex items-center justify-around p-2">
-          {navigation.filter(item => !['Subscription', t('leaderboard')].includes(item.name)).map((item) => {
+        <div className="flex items-center justify-between px-2">
+          {/* Main Items - Limited to 4 */}
+          {navigation.filter(item => 
+            [t('overview'), t('browse'), t('myBooks'), 'Social'].includes(item.name)
+          ).map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center justify-center p-2 rounded-lg transition-colors min-w-[60px]',
+                  'flex flex-col items-center justify-center p-2 rounded-lg transition-colors flex-1 min-w-0',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-white'
                 )}
               >
-                <item.icon className={cn("w-6 h-6 mb-1", isActive && "fill-current")} />
-                <span className="text-[10px] font-medium truncate max-w-[64px]">{item.name}</span>
+                <item.icon className={cn("w-5 h-5 mb-0.5", isActive && "fill-current")} />
+                <span className="text-[10px] font-medium truncate max-w-full leading-tight">{item.name}</span>
                 {item.badge && item.badge > 0 && (
-                  <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full" />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
                 )}
               </Link>
             );
           })}
           
+          {/* More and Create Items */}
+          <Link
+            href="/dashboard/settings"
+             className={cn(
+              'flex flex-col items-center justify-center p-2 rounded-lg transition-colors flex-1 min-w-0',
+              pathname === '/dashboard/settings' ? 'text-primary' : 'text-muted-foreground hover:text-white'
+            )}
+          >
+            <Settings className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] font-medium truncate max-w-full leading-tight">Settings</span>
+          </Link>
+
           <Link
             href="/dashboard/create-book"
-            className="flex flex-col items-center justify-center p-2 text-primary min-w-[60px]"
+            className="flex flex-col items-center justify-center p-2 text-primary flex-1 bg-primary/10 rounded-xl mx-1 min-w-0"
           >
-            <PlusCircle className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-medium">{t('create')}</span>
+            <PlusCircle className="w-5 h-5 mb-0.5" />
+             <span className="text-[10px] font-medium truncate max-w-full leading-tight">{t('create') || 'Create'}</span>
           </Link>
         </div>
       </nav>
 
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-md border-b border-white/10 z-40 flex items-center justify-between px-4" suppressHydrationWarning>
-          <span className="font-bold text-lg bg-linear-to-r from-primary to-purple-600 bg-clip-text text-transparent">BookVerse</span>
+          <div className="flex-1 flex items-center gap-2 mr-2">
+            <span className="font-bold text-lg bg-linear-to-r from-primary to-purple-600 bg-clip-text text-transparent">BookVerse</span>
+
+          </div>
           <div className="flex items-center gap-2">
             <Link href="/dashboard/leaderboard" className="p-2 rounded-lg hover:bg-white/10 transition-colors">
               <Trophy className="w-5 h-5 text-yellow-400" />

@@ -1,4 +1,4 @@
-import { Plus, Trash2, Users, Wand2, Book, User, Settings, ImageIcon, DollarSign, X, Music, Calendar } from 'lucide-react';
+import { Plus, Trash2, Users, Wand2, Book, User, Settings, ImageIcon, DollarSign, X, Music, Calendar, Tag } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -58,6 +58,8 @@ interface EditorSidebarProps {
   setDescription: (desc: string) => void;
   genre: string;
   setGenre: (genre: string) => void;
+  tags: string;
+  setTags: (tags: string) => void;
   isPremium: boolean;
   setIsPremium: (isPremium: boolean) => void;
   price: string;
@@ -181,6 +183,8 @@ export default function EditorSidebar({
   setDescription,
   genre,
   setGenre,
+  tags,
+  setTags,
   isPremium,
   setIsPremium,
   price,
@@ -355,6 +359,49 @@ export default function EditorSidebar({
                       <option value="Young Adult">Young Adult</option>
                       <option value="Children">Children</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                    <Tag className="w-3 h-3" />
+                    {t('tags') || 'Tags'}
+                  </label>
+                   <div className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      {tags.split(',').filter(Boolean).map((tag) => (
+                        <span key={tag} className="px-2 py-1 bg-white/5 border border-white/10 text-zinc-300 text-[10px] font-bold uppercase tracking-wider rounded-md flex items-center gap-1">
+                          #{tag.trim()}
+                          <button
+                            onClick={() => {
+                              const newTags = tags.split(',').filter(t => t.trim() !== tag.trim()).join(',');
+                              setTags(newTags);
+                            }}
+                            className="hover:text-white transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                     <input
+                      type="text"
+                      placeholder={t('addTagsPlaceholder') || 'Add tags (comma separated)...'}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = e.currentTarget.value.trim();
+                          if (val) {
+                             const currentTags = tags ? tags.split(',') : [];
+                             if (!currentTags.includes(val)) {
+                               setTags(tags ? `${tags},${val}` : val);
+                             }
+                             e.currentTarget.value = '';
+                          }
+                        }
+                      }}
+                      className="w-full bg-black/20 border border-white/5 rounded-xl p-3 text-xs focus:outline-none focus:border-white/20 transition-colors placeholder:text-zinc-700 text-zinc-300"
+                    />
                   </div>
                 </div>
               </div>

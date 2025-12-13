@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Users, DollarSign, TrendingUp, Sparkles, ArrowRight, Star, PenTool, Plus, ShoppingBag } from 'lucide-react';
+import { BookOpen, Users, DollarSign, TrendingUp, Sparkles, ArrowRight, Star, PenTool, Plus, BookMarked } from 'lucide-react';
 import ActivityFeed from '@/components/ActivityFeed';
 import { useLanguage } from '@/context/LanguageContext';
 import UserAvatar from '@/components/UserAvatar';
@@ -224,14 +224,14 @@ export default function DashboardContent({ userName, userImage, equippedFrame, s
           </h2>
           
           <div className="space-y-3">
-            <Link href="/dashboard/store" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-pink-500/50 hover:bg-pink-500/5 transition-all group">
+            <Link href="/dashboard/reading-lists" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all group">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+                  <BookMarked className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="font-bold text-white group-hover:text-pink-400 transition-colors">{t('itemStore')}</div>
-                  <div className="text-xs text-muted-foreground">{t('buyFramesAccessories')}</div>
+                  <div className="font-bold text-white group-hover:text-indigo-400 transition-colors">{t('readingLists') || 'Reading Lists'}</div>
+                  <div className="text-xs text-muted-foreground">{t('yourCollections') || 'Your collections'}</div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
               </div>

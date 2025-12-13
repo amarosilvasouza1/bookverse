@@ -14,6 +14,7 @@ export async function createBook(data: {
   description?: string;
   coverImage?: string;
   genre?: string;
+  tags?: string;
   isPremium?: boolean;
   allowDownload?: boolean;
   ambience?: string;
@@ -26,7 +27,7 @@ export async function createBook(data: {
       return { error: 'Unauthorized' };
     }
 
-    const { id, title, pages, description, coverImage, genre, isPremium, allowDownload, ambience, price, published } = data;
+    const { id, title, pages, description, coverImage, genre, tags, isPremium, allowDownload, ambience, price, published } = data;
 
     if (!title || pages.length === 0) {
       return { error: 'Title and at least one page are required' };
@@ -61,6 +62,7 @@ export async function createBook(data: {
             description: description || '',
             coverImage,
             genre,
+            tags, // Add tags
             isPremium: isPremium || false,
             allowDownload: allowDownload || false,
             ambience: ambience || null,
@@ -98,6 +100,7 @@ export async function createBook(data: {
           description: description || '',
           coverImage,
           genre,
+          tags,
           isPremium: isPremium || false,
           allowDownload: allowDownload || false,
           ambience: ambience || null,

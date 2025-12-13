@@ -74,6 +74,9 @@ model User {
   readingSessions  ReadingSession[]
   bookmarks        Bookmark[]
   reports          Report[]
+
+  // Reading Lists
+  readingLists ReadingList[]
 }
 
 model Item {
@@ -256,6 +259,7 @@ model Book {
   updatedAt     DateTime           @updatedAt
   authorId      String
   genre         String?
+  tags          String?            @db.Text // Comma-separated tags
   author        User               @relation(fields: [authorId], references: [id])
   weeklyFree    WeeklyFree[]
   purchases     Purchase[]
@@ -265,11 +269,12 @@ model Book {
   reviews       Review[]
 
   // New Features Relations
-  characters      Character[]
-  readingProgress ReadingProgress[]
-  readingRooms    ReadingRoom[]
-  readingSessions ReadingSession[]
-  bookmarks       Bookmark[]
+  characters       Character[]
+  readingProgress  ReadingProgress[]
+  readingRooms     ReadingRoom[]
+  readingSessions  ReadingSession[]
+  bookmarks        Bookmark[]
+  readingListBooks ReadingListBook[]
 
   @@index([authorId], map: "Book_authorId_fkey")
 }
@@ -661,4 +666,36 @@ model Report {
   @@index([reporterId])
   @@index([status])
   @@index([contentType, contentId])
+}
+
+// Reading Lists
+model ReadingList {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String? // Emoji or icon name
+  color     String? // Hex color for list
+  isDefault Boolean  @default(false) // "Read Later", "Favorites" are defaults
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  books ReadingListBook[]
+
+  @@index([userId])
+}
+
+model ReadingListBook {
+  id      String   @id @default(cuid())
+  listId  String
+  bookId  String
+  addedAt DateTime @default(now())
+  note    String?  @db.Text // Optional note about the book
+
+  list ReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  book Book        @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, bookId])
+  @@index([listId])
+  @@index([bookId])
 }

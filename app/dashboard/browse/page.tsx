@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, BookOpen, Star, TrendingUp, ChevronDown } from 'lucide-react';
+import { Search, Filter, BookOpen, Star, TrendingUp, ChevronDown, Users, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { searchGlobal, SearchResult } from '@/app/actions/search';
+import Image from 'next/image';
 
 interface Book {
   id: string;
@@ -34,22 +36,82 @@ function BrowseBooksContent() {
   const [loading, setLoading] = useState(true);
   
   // Filters
-  const [search, setSearch] = useState(searchParams.get('q') || '');
-  const [filter, setFilter] = useState(searchParams.get('filter') || 'all'); // all, premium, free
+
+  const [inputValue, setInputValue] = useState(searchParams.get('q') || '');
+  const [filter, setFilter] = useState(searchParams.get('filter') || 'all'); 
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [genre, setGenre] = useState(searchParams.get('genre') || 'all');
 
+  const [tagInput, setTagInput] = useState(searchParams.get('tag') || '');
+  const currentTab = searchParams.get('tab') || 'books';
+
+  const [globalResults, setGlobalResults] = useState<SearchResult | null>(null);
+
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  const updateUrl = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== 'all' && value !== 'newest') {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    router.push(`/dashboard/browse?${params.toString()}`);
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    // Immediate update for selects/buttons
+    if (key === 'filter') setFilter(value);
+    if (key === 'sort') setSort(value);
+    if (key === 'genre') setGenre(value);
+    updateUrl(key, value);
+  };
+
+  const clearFilters = () => {
+    setInputValue('');
+    setTagInput('');
+    setFilter('all');
+    setSort('newest');
+    setGenre('all');
+    router.push('/dashboard/browse');
+  };
+
+  // Sync URL params to local state on load/nav
   useEffect(() => {
+    setInputValue(searchParams.get('q') || '');
+    setTagInput(searchParams.get('tag') || '');
+    setFilter(searchParams.get('filter') || 'all');
+    setSort(searchParams.get('sort') || 'newest');
+    setGenre(searchParams.get('genre') || 'all');
+  }, [searchParams]);
+
+  // Debounce Search & Tag Input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        if (inputValue !== (searchParams.get('q') || '')) {
+            updateUrl('q', inputValue);
+        }
+        if (tagInput !== (searchParams.get('tag') || '')) {
+            updateUrl('tag', tagInput);
+        }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [inputValue, tagInput]);
+
+
+  // Fetch Books (Only if tab is books)
+  useEffect(() => {
+    if (currentTab !== 'books') return;
+
     async function fetchBooks() {
       setLoading(true);
       try {
         const params = new URLSearchParams();
-        if (search) params.append('q', search);
+        if (inputValue) params.append('q', inputValue);
         if (filter !== 'all') params.append('filter', filter);
         if (sort !== 'newest') params.append('sort', sort);
         if (genre !== 'all') params.append('genre', genre);
+        if (tagInput) params.append('tag', tagInput);
 
         const response = await fetch(`/api/books/browse?${params.toString()}`);
         if (response.ok) {
@@ -63,37 +125,36 @@ function BrowseBooksContent() {
       }
     }
 
-    const timeoutId = setTimeout(() => {
-      fetchBooks();
+    // Call fetch immediately since URL changes are debounced
+    fetchBooks();
+  }, [searchParams, currentTab, inputValue, filter, sort, genre, tagInput]);
+
+  // Fetch Global Search (Users/Communities)
+  useEffect(() => {
+    if (currentTab === 'books') return;
+    
+    // Only search if we have query > 1 char
+    if (inputValue.length < 2) {
+       setGlobalResults(null);
+       return;
+    }
+
+    const timer = setTimeout(async () => {
+       setLoading(true);
+       try {
+         const res = await searchGlobal(inputValue);
+         setGlobalResults(res);
+       } catch (e) {
+         console.error(e);
+       } finally {
+         setLoading(false);
+       }
     }, 500);
 
-    return () => clearTimeout(timeoutId);
-  }, [search, filter, sort, genre]);
+    return () => clearTimeout(timer);
+  }, [inputValue, currentTab]);
 
-  const updateUrl = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== 'all' && value !== 'newest') {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    router.push(`/dashboard/browse?${params.toString()}`);
-  };
 
-  const handleFilterChange = (key: string, value: string) => {
-    if (key === 'filter') setFilter(value);
-    if (key === 'sort') setSort(value);
-    if (key === 'genre') setGenre(value);
-    updateUrl(key, value);
-  };
-
-  const clearFilters = () => {
-    setSearch('');
-    setFilter('all');
-    setSort('newest');
-    setGenre('all');
-    router.push('/dashboard/browse');
-  };
 
   return (
     <div className="min-h-screen pb-20" suppressHydrationWarning>
@@ -108,17 +169,38 @@ function BrowseBooksContent() {
           <input
             type="text"
             placeholder="Search titles, authors, genres..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              updateUrl('q', e.target.value);
-            }}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             className="w-full bg-zinc-900 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-colors"
           />
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none">
+        {[
+            { id: 'books', label: 'Books', icon: BookOpen },
+            { id: 'users', label: 'People', icon: Users },
+            { id: 'communities', label: 'Communities', icon: MessageCircle }
+        ].map(tab => (
+            <button
+                key={tab.id}
+                onClick={() => updateUrl('tab', tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  currentTab === tab.id
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white'
+                }`}
+            >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+            </button>
+        ))}
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-8">
+        {currentTab === 'books' && (
+          <>
         {/* Mobile Filter Toggle */}
         <button 
           onClick={() => setShowMobileFilters(!showMobileFilters)}
@@ -134,11 +216,23 @@ function BrowseBooksContent() {
               <h3 className="font-bold text-lg flex items-center gap-2">
                 <Filter className="w-4 h-4 text-indigo-400" /> Filters
               </h3>
-              {(filter !== 'all' || genre !== 'all' || sort !== 'newest') && (
+              {(filter !== 'all' || genre !== 'all' || sort !== 'newest' || inputValue || tagInput) && (
                 <button onClick={clearFilters} className="text-xs text-indigo-400 hover:underline">
                   Reset
                 </button>
               )}
+            </div>
+
+            {/* Tag Filter */}
+             <div className="space-y-3">
+              <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Tag</label>
+              <input 
+                type="text" 
+                placeholder="#adventure" 
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500/50 transition-colors"
+              />
             </div>
 
             {/* Price Filter */}
@@ -206,9 +300,13 @@ function BrowseBooksContent() {
             </div>
           </div>
         </aside>
+          </>
+        )}
 
         {/* Results Grid */}
         <main className="flex-1">
+          {currentTab === 'books' && (
+            <>
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">
               {loading ? 'Loading...' : `${books.length} Books Found`}
@@ -312,6 +410,75 @@ function BrowseBooksContent() {
                 </Link>
               ))}
             </div>
+
+          )}
+            </>
+          )}
+          
+          {/* Users Grid */}
+          {currentTab === 'users' && (
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                 {globalResults?.users.map(user => (
+                    <Link
+                      key={user.id}
+                      href={`/dashboard/profile/${user.username}`}
+                      className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full overflow-hidden relative border border-white/10">
+                        {user.image ? (
+                          <Image src={user.image} alt={user.username} fill className="object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                            {user.username[0].toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-bold text-white group-hover:text-indigo-400 transition-colors">
+                          {user.name || user.username}
+                        </p>
+                        <p className="text-xs text-muted-foreground">@{user.username}</p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          {user._count.followers} followers
+                        </p>
+                      </div>
+                    </Link>
+                 ))}
+                 {(!globalResults?.users.length && !loading) && (
+                     <p className="text-zinc-500 col-span-full text-center py-10">
+                        {inputValue.length < 2 ? 'Type to search people...' : 'No users found.'}
+                     </p>
+                 )}
+             </div>
+          )}
+
+          {/* Communities Grid */}
+          {currentTab === 'communities' && (
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 {globalResults?.communities.map(community => (
+                    <Link
+                      key={community.id}
+                      href={`/dashboard/communities/${community.id}`}
+                      className="p-5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all flex flex-col justify-between h-full"
+                    >
+                      <div>
+                        <h3 className="font-bold text-white mb-2">{community.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                          {community.description || 'No description'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-zinc-500">
+                        <Users className="w-3 h-3" />
+                        {community._count.members} members
+                      </div>
+                    </Link>
+                 ))}
+                 {(!globalResults?.communities.length && !loading) && (
+                     <p className="text-zinc-500 col-span-full text-center py-10">
+                        {inputValue.length < 2 ? 'Type to search communities...' : 'No communities found.'}
+                     </p>
+                 )}
+             </div>
           )}
         </main>
       </div>
