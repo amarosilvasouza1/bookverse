@@ -116,10 +116,10 @@ export async function createBook(data: {
       });
     }
 
-    revalidatePath('/dashboard/my-books');
+    revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
     
-    revalidatePath('/dashboard/my-books');
+    revalidatePath('/dashboard/books');
     revalidatePath('/dashboard');
     
     // Check for achievements

@@ -220,7 +220,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
       });
 
       if (published) {
-        setTimeout(() => router.push('/dashboard/my-books'), 1500);
+        setTimeout(() => router.push('/dashboard/books'), 1500);
       } else if (!bookId && result.bookId) {
          window.history.replaceState(null, '', `/dashboard/create-book?id=${result.bookId}`);
       }
