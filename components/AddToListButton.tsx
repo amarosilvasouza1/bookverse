@@ -12,11 +12,22 @@ interface AddToListButtonProps {
   compact?: boolean;
 }
 
+interface ReadingListBook {
+  bookId: string;
+}
+
+interface ReadingList {
+  id: string;
+  name: string;
+  icon?: string | null;
+  books: ReadingListBook[];
+}
+
 export default function AddToListButton({ bookId, listsContainingBook, compact }: AddToListButtonProps) {
   const { t } = useLanguage();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [lists, setLists] = useState<any[]>([]);
+  const [lists, setLists] = useState<ReadingList[]>([]);
   const [loading, setLoading] = useState(false);
   const [containingLists, setContainingLists] = useState<Set<string>>(new Set(listsContainingBook));
   const [newListName, setNewListName] = useState('');
@@ -26,12 +37,12 @@ export default function AddToListButton({ bookId, listsContainingBook, compact }
     setLoading(true);
     const result = await getMyReadingLists();
     if (result.success && result.lists) {
-      setLists(result.lists);
+      setLists(result.lists as unknown as ReadingList[]);
       
       // Update containing lists locally based on fresh data
       const updatedContaining = new Set<string>();
-      result.lists.forEach((list: any) => {
-        if (list.books.some((b: any) => b.bookId === bookId)) {
+      (result.lists as unknown as ReadingList[]).forEach((list) => {
+        if (list.books.some((b) => b.bookId === bookId)) {
           updatedContaining.add(list.id);
         }
       });
@@ -104,15 +115,24 @@ export default function AddToListButton({ bookId, listsContainingBook, compact }
       </button>
 
       {isOpen && (
-        <>
-          <div className="fixed inset-0 z-[60]" onClick={(e) => {e.stopPropagation(); setIsOpen(false)}} />
-          <div className="absolute right-0 top-full mt-2 w-72 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl z-[70] p-4 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ zIndex: 60 }}>
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+          />
+          <div 
+            className="bg-[#1a1b1e] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 relative z-10 animate-in fade-in zoom-in duration-300" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3 p-4 pb-2 border-b border-white/5">
               <h3 className="font-bold text-sm text-white">{t('saveTo') || 'Save to...'}</h3>
               <button onClick={() => setIsOpen(false)}><X className="w-4 h-4 text-zinc-500 hover:text-white" /></button>
             </div>
 
-            <div className="space-y-1 max-h-60 overflow-y-auto custom-scrollbar mb-3">
+            <div className="space-y-1 max-h-60 overflow-y-auto custom-scrollbar mb-3 px-4">
               {loading ? (
                 <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
               ) : (
@@ -135,7 +155,7 @@ export default function AddToListButton({ bookId, listsContainingBook, compact }
               )}
             </div>
 
-            <div className="pt-2 border-t border-white/5">
+            <div className="p-4 pt-2 border-t border-white/5">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -155,7 +175,7 @@ export default function AddToListButton({ bookId, listsContainingBook, compact }
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

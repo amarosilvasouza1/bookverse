@@ -64,6 +64,7 @@ async function CreateBook({ searchParams }: { searchParams: Promise<{ id?: strin
     genre: book.genre || undefined,
     price: book.price || undefined,
     ambience: book.ambience || undefined,
+    tags: book.tags || undefined,
     pages: book.pages.map(page => ({
       ...page,
       title: page.title || '',
