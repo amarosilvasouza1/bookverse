@@ -56,35 +56,34 @@ export default function CommunityCard({ community, isMember }: CommunityCardProp
   const gradient = getGradient(community.name);
 
   return (
-    <div className="group relative h-full flex flex-col glass-card rounded-3xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2">
-      {/* Header / Banner Placeholder */}
-      <div className={`h-32 bg-linear-to-br ${gradient} relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay"></div>
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"></div>
+    <div className="group relative h-full flex flex-col bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-1">
+      {/* Header / Banner - Cleaner */}
+      <div className={`h-28 bg-linear-to-br ${gradient} relative`}>
+        <div className="absolute inset-0 bg-black/10"></div>
         
-        {/* Animated sheen effect */}
-        <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
+        {/* Subtle sheen */}
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
 
-        <div className="absolute -bottom-8 left-6">
-          <div className="w-16 h-16 rounded-2xl bg-zinc-900 border-4 border-zinc-900 flex items-center justify-center text-white font-bold text-2xl shadow-xl group-hover:scale-110 transition-transform duration-500">
+        <div className="absolute -bottom-6 left-6">
+          <div className="w-14 h-14 rounded-2xl bg-zinc-900 border-4 border-zinc-900 flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-500">
             {community.name.substring(0, 2).toUpperCase()}
           </div>
         </div>
       </div>
 
-      <div className="p-6 pt-10 flex-1 flex flex-col bg-black/20 backdrop-blur-sm">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors line-clamp-1 tracking-tight">
+      <div className="p-6 pt-8 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-bold text-white group-hover:text-purple-400 transition-colors line-clamp-1 tracking-tight">
             {community.name}
           </h3>
         </div>
 
-        <p className="text-sm text-gray-400 mb-6 line-clamp-2 h-10 leading-relaxed group-hover:text-gray-300 transition-colors">
+        <p className="text-sm text-zinc-400 mb-6 line-clamp-2 leading-relaxed group-hover:text-zinc-300 transition-colors bg-zinc-900/50">
           {community.description || t('defaultCommunityDesc')}
         </p>
 
         <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors">
-          <div className="flex gap-4 text-xs font-medium text-gray-500 group-hover:text-gray-400 transition-colors">
+          <div className="flex gap-4 text-xs font-medium text-zinc-500 group-hover:text-zinc-400 transition-colors">
             <div className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" />
               {community._count.members}
@@ -96,7 +95,7 @@ export default function CommunityCard({ community, isMember }: CommunityCardProp
           </div>
 
           {isMember ? (
-            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20 flex items-center gap-1.5 shadow-lg shadow-emerald-900/20">
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               {t('member')}
             </span>
@@ -104,14 +103,14 @@ export default function CommunityCard({ community, isMember }: CommunityCardProp
             <button
               onClick={handleJoin}
               disabled={loading}
-              className="text-xs font-bold bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-xl transition-all flex items-center group/btn shadow-lg shadow-white/5 hover:shadow-white/20 hover:scale-105 active:scale-95"
+              className="text-xs font-bold text-white group-hover:text-purple-400 transition-colors flex items-center gap-1 group/btn"
             >
               {loading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
                 <>
                   {t('join')}
-                  <ArrowRight className="w-3.5 h-3.5 ml-1 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
+                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
                 </>
               )}
             </button>

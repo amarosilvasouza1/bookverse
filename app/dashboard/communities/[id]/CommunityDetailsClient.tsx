@@ -10,6 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { joinCommunity } from '@/app/actions/join-community';
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 interface Creator {
   username: string;
@@ -106,9 +107,18 @@ export default function CommunityDetailsClient({ community, session }: Community
   const gradient = getGradient(community.name);
 
   return (
-    <div className="-mt-4 -mx-4 md:-mt-8 md:-mx-8">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="-mt-4 -mx-4 md:-mt-6 md:-mx-6 lg:-mt-8 lg:-mx-8"
+    >
       {/* Immersive Header */}
-      <div className="relative h-[400px] md:h-[500px] overflow-hidden group">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "circOut" }}
+        className="relative h-[400px] md:h-[500px] overflow-hidden group"
+      >
         {/* Dynamic Background */}
         <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-80`} />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-40 mix-blend-overlay" />
@@ -117,6 +127,16 @@ export default function CommunityDetailsClient({ community, session }: Community
         {/* Animated Elements */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 animate-pulse" />
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-black/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+        {/* Floating Back Button - Mobile Only (Top Left) */}
+        <div className="absolute top-4 left-4 z-50 md:hidden">
+          <Link 
+            href="/dashboard/social"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 text-white shadow-lg active:scale-95 transition-all"
+          >
+             <ArrowRight className="w-5 h-5 rotate-180" />
+          </Link>
+        </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 max-w-7xl mx-auto w-full z-20">
           <div className="flex flex-col md:flex-row items-end gap-8">
@@ -143,8 +163,18 @@ export default function CommunityDetailsClient({ community, session }: Community
                       <Globe className="w-3 h-3" /> {t('community')}
                     </span>
                   </div>
+
+                  <div className="hidden md:flex mb-4">
+                    <Link 
+                      href="/dashboard/social" 
+                      className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black/20 hover:bg-black/30 backdrop-blur-md border border-white/10 transition-all text-sm font-bold text-white/90 hover:text-white"
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                      Back to Social Hub
+                    </Link>
+                  </div>
                   
-                  <h1 className="text-4xl md:text-8xl font-black text-white tracking-tighter leading-none drop-shadow-2xl">
+                  <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-none drop-shadow-2xl break-words hyphens-auto">
                     {community.name}
                   </h1>
                   
@@ -154,18 +184,18 @@ export default function CommunityDetailsClient({ community, session }: Community
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-4 pb-2">
+                <div className="flex flex-wrap items-center gap-3 pb-2 max-w-full">
                   {community.isMember ? (
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 px-6 py-3 bg-emerald-500/20 text-emerald-300 rounded-2xl font-bold border border-emerald-500/30 backdrop-blur-xl shadow-lg shadow-emerald-900/20 animate-in zoom-in duration-300">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                      <div className="flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 bg-emerald-500/20 text-emerald-300 rounded-xl md:rounded-2xl text-sm md:text-base font-bold border border-emerald-500/30 backdrop-blur-xl shadow-lg shadow-emerald-900/20 animate-in zoom-in duration-300 whitespace-nowrap">
+                        <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
                         {t('member')}
                       </div>
                       
                       {community.memberRole === 'ADMIN' && (
                         <Link 
                           href={`/dashboard/communities/${community.id}/settings`}
-                          className="inline-flex items-center px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold transition-all border border-white/10 backdrop-blur-md hover:scale-105 active:scale-95 group"
+                          className="inline-flex items-center p-2 md:px-4 md:py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl md:rounded-2xl font-bold transition-all border border-white/10 backdrop-blur-md hover:scale-105 active:scale-95 group"
                         >
                           <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform duration-500" />
                         </Link>
@@ -176,15 +206,15 @@ export default function CommunityDetailsClient({ community, session }: Community
                       )}
                     </div>
                   ) : community.memberStatus === 'PENDING' ? (
-                    <div className="inline-flex items-center px-6 py-3 bg-amber-500/10 text-amber-300 rounded-2xl font-bold border border-amber-500/20 backdrop-blur-md shadow-lg shadow-amber-900/20">
-                       <Clock className="w-4 h-4 mr-2 animate-spin-slow" />
+                    <div className="inline-flex items-center px-4 py-2 md:px-6 md:py-3 bg-amber-500/10 text-amber-300 rounded-xl md:rounded-2xl text-sm md:text-base font-bold border border-amber-500/20 backdrop-blur-md shadow-lg shadow-amber-900/20 whitespace-nowrap">
+                       <Clock className="w-3 h-3 md:w-4 md:h-4 mr-2 animate-spin-slow" />
                        {t('requestPending')}
                     </div>
                   ) : (
                     <button 
                       onClick={handleJoin}
                       disabled={isPending}
-                      className="group relative overflow-hidden bg-white text-black hover:bg-gray-100 px-10 py-4 rounded-2xl font-bold transition-all shadow-xl shadow-white/10 hover:shadow-white/20 hover:scale-105 active:scale-95 text-lg flex items-center gap-2"
+                      className="group relative overflow-hidden bg-white text-black hover:bg-gray-100 px-6 py-3 md:px-10 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all shadow-xl shadow-white/10 hover:shadow-white/20 hover:scale-105 active:scale-95 text-base md:text-lg flex items-center gap-2 whitespace-nowrap"
                     >
                       <div className="absolute inset-0 bg-linear-to-r from-transparent via-black/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       {isPending ? (
@@ -192,7 +222,7 @@ export default function CommunityDetailsClient({ community, session }: Community
                       ) : (
                          <>
                            <span>{community.privacy === 'CLOSED' ? t('requestToJoin') : t('joinCommunityButton')}</span>
-                           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                           <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
                          </>
                       )}
                     </button>
@@ -202,10 +232,10 @@ export default function CommunityDetailsClient({ community, session }: Community
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 md:px-10 pt-24 md:pt-32 pb-12">
+      {/* Main Content Area */ }
+      <div className="max-w-7xl mx-auto px-4 md:px-10 pt-24 md:pt-32 pb-12 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           
           {/* Left Column: Feed (8 cols) */}
@@ -333,6 +363,6 @@ export default function CommunityDetailsClient({ community, session }: Community
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

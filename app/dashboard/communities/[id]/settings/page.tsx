@@ -2,6 +2,8 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import CommunitySettingsForm from '@/components/CommunitySettingsForm';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function CommunitySettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
@@ -37,6 +39,13 @@ export default async function CommunitySettingsPage({ params }: { params: Promis
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
+        <Link 
+          href={`/dashboard/communities/${id}`}
+          className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-4 group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Back to Community
+        </Link>
         <h1 className="text-3xl font-bold mb-2">Community Settings</h1>
         <p className="text-muted-foreground">Manage your community, members, and requests.</p>
       </div>

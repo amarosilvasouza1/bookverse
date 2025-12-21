@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, MessageCircle, Users, Clock, Layout, ArrowLeft } from 'lucide-react';
+import { Plus, MessageCircle, Users, Clock, Layout, ArrowRight, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ChatInterface from '@/components/ChatInterface';
-
 import StatusViewer from '@/components/StatusViewer';
+import { followUser } from '@/app/actions/social';
+import { toast } from 'sonner';
+import CreateStatusModal from './CreateStatusModal';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Community {
   id: string;
@@ -36,15 +39,11 @@ export interface Status {
   user: {
     name: string | null;
     image: string | null;
+    username: string; // Added username to type definition
   };
   expiresAt: Date;
   createdAt: string | Date;
 }
-
-import { followUser } from '@/app/actions/social';
-
-import { toast } from 'sonner';
-import CreateStatusModal from './CreateStatusModal';
 
 interface SuggestedUser {
   id: string;
@@ -70,103 +69,143 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
   const [showCreateStatus, setShowCreateStatus] = useState(false);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 px-2 py-4 sm:p-4 md:p-8 overflow-x-hidden" suppressHydrationWarning>
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 px-4 py-6 md:p-8" suppressHydrationWarning>
       {/* Status Viewer Overlay */}
-      {viewingStatus && (
-        <StatusViewer 
-          status={viewingStatus} 
-          onClose={() => setViewingStatus(null)} 
-        />
-      )}
+      <AnimatePresence>
+        {viewingStatus && (
+          <StatusViewer 
+            status={viewingStatus} 
+            onClose={() => setViewingStatus(null)} 
+          />
+        )}
+      </AnimatePresence>
 
-      {showCreateStatus && (
-        <CreateStatusModal onClose={() => setShowCreateStatus(false)} />
-      )}
+      <AnimatePresence>
+        {showCreateStatus && (
+          <CreateStatusModal onClose={() => setShowCreateStatus(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Header - Hidden on mobile when in Chat */}
-      <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-4", activeTab === 'chat' ? "hidden md:flex" : "flex")}>
+      <div className={cn(
+        "flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300",
+        activeTab === 'chat' ? "hidden md:flex" : "flex"
+      )}>
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2 bg-linear-to-r from-white via-white/80 to-white/50 bg-clip-text text-transparent tracking-tight">
+          <motion.h1 
+             initial={{ opacity: 0, y: -10 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="text-3xl md:text-4xl font-bold mb-1 bg-linear-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent tracking-tight"
+          >
             Social Hub
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg">Connect, share, and explore the community.</p>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-muted-foreground text-sm md:text-base font-medium"
+          >
+            Connect, share, and explore the community.
+          </motion.p>
         </div>
         
         {/* Premium Tabs */}
-        <div className="flex bg-black/40 backdrop-blur-xl p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-white/10 shadow-2xl shadow-black/50 w-full md:w-auto">
+        <div className="flex bg-zinc-900/50 backdrop-blur-xl p-1.5 rounded-2xl border border-white/5 shadow-2xl w-full md:w-auto relative">
           <button
             onClick={() => setActiveTab('feed')}
             className={cn(
-              "flex-1 md:flex-none px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2",
-              activeTab === 'feed' 
-                ? "bg-white text-black shadow-lg scale-100" 
-                : "text-muted-foreground hover:text-white hover:bg-white/5 scale-95 hover:scale-100"
+              "flex-1 md:flex-none px-6 md:px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 relative z-10",
+              activeTab === 'feed' ? "text-white" : "text-zinc-500 hover:text-zinc-300"
             )}
           >
-            <Layout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            {activeTab === 'feed' && (
+              <motion.div 
+                layoutId="activeTab"
+                className="absolute inset-0 bg-white/10 rounded-xl"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+            <Layout className="w-4 h-4" />
             Feed
           </button>
           <button
             onClick={() => setActiveTab('chat')}
             className={cn(
-              "flex-1 md:flex-none px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2",
-              activeTab === 'chat' 
-                ? "bg-white text-black shadow-lg scale-100" 
-                : "text-muted-foreground hover:text-white hover:bg-white/5 scale-95 hover:scale-100"
+              "flex-1 md:flex-none px-6 md:px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 relative z-10",
+              activeTab === 'chat' ? "text-white" : "text-zinc-500 hover:text-zinc-300"
             )}
           >
-            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+           {activeTab === 'chat' && (
+              <motion.div 
+                layoutId="activeTab"
+                className="absolute inset-0 bg-white/10 rounded-xl"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+            <MessageCircle className="w-4 h-4" />
             Messages
           </button>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="mt-4 sm:mt-6 md:mt-8 min-h-[calc(100vh-200px)] md:min-h-[600px]">
+      <div className="mt-6 md:mt-8 min-h-[calc(100vh-200px)] md:min-h-[600px]">
         {/* Feed Tab Content */}
         {activeTab === 'feed' && (
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-12"
+          >
             {/* Status Section (Stories) */}
             <div className="relative">
-              <div className="absolute inset-0 bg-linear-to-r from-primary/10 via-purple-500/10 to-blue-500/10 blur-3xl -z-10 rounded-full opacity-50" />
-              <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl">
-                <h2 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+              <div className="absolute inset-0 bg-linear-to-r from-purple-500/5 to-blue-500/5 blur-3xl -z-10 rounded-full" />
+              <div className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-3xl p-6 md:p-8">
+                <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-purple-400" />
                   Recent Stories
                 </h2>
-                <div className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto pb-4 scrollbar-hide snap-x -mx-2 px-2">
+                <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
                   {/* My Status */}
-                  <div 
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setShowCreateStatus(true)}
-                    className="flex flex-col items-center gap-2 sm:gap-3 md:gap-4 shrink-0 group cursor-pointer snap-start"
+                    className="flex flex-col items-center gap-3 shrink-0 cursor-pointer group"
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 group-hover:bg-white/10 group-hover:border-primary/50 transition-all duration-300 group-hover:scale-105 shadow-lg">
-                      <Plus className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white/50 group-hover:text-white transition-colors" />
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center bg-white/5 group-hover:bg-white/10 group-hover:border-purple-500/50 transition-colors">
+                      <Plus className="w-6 h-6 md:w-8 md:h-8 text-zinc-500 group-hover:text-white transition-colors" />
                     </div>
-                    <span className="text-[10px] sm:text-xs font-bold text-muted-foreground group-hover:text-white transition-colors">Add Story</span>
-                  </div>
+                    <span className="text-xs font-medium text-zinc-500 group-hover:text-white transition-colors">Add Story</span>
+                  </motion.div>
 
-                  {statuses.map((status) => (
-                    <div 
+                  {statuses.map((status, i) => (
+                    <motion.div 
                       key={status.id} 
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      whileHover={{ scale: 1.05 }}
                       onClick={() => setViewingStatus(status)}
-                      className="flex flex-col items-center gap-2 sm:gap-3 md:gap-4 shrink-0 cursor-pointer group snap-start"
+                      className="flex flex-col items-center gap-3 shrink-0 cursor-pointer group"
                     >
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full p-[2px] sm:p-[3px] bg-linear-to-tr from-yellow-400 via-orange-500 to-purple-600 animate-gradient-xy shadow-xl shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300 group-hover:scale-105">
-                        <div className="w-full h-full rounded-full border-2 sm:border-4 border-black overflow-hidden relative">
-                          {status.user.image && (status.user.image.startsWith('http') || status.user.image.startsWith('/')) ? (
-                            <Image src={status.user.image} alt={status.user.name || ''} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[3px] bg-linear-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all relative">
+                        <div className="w-full h-full rounded-full border-4 border-black overflow-hidden relative">
+                          {status.user.image ? (
+                            <Image src={status.user.image} alt={status.user.name || ''} fill className="object-cover" />
                           ) : (
-                            <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-xs sm:text-sm font-bold text-white">
-                              {(status.user.name || '?')[0]}
+                            <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-sm font-bold text-white">
+                              {(status.user.name || status.user.username || '?')[0].toUpperCase()}
                             </div>
                           )}
                         </div>
                       </div>
-                      <span className="text-[10px] sm:text-xs font-bold text-white group-hover:text-primary transition-colors truncate max-w-[60px] sm:max-w-[80px]">
-                        {status.user.name}
+                      <span className="text-xs font-medium text-zinc-400 group-hover:text-white transition-colors truncate max-w-[80px]">
+                        {status.user.name || status.user.username}
                       </span>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -175,100 +214,113 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
             {/* Suggested Authors */}
             {suggestedUsers.length > 0 && (
               <div className="space-y-4">
-                 <h2 className="text-xs sm:text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Suggested Authors</h2>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {suggestedUsers.map(user => (
-                      <SuggestedUserCard key={user.id} user={user} />
+                 <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1 flex items-center gap-2">
+                   <TrendingUp className="w-4 h-4 text-pink-400" />
+                   Suggested Authors
+                 </h2>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {suggestedUsers.map((user, i) => (
+                      <SuggestedUserCard key={user.id} user={user} delay={i * 0.1} />
                     ))}
                  </div>
               </div>
             )}
 
             {/* Communities Feed */}
-            <div className="space-y-6 sm:space-y-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4" suppressHydrationWarning>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
-                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <div className="space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <Users className="w-6 h-6 text-purple-400" />
                   Trending Communities
                 </h2>
                 <Link 
                   href="/dashboard/communities/create"
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-white text-black rounded-full text-xs sm:text-sm font-bold hover:bg-gray-200 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10 text-center"
+                  className="px-6 py-2.5 bg-white text-black rounded-xl text-sm font-bold hover:bg-zinc-200 transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] text-center flex items-center justify-center gap-2 group"
                 >
+                  <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
                   Create Community
                 </Link>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-                {communities.map((community) => (
-                  <Link 
-                    key={community.id} 
-                    href={`/dashboard/communities/${community.id}`}
-                    className="group relative bg-black/40 border border-white/10 hover:border-primary/50 rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 overflow-hidden"
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {communities.map((community, i) => (
+                  <motion.div
+                    key={community.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + (i * 0.1) }}
                   >
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    <div className="relative flex flex-col h-full">
-                      <div className="flex items-start justify-between mb-4 sm:mb-5 md:mb-6">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl bg-linear-to-br from-gray-800 to-black flex items-center justify-center text-white text-sm sm:text-base md:text-xl font-bold shadow-xl border border-white/5 group-hover:scale-110 transition-transform duration-500">
-                          {community.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-white/5 border border-white/10 text-[8px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                          Community
-                        </div>
-                      </div>
+                    <Link 
+                      href={`/dashboard/communities/${community.id}`}
+                      className="group relative block bg-zinc-900/40 border border-white/5 hover:border-purple-500/30 rounded-[2rem] p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden h-full"
+                    >
+                      <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-base sm:text-lg md:text-xl text-white mb-1 sm:mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                          {community.name}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 mb-4 sm:mb-5 md:mb-6 leading-relaxed">
-                          {community.description || 'Join this community to connect with others and share your passion for books.'}
-                        </p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between pt-4 sm:pt-5 md:pt-6 border-t border-white/5">
-                        <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs font-medium text-gray-400">
-                          <span className="flex items-center gap-1 sm:gap-1.5">
-                            <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                            {community._count.members}
-                          </span>
-                          <span className="flex items-center gap-1 sm:gap-1.5">
-                            <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                            {community._count.posts}
+                      <div className="relative flex flex-col h-full">
+                        <div className="flex items-start justify-between mb-6">
+                          <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-zinc-800 to-black flex items-center justify-center text-xl font-bold text-white shadow-lg border border-white/5 group-hover:scale-110 group-hover:shadow-purple-500/20 transition-all duration-500">
+                            {community.name.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-zinc-400 uppercase tracking-wider group-hover:bg-purple-500/10 group-hover:text-purple-300 transition-colors">
+                            Community
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-xl text-white mb-2 group-hover:text-purple-400 transition-colors line-clamp-1">
+                            {community.name}
+                          </h3>
+                          <p className="text-sm text-zinc-400 line-clamp-2 mb-6 leading-relaxed group-hover:text-zinc-300 transition-colors">
+                            {community.description || 'Join this community to connect with others and share your passion for books.'}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-6 border-t border-white/5 group-hover:border-white/10 transition-colors">
+                          <div className="flex items-center gap-4 text-xs font-medium text-zinc-500">
+                            <span className="flex items-center gap-1.5 group-hover:text-zinc-300 transition-colors">
+                              <Users className="w-3.5 h-3.5" />
+                              {community._count.members}
+                            </span>
+                            <span className="flex items-center gap-1.5 group-hover:text-zinc-300 transition-colors">
+                              <MessageCircle className="w-3.5 h-3.5" />
+                              {community._count.posts}
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold text-purple-400 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 flex items-center gap-1">
+                            Join <ArrowRight className="w-3 h-3" />
                           </span>
                         </div>
-                        <span className="text-[10px] sm:text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                          Join Now →
-                        </span>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Chat Tab Content */}
         {activeTab === 'chat' && (
-          <div className="animate-in fade-in zoom-in-95 duration-300 -mx-4 md:mx-0">
+          <motion.div 
+             initial={{ opacity: 0, scale: 0.98 }}
+             animate={{ opacity: 1, scale: 1 }}
+             className="h-full"
+          >
              <ChatInterface onBack={() => setActiveTab('feed')} />
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
   );
 }
-function SuggestedUserCard({ user }: { user: SuggestedUser }) {
+
+function SuggestedUserCard({ user, delay }: { user: SuggestedUser, delay: number }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleFollow = async () => {
     setLoading(true);
-    // Optimistic
-    setIsFollowing(true);
+    setIsFollowing(true); // Optimistic
     
     try {
       const result = await followUser(user.id);
@@ -287,24 +339,29 @@ function SuggestedUserCard({ user }: { user: SuggestedUser }) {
   };
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3 md:gap-4 hover:border-white/20 transition-all">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className="bg-zinc-900/50 border border-white/5 rounded-2xl p-4 flex items-center gap-4 hover:border-white/10 hover:bg-zinc-900/80 transition-all group"
+    >
       <Link href={`/dashboard/profile/${user.username}`}>
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-white/10">
+        <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-white/10 group-hover:border-purple-500/30 transition-colors">
           {user.image ? (
             <Image src={user.image} alt={user.username} width={48} height={48} className="object-cover w-full h-full" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white font-bold">
+            <div className="w-full h-full flex items-center justify-center text-white font-bold bg-linear-to-br from-zinc-700 to-black">
               {(user.name || user.username)[0].toUpperCase()}
             </div>
           )}
         </div>
       </Link>
       
-      <div className="flex-1 min-w-0 overflow-hidden">
-        <Link href={`/dashboard/profile/${user.username}`} className="font-bold text-sm sm:text-base text-white hover:underline truncate block">
+      <div className="flex-1 min-w-0">
+        <Link href={`/dashboard/profile/${user.username}`} className="font-bold text-sm text-white hover:text-purple-400 transition-colors truncate block">
           {user.name || user.username}
         </Link>
-        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+        <p className="text-xs text-zinc-500 truncate">
           {user._count.followers} followers • {user._count.books} books
         </p>
       </div>
@@ -312,14 +369,15 @@ function SuggestedUserCard({ user }: { user: SuggestedUser }) {
       <button
         onClick={handleFollow}
         disabled={loading || isFollowing}
-        className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all shrink-0 ${
+        className={cn(
+          "px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0",
           isFollowing 
-            ? 'bg-zinc-800 text-zinc-400 cursor-default' 
-            : 'bg-white text-black hover:bg-gray-200 hover:scale-105 active:scale-95'
-        }`}
+            ? "bg-zinc-800 text-zinc-500 cursor-default" 
+            : "bg-white text-black hover:bg-zinc-200 hover:scale-105 active:scale-95 shadow-lg shadow-white/5"
+        )}
       >
         {isFollowing ? 'Following' : 'Follow'}
       </button>
-    </div>
+    </motion.div>
   );
 }
