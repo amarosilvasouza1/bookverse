@@ -10,18 +10,15 @@ export async function getUserSkillTree() {
   const userId = session.id as string;
 
   try {
-    // @ts-expect-error Prisma generation issue
     let tree = await prisma.userSkillTree.findUnique({
       where: { userId }
     });
 
     if (!tree) {
-       // Create initial tree if not exists
-       // @ts-expect-error Prisma generation issue
        tree = await prisma.userSkillTree.create({
          data: {
            userId,
-           points: 5, // Starter points
+           points: 5,
            unlockedSkills: "[]"
          }
        });
@@ -40,7 +37,6 @@ export async function unlockSkill(skillId: string, cost: number) {
   const userId = session.id as string;
 
   try {
-    // @ts-expect-error Prisma generation issue
     const tree = await prisma.userSkillTree.findUnique({
       where: { userId }
     });
@@ -53,7 +49,6 @@ export async function unlockSkill(skillId: string, cost: number) {
 
     unlocked.push(skillId);
 
-    // @ts-expect-error Prisma generation issue
     await prisma.userSkillTree.update({
       where: { userId },
       data: {

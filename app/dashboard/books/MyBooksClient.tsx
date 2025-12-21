@@ -5,6 +5,12 @@ import Link from 'next/link';
 import BookList from '@/components/BookList';
 import { useLanguage } from '@/context/LanguageContext';
 
+interface Collaborator {
+  id: string;
+  userId: string;
+  bookId: string;
+}
+
 interface Book {
   id: string;
   title: string;
@@ -12,7 +18,7 @@ interface Book {
   createdAt: Date;
   published: boolean;
   authorId: string;
-  collaborators: any[];
+  collaborators: Collaborator[];
 }
 
 interface MyBooksClientProps {
@@ -30,9 +36,9 @@ export default function MyBooksClient({ books }: MyBooksClientProps) {
       {/* Premium Hero Header */}
       <div className="relative overflow-hidden rounded-3xl">
         {/* Animated Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700" />
+        <div className="absolute inset-0 bg-linear-to-br from-violet-600 via-purple-600 to-indigo-700" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')] opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent" />
         
         {/* Decorative Elements */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
@@ -99,7 +105,7 @@ export default function MyBooksClient({ books }: MyBooksClientProps) {
           <Sparkles className="w-5 h-5 text-purple-400" />
           <h2 className="text-lg font-semibold text-white">Your Works</h2>
         </div>
-        <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
+        <div className="flex-1 h-px bg-linear-to-r from-white/10 to-transparent" />
       </div>
 
       <BookList initialBooks={books} />

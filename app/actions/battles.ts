@@ -9,12 +9,11 @@ export async function createBattle(theme: string) {
   if (!session || !session.id) return { success: false, error: "Unauthorized" };
 
   try {
-    // @ts-expect-error Prisma generation issue
     const battle = await prisma.writingBattle.create({
       data: {
         theme,
         status: "WAITING",
-        startTime: new Date(Date.now() + 5 * 60 * 1000), // Default start in 5 mins if auto-start? Or just placeholder
+        startTime: new Date(Date.now() + 5 * 60 * 1000),
         participants: {
              create: { userId: session.id as string }
         }
@@ -35,15 +34,12 @@ export async function joinBattle(battleId: string) {
   const userId = session.id as string;
 
   try {
-    // Check if already joined
-    // @ts-expect-error Prisma generation issue
     const existing = await prisma.battleParticipant.findFirst({
       where: { battleId, userId }
     });
     
     if (existing) return { success: true, message: "Already joined" };
 
-    // @ts-expect-error Prisma generation issue
     await prisma.battleParticipant.create({
       data: {
         battleId,
@@ -60,7 +56,6 @@ export async function joinBattle(battleId: string) {
 
 export async function getActiveBattles() {
   try {
-    // @ts-expect-error Prisma generation issue
     const battles = await prisma.writingBattle.findMany({
       where: {
         status: { in: ["WAITING", "IN_PROGRESS", "VOTING"] }
@@ -81,7 +76,6 @@ export async function getActiveBattles() {
 
 export async function getBattleState(battleId: string) {
     try {
-        // @ts-expect-error Prisma generation issue
         const battle = await prisma.writingBattle.findUnique({
             where: { id: battleId },
             include: {
@@ -98,18 +92,16 @@ export async function getBattleState(battleId: string) {
 }
 
 export async function startBattle(battleId: string) {
-    // In real app, verify host. For now, any participant can start? Or just check session.
     const session = await getSession();
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        // @ts-expect-error Prisma generation issue
         await prisma.writingBattle.update({
             where: { id: battleId },
             data: { 
                 status: "IN_PROGRESS",
                 startTime: new Date(),
-                endTime: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes duration
+                endTime: new Date(Date.now() + 10 * 60 * 1000)
             }
         });
         revalidatePath(`/dashboard/battles/${battleId}`);
@@ -125,8 +117,6 @@ export async function submitBattleContent(battleId: string, content: string) {
     const userId = session.id as string;
 
     try {
-        // Find participant ID first? Or use updateMany
-        // @ts-expect-error Prisma generation issue
         await prisma.battleParticipant.updateMany({
             where: { battleId, userId },
             data: { content }
@@ -142,15 +132,12 @@ export async function voteForParticipant(battleId: string, participantId: string
      if (!session || !session.id) return { success: false, error: "Unauthorized" };
      
      try {
-         // Prevent double voting?
-         // @ts-expect-error Prisma generation issue
          const existing = await prisma.battleVote.findFirst({
              where: { battleId, voterId: session.id as string }
          });
          
          if (existing) return { success: false, error: "Already voted" };
 
-         // @ts-expect-error Prisma generation issue
          await prisma.battleVote.create({
              data: {
                  battleId,
