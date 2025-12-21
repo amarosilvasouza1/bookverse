@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check, Loader2, Star, Shield, Zap, Crown, Sparkles } from 'lucide-react';
+import { Check, Loader2, Star, Shield, Zap, Crown, Sparkles, X, ChevronRight, type LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 type BillingPeriod = 'monthly' | 'yearly';
 
@@ -76,7 +78,12 @@ export default function SubscriptionPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -107,181 +114,230 @@ export default function SubscriptionPage() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 md:space-y-12 px-4 py-6 md:py-8">
-      {/* Header */}
-      <div className="text-center space-y-3 md:space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium">
-          <Crown className="w-4 h-4" />
-          {t('upgradeToPremium') || 'Upgrade to Premium'}
-        </div>
-        <h1 className="text-3xl md:text-5xl font-bold bg-linear-to-r from-white via-purple-200 to-white/50 bg-clip-text text-transparent">
-          {t('upgradeTitle') || 'Unlock Your Full Potential'}
-        </h1>
-        <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          {t('upgradeSubtitle') || 'Get unlimited access to premium books, exclusive features, and support the platform.'}
-        </p>
-      </div>
-
-      {/* Billing Toggle */}
-      <div className="flex justify-center">
-        <div className="flex items-center gap-2 p-1.5 bg-black/40 border border-white/10 rounded-2xl backdrop-blur-xl">
-          <button
-            onClick={() => setBillingPeriod('monthly')}
-            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-medium text-sm md:text-base transition-all ${
-              billingPeriod === 'monthly'
-                ? 'bg-white text-black shadow-lg'
-                : 'text-white/70 hover:text-white'
-            }`}
+    <div className="min-h-screen pb-20">
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-16">
+        
+        {/* Header - Cleaner Version */}
+        <div className="text-center space-y-6 mb-12 md:mb-16 relative">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs md:text-sm font-semibold tracking-wide uppercase"
           >
-            {t('monthly') || 'Monthly'}
-          </button>
-          <button
-            onClick={() => setBillingPeriod('yearly')}
-            className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-medium text-sm md:text-base transition-all relative ${
-              billingPeriod === 'yearly'
-                ? 'bg-white text-black shadow-lg'
-                : 'text-white/70 hover:text-white'
-            }`}
+            <Crown className="w-3.5 h-3.5" />
+            {t('upgradeToPremium') || 'Premium Membership'}
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight max-w-4xl mx-auto"
           >
-            {t('yearly') || 'Yearly'}
-            <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-              -{yearlySavings}%
-            </span>
-          </button>
+            {t('upgradeTitle') || 'Unlock Your Full Potential'}
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed"
+          >
+            {t('upgradeSubtitle') || 'Join thousands of creators and readers. Get unlimited access, AI tools, and exclusive perks.'}
+          </motion.p>
         </div>
-      </div>
 
-      {/* Plans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 max-w-4xl mx-auto">
-        {/* Free Plan */}
-        <div className="glass-card p-5 md:p-8 rounded-2xl md:rounded-3xl border border-white/10 bg-black/20 backdrop-blur-xl flex flex-col relative overflow-hidden">
-          <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
-            <h3 className="text-xl md:text-2xl font-bold text-white">{t('freePlan') || 'Free'}</h3>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl md:text-4xl font-bold text-white">$0</span>
-              <span className="text-muted-foreground text-sm md:text-base">/{t('month') || 'month'}</span>
+        {/* Billing Toggle - Simpler */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-center mb-12"
+        >
+          <div className="p-1 bg-zinc-900 border border-white/10 rounded-xl flex items-center relative">
+            <button
+              onClick={() => setBillingPeriod('monthly')}
+              className={cn(
+                "px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative z-10",
+                billingPeriod === 'monthly' ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+              )}
+            >
+              {t('monthly') || 'Monthly'}
+            </button>
+            <button
+              onClick={() => setBillingPeriod('yearly')}
+              className={cn(
+                "px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative z-10 flex items-center gap-2",
+                billingPeriod === 'yearly' ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
+              )}
+            >
+              {t('yearly') || 'Yearly'}
+              <span className="bg-emerald-500/10 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-md border border-emerald-500/20 font-bold">
+                -{yearlySavings}%
+              </span>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Plans Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto items-start">
+          {/* Free Plan - Cleaner */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="rounded-3xl p-8 border border-white/10 bg-black/20"
+          >
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-white mb-2">{t('freePlan') || 'Starter'}</h3>
+              <p className="text-zinc-500 text-sm">Essentials for casual readers.</p>
             </div>
-            <p className="text-muted-foreground text-sm md:text-base">{t('freeDescription') || 'Perfect for getting started'}</p>
-          </div>
+            
+            <div className="mb-6 flex items-baseline gap-1">
+              <span className="text-4xl font-bold text-white">$0</span>
+              <span className="text-zinc-500">/{t('month') || 'mo'}</span>
+            </div>
 
-          <div className="space-y-3 md:space-y-4 flex-1">
-            {freeFeatures.map((feature, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
-                <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center shrink-0">
-                  <Check className="w-3 h-3 text-white" />
+            <div className="space-y-4 mb-8">
+              {freeFeatures.map((feature, i) => (
+                <div key={i} className="flex items-start gap-3 text-zinc-400">
+                  <Check className="w-5 h-5 text-zinc-500 shrink-0" />
+                  <span className="text-sm">{feature}</span>
                 </div>
-                <span className="leading-tight">{feature}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="mt-6 md:mt-8">
             <button 
-              disabled
-              className="w-full py-3 md:py-4 rounded-xl bg-white/5 text-white/50 font-medium cursor-not-allowed border border-white/5 text-sm md:text-base"
+              disabled 
+              className="w-full py-3 rounded-xl bg-zinc-800/50 text-zinc-500 font-medium border border-white/5 cursor-not-allowed"
             >
               {t('currentPlan') || 'Current Plan'}
             </button>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Premium Plan */}
-        <div className="glass-card p-5 md:p-8 rounded-2xl md:rounded-3xl border-2 border-purple-500/40 bg-purple-500/5 backdrop-blur-xl flex flex-col relative overflow-hidden group">
-          {/* Popular Badge */}
-          <div className="absolute top-3 right-3 md:top-4 md:right-4">
-            <div className="bg-linear-to-r from-purple-500 to-pink-500 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-purple-500/25 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              {t('mostPopular') || 'MOST POPULAR'}
+          {/* Premium Plan - Cleaner */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="group relative rounded-3xl p-8 border border-purple-500/30 bg-zinc-900/40 overflow-hidden"
+          >
+             {/* Subtle Glow Only */}
+            <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-purple-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+            <div className="absolute top-6 right-6">
+               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-bold">
+                 MOST POPULAR
+               </span>
             </div>
-          </div>
-          
-          {/* Glow Effect */}
-          <div className="absolute inset-0 bg-linear-to-b from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-          <div className="space-y-3 md:space-y-4 mb-6 md:mb-8 relative">
-            <h3 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-              {t('premiumPlan') || 'Premium'}
-              <Star className="w-5 h-5 text-purple-400 fill-purple-400" />
-            </h3>
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl md:text-4xl font-bold text-white">${currentPrice.toFixed(2)}</span>
-              <span className="text-muted-foreground text-sm md:text-base">/{billingPeriod === 'monthly' ? t('month') || 'month' : t('year') || 'year'}</span>
-            </div>
-            {billingPeriod === 'yearly' && (
-              <p className="text-green-400 text-sm font-medium">
-                💰 {t('savingsText') || `You save $${((monthlyPrice * 12) - yearlyPrice).toFixed(2)}/year`}
-              </p>
-            )}
-            <p className="text-purple-200/70 text-sm md:text-base">{t('premiumDescription') || 'For serious readers & writers'}</p>
-          </div>
-
-          <div className="space-y-3 md:space-y-4 flex-1 relative">
-            {premiumFeatures.map((feature, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-gray-200">
-                <div className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
-                  <Check className="w-3 h-3 text-purple-400" />
-                </div>
-                <span className="leading-tight">{feature}</span>
+            <div className="mb-6 relative">
+              <div className="flex items-center gap-2 mb-2">
+                 <h3 className="text-xl font-bold text-white">{t('premiumPlan') || 'Premium'}</h3>
+                 <Crown className="w-4 h-4 text-yellow-500 fill-yellow-500" />
               </div>
-            ))}
-          </div>
-
-          <div className="mt-6 md:mt-8 relative">
-            {isPremium ? (
-              <button 
-                onClick={handleCancel}
-                disabled={processing}
-                className="w-full py-3 md:py-4 rounded-xl bg-red-500/10 text-red-400 font-bold border border-red-500/20 hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 text-sm md:text-base"
-              >
-                {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : t('cancelSubscription') || 'Cancel Subscription'}
-              </button>
-            ) : (
-              <button 
-                onClick={() => handleSubscribe('PREMIUM')}
-                disabled={processing}
-                className="w-full py-3 md:py-4 rounded-xl bg-linear-to-r from-purple-600 to-pink-600 text-white font-bold shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm md:text-base"
-              >
-                {processing ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    {t('subscribeNow') || 'Subscribe Now'}
-                    <Zap className="w-4 h-4 fill-white" />
-                  </>
-                )}
-              </button>
-            )}
-            <p className="text-center text-[10px] md:text-xs text-muted-foreground mt-3">
-              {t('securePayment') || '🔒 Secure payment • Cancel anytime'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Benefits Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto pt-4 md:pt-8">
-        {[
-          { icon: Shield, title: t('securePaymentTitle') || 'Secure Payment', desc: t('securePaymentDesc') || 'Your payment information is encrypted and secure.' },
-          { icon: Zap, title: t('instantAccessTitle') || 'Instant Access', desc: t('instantAccessDesc') || 'Start reading premium content immediately after subscribing.' },
-          { icon: Star, title: t('supportCreatorsTitle') || 'Support Creators', desc: t('supportCreatorsDesc') || 'Your subscription directly supports the authors you love.' }
-        ].map((item, i) => (
-          <div key={i} className="p-5 md:p-6 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 text-center space-y-2 md:space-y-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto">
-              <item.icon className="w-5 h-5 md:w-6 md:h-6 text-white/50" />
+              <p className="text-zinc-400 text-sm">Unlock the full experience.</p>
             </div>
-            <h4 className="font-bold text-white text-sm md:text-base">{item.title}</h4>
-            <p className="text-xs md:text-sm text-muted-foreground">{item.desc}</p>
-          </div>
-        ))}
-      </div>
+            
+            <div className="mb-6 relative">
+              <div className="flex items-baseline gap-1">
+                 <span className="text-4xl font-bold text-white">${currentPrice.toFixed(2)}</span>
+                 <span className="text-zinc-500">/{billingPeriod === 'monthly' ? t('month') || 'mo' : t('year') || 'yr'}</span>
+              </div>
+              {billingPeriod === 'yearly' && (
+                 <p className="text-emerald-400 text-sm font-medium mt-1">
+                   Save ${(monthlyPrice * 12 - yearlyPrice).toFixed(2)} a year
+                 </p>
+              )}
+            </div>
 
-      {/* FAQ or Money Back Guarantee */}
-      <div className="text-center py-4 md:py-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs md:text-sm font-medium">
-          <Shield className="w-4 h-4" />
-          {t('moneyBackGuarantee') || '30-day money-back guarantee'}
+            <div className="space-y-4 mb-8 relative">
+              {premiumFeatures.map((feature, i) => (
+                <div key={i} className="flex items-start gap-3 text-zinc-300">
+                  <Check className="w-5 h-5 text-purple-400 shrink-0" />
+                  <span className="text-sm">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative">
+              {isPremium ? (
+                 <button 
+                  onClick={handleCancel}
+                  disabled={processing}
+                  className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-medium hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                     <>
+                        <X className="w-4 h-4" />
+                        {t('cancelSubscription') || 'Cancel Subscription'}
+                     </>
+                  )}
+                </button>
+              ) : (
+                <button 
+                  onClick={() => handleSubscribe('PREMIUM')}
+                  disabled={processing}
+                  className="w-full py-3 rounded-xl bg-white text-black font-bold hover:bg-zinc-200 transition-all flex items-center justify-center gap-2"
+                >
+                  {processing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      {t('subscribeNow') || 'Get Started'}
+                      <ChevronRight className="w-4 h-4" />
+                    </span>
+                  )}
+                </button>
+              )}
+              <p className="text-center text-xs text-zinc-500 mt-4">
+                 {t('securePayment') || 'Secure payment • Cancel anytime'}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Features / Benefits Grid */}
+        <div className="mt-20 max-w-5xl mx-auto">
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <BenefitCard 
+                 icon={Shield} 
+                 title="Secure & Private" 
+                 desc="Your data is encrypted and transactions are secure." 
+                 delay={0.6}
+              />
+              <BenefitCard 
+                 icon={Zap} 
+                 title="Instant Access" 
+                 desc="Features are unlocked the moment you subscribe." 
+                 delay={0.7}
+              />
+              <BenefitCard 
+                 icon={Star} 
+                 title="Support Creators" 
+                 desc="Directly contribute to the future of the platform." 
+                 delay={0.8}
+              />
+           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function BenefitCard({ icon: Icon, title, desc, delay }: { icon: LucideIcon; title: string; desc: string; delay: number }) {
+   return (
+      <motion.div 
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+         transition={{ delay }}
+         className="p-6 rounded-3xl bg-zinc-900/30 border border-white/5 text-center group hover:bg-zinc-900/50 transition-colors"
+      >
+         <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Icon className="w-6 h-6 text-zinc-400 group-hover:text-white transition-colors" />
+         </div>
+         <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+         <p className="text-sm text-zinc-500 leading-relaxed">{desc}</p>
+      </motion.div>
+   );
 }

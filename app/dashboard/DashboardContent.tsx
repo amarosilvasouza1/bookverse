@@ -1,13 +1,13 @@
 'use client';
 
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Users, DollarSign, TrendingUp, Sparkles, ArrowRight, Star, PenTool, Plus, BookMarked } from 'lucide-react';
+import { BookOpen, Users, DollarSign, TrendingUp, Sparkles, ArrowRight, Star, PenTool, Plus, BookMarked, MessageSquare, ChevronRight } from 'lucide-react';
 import ActivityFeed from '@/components/ActivityFeed';
 import { useLanguage } from '@/context/LanguageContext';
 import UserAvatar from '@/components/UserAvatar';
-
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface Book {
   id: string;
@@ -33,271 +33,268 @@ interface DashboardContentProps {
   tags?: string | null;
 }
 
+const containerVars = {
+    hidden: { opacity: 0 },
+    visible: { 
+        opacity: 1,
+        transition: { 
+            staggerChildren: 0.1 
+        } 
+    }
+};
+
+const itemVars = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+};
+
 export default function DashboardContent({ userName, userImage, equippedFrame, stats, tags }: DashboardContentProps) {
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-2xl">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
-        <div className="absolute top-0 right-0 p-12 opacity-30">
-          <Sparkles className="w-64 h-64 text-white blur-3xl" />
-        </div>
-        
-        <div className="relative z-10 p-6 md:p-10 text-white">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-center md:text-left">
-              <UserAvatar 
-                src={userImage} 
-                alt={userName} 
-                size={96} // 24 * 4 = 96px (w-24)
-                rarity={equippedFrame?.rarity}
-                className="md:w-24 md:h-24 w-20 h-20"
-              />
-              
-              <div>
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 border border-white/20 text-xs md:text-sm font-medium backdrop-blur-md mb-3">
-                  <Star className="w-3 h-3 md:w-4 md:h-4 mr-2 text-yellow-300 fill-yellow-300" />
-                  {t('premiumAuthorDashboard')}
-                </div>
-                <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <h1 className={`text-2xl md:text-5xl font-bold mb-2 tracking-tight ${tags?.includes('BETA') ? 'text-yellow-300 drop-shadow-md' : ''}`}>
-                    {t('welcomeBack', { name: userName })}
-                  </h1>
-                  {tags?.includes('DEV') && (
-                    <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-200 text-xs font-bold border border-blue-500/30 mb-2">
-                      DEV
-                    </span>
-                  )}
-                  {tags?.includes('BETA') && (
-                    <span className="px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-200 text-xs font-bold border border-yellow-500/30 mb-2">
-                      BETA
-                    </span>
-                  )}
-                </div>
-                <p className="text-purple-100 text-sm md:text-lg max-w-xl">
-                  {t('readyToCreate', { books: stats.booksCount, communities: stats.communitiesCount })}
-                </p>
-              </div>
+    <motion.div 
+        variants={containerVars}
+        initial="hidden"
+        animate="visible"
+        className="space-y-8 pb-12"
+    >
+      {/* Welcome Section - Cleaner Version */}
+      <motion.div variants={itemVars} className="relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/10 shadow-2xl">
+         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+         <div className="relative z-10 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+               <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                  <div className="relative">
+                     <UserAvatar 
+                        src={userImage} 
+                        alt={userName} 
+                        size={100}
+                        rarity={equippedFrame?.rarity}
+                        className="w-24 h-24 sm:w-28 sm:h-28 shadow-xl ring-4 ring-zinc-800"
+                     />
+                     <div className="absolute -bottom-2 -right-2 bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                        PRO
+                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                     <div className="flex items-center gap-2 justify-center md:justify-start flex-wrap">
+                        {tags?.includes('DEV') && <Badge text="DEV" color="bg-blue-500/10 text-blue-400 border-blue-500/20" />}
+                        {tags?.includes('BETA') && <Badge text="BETA" color="bg-yellow-500/10 text-yellow-400 border-yellow-500/20" />}
+                     </div>
+                     
+                     <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                        {t('welcomeBack', { name: userName })}
+                     </h1>
+                     <p className="text-zinc-400 text-sm sm:text-base max-w-xl">
+                        {t('readyToCreate', { books: stats.booksCount, communities: stats.communitiesCount })}
+                     </p>
+                  </div>
+               </div>
+
+               <Link 
+                  href="/dashboard/create-book"
+                  className="group px-6 py-3 bg-white text-black font-bold rounded-xl shadow-lg shadow-white/5 hover:shadow-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+               >
+                  <span className="flex items-center gap-2">
+                     <PenTool className="w-4 h-4" />
+                     {t('writeNewBook')}
+                  </span>
+               </Link>
             </div>
-            
-            <Link 
-              href="/dashboard/create-book"
-              className="w-full md:w-auto group flex items-center justify-center bg-white text-purple-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-purple-50 transition-all hover:scale-105 active:scale-95"
-            >
-              <PenTool className="w-5 h-5 mr-2" />
-              {t('writeNewBook')}
-              <ArrowRight className="w-4 h-4 ml-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-            </Link>
-          </div>
-        </div>
-      </div>
+         </div>
+      </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card p-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 rounded-xl bg-blue-500/20 text-blue-400 group-hover:scale-110 transition-transform">
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/5 text-muted-foreground">+2 {t('thisMonth')}</span>
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-3xl font-bold text-white">{stats.booksCount}</h3>
-            <p className="text-sm text-muted-foreground">{t('totalBooksPublished')}</p>
-          </div>
-        </div>
-        
-        <div className="glass-card p-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400 group-hover:scale-110 transition-transform">
-              <Users className="w-6 h-6" />
-            </div>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/5 text-muted-foreground">{t('active')}</span>
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-3xl font-bold text-white">{stats.communitiesCount}</h3>
-            <p className="text-sm text-muted-foreground">{t('communitiesJoined')}</p>
-          </div>
-        </div>
-
-        <div className="glass-card p-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors group">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 rounded-xl bg-green-500/20 text-green-400 group-hover:scale-110 transition-transform">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-500/10 text-green-400 flex items-center">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              +12%
-            </span>
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-3xl font-bold text-white">${stats.totalEarnings.toFixed(2)}</h3>
-            <p className="text-sm text-muted-foreground">{t('totalRevenue')}</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+         <StatsCard 
+            title={t('totalBooksPublished')}
+            value={stats.booksCount.toString()}
+            icon={BookOpen}
+            trend="+2 This Month"
+            color="blue"
+            delay={0.1}
+         />
+         <StatsCard 
+            title={t('communitiesJoined')}
+            value={stats.communitiesCount.toString()}
+            icon={Users}
+            trend={t('active')}
+            color="purple"
+            delay={0.2}
+         />
+         <StatsCard 
+            title={t('totalRevenue')}
+            value={`$${stats.totalEarnings.toFixed(2)}`}
+            icon={DollarSign}
+            trend="+12%"
+            color="emerald"
+            delay={0.3}
+         />
       </div>
 
-
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Books */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-pink-500" />
-              {t('recentProjects')}
-            </h2>
-            <Link href="/dashboard/books" className="text-sm text-muted-foreground hover:text-white transition-colors">
-              {t('viewAll')}
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {stats.recentBooks.length === 0 ? (
-              <div className="col-span-2 glass-card p-8 rounded-2xl border border-dashed border-white/10 text-center">
-                <p className="text-muted-foreground">{t('noBooksCreated')}</p>
-              </div>
-            ) : (
-              stats.recentBooks.map((book) => (
-                <Link 
-                  href={`/dashboard/create-book?id=${book.id}`} 
-                  key={book.id} 
-                  className="group glass-card p-4 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all flex gap-4"
-                >
-                  <div className="w-16 h-24 bg-gray-800 rounded-lg overflow-hidden shrink-0 shadow-lg group-hover:shadow-xl transition-all relative">
-                    {book.coverImage ? (
-                      <Image 
-                        src={book.coverImage} 
-                        alt={book.title} 
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500" 
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-700 to-gray-800">
-                        <BookOpen className="w-6 h-6 text-white/20" />
-                      </div>
-                    )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+         {/* Recent Books */}
+         <motion.div variants={itemVars} className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between px-1">
+               <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 flex items-center gap-3">
+                  <div className="p-2 bg-pink-500/10 rounded-xl border border-pink-500/20">
+                     <BookOpen className="w-5 h-5 text-pink-500" />
                   </div>
-                  <div className="flex-1 min-w-0 py-1">
-                    <h3 className="font-bold text-white truncate group-hover:text-primary transition-colors mb-1">
-                      {book.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        book.published 
-                          ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                          : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
-                      }`}>
-                        {book.published ? t('published') : t('draft')}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(book.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {book.description || t('noDescription')}
-                    </p>
+                  {t('recentProjects')}
+               </h2>
+               <Link href="/dashboard/books" className="text-sm font-medium text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-1 group">
+                  {t('viewAll')}
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+               </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <Link 
+                  href="/dashboard/create-book" 
+                  className="group flex flex-col items-center justify-center min-h-[160px] rounded-3xl border-2 border-dashed border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-purple-500/50 transition-all duration-300"
+               >
+                  <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-purple-500/20 transition-all duration-300 mb-3">
+                     <Plus className="w-6 h-6 text-zinc-500 group-hover:text-purple-400" />
                   </div>
-                </Link>
-              ))
-            )}
+                  <span className="font-semibold text-zinc-400 group-hover:text-white transition-colors">{t('createNewBook')}</span>
+               </Link>
+
+               {stats.recentBooks.length > 0 && stats.recentBooks.map((book) => (
+                  <BookCard key={book.id} book={book} t={t} />
+               ))}
+            </div>
+         </motion.div>
+
+         {/* Quick Actions & Feed */}
+         <motion.div variants={itemVars} className="space-y-6">
+            <div className="flex items-center gap-3 px-1 mb-2">
+               <div className="p-2 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                  <Sparkles className="w-5 h-5 text-yellow-500" />
+               </div>
+               <h2 className="text-lg font-bold text-white">{t('quickActions')}</h2>
+            </div>
             
-            <Link 
-              href="/dashboard/create-book" 
-              className="group glass-card p-4 rounded-2xl border border-dashed border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 text-center min-h-[120px]"
-            >
-              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-primary/20">
-                <Plus className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-              </div>
-              <span className="text-sm font-medium text-muted-foreground group-hover:text-primary">{t('createNewBook')}</span>
-            </Link>
-          </div>
-        </div>
+            <div className="space-y-3">
+               <QuickAction 
+                  href="/dashboard/reading-lists" 
+                  icon={BookMarked} 
+                  title={t('readingLists') || 'Reading Lists'} 
+                  subtitle="Collections"
+                  color="indigo" 
+               />
+               <QuickAction 
+                  href="/dashboard/communities" 
+                  icon={Users} 
+                  title={t('joinCommunity')} 
+                  subtitle="Connect"
+                  color="purple" 
+               />
+               <QuickAction 
+                  href="/dashboard/wallet" 
+                  icon={DollarSign} 
+                  title={t('wallet')} 
+                  subtitle="Earnings"
+                  color="emerald" 
+               />
+            </div>
 
-        {/* Quick Actions Sidebar */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-yellow-500" />
-            {t('quickActions')}
-          </h2>
-          
-          <div className="space-y-3">
-            <Link href="/dashboard/reading-lists" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-indigo-500/50 hover:bg-indigo-500/5 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                  <BookMarked className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="font-bold text-white group-hover:text-indigo-400 transition-colors">{t('readingLists') || 'Reading Lists'}</div>
-                  <div className="text-xs text-muted-foreground">{t('yourCollections') || 'Your collections'}</div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            <Link href="/dashboard/communities" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-                  <Users className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="font-bold text-white group-hover:text-purple-400 transition-colors">{t('joinCommunity')}</div>
-                  <div className="text-xs text-muted-foreground">{t('connectWithOthers')}</div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            <Link href="/dashboard/settings" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                  <Users className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="font-bold text-white group-hover:text-blue-400 transition-colors">{t('editProfile')}</div>
-                  <div className="text-xs text-muted-foreground">{t('updateBio')}</div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            <Link href="/dashboard/wallet" className="block glass-card p-4 rounded-xl border border-white/5 hover:border-green-500/50 hover:bg-green-500/5 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 group-hover:scale-110 transition-transform">
-                  <DollarSign className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="font-bold text-white group-hover:text-green-400 transition-colors">{t('wallet')}</div>
-                  <div className="text-xs text-muted-foreground">{t('manageEarnings')}</div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          </div>
-
-          {/* Activity Feed */}
-          <div className="glass-card p-6 rounded-2xl border border-white/5 bg-white/5">
-            <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-indigo-400" />
-              {t('communityActivity')}
-            </h3>
-            <ActivityFeed />
-          </div>
-
-          {/* Mini Ad / Tip */}
-          <div className="glass-card p-6 rounded-2xl bg-linear-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/20">
-            <h3 className="font-bold text-white mb-2">{t('proTip')}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('proTipContent')}
-            </p>
-            <Link href="/dashboard/communities" className="text-sm font-bold text-pink-400 hover:text-pink-300 hover:underline">
-              {t('goToCommunities')} &rarr;
-            </Link>
-          </div>
-        </div>
+            <div className="rounded-[2rem] bg-zinc-900/30 border border-white/5 backdrop-blur-xl p-6">
+               <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                     <TrendingUp className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <h3 className="font-bold text-white">{t('communityActivity')}</h3>
+               </div>
+               <ActivityFeed />
+            </div>
+         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
+}
+
+// Sub-components
+function Badge({ text, color }: { text: string, color: string }) {
+   return <span className={cn("px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider", color)}>{text}</span>;
+}
+
+function StatsCard({ title, value, icon: Icon, trend, color, delay }: any) {
+   const colors: any = {
+      blue: "from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/20",
+      purple: "from-purple-500/20 to-pink-500/20 text-purple-400 border-purple-500/20",
+      emerald: "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/20",
+   };
+
+   return (
+      <motion.div 
+         initial={{ opacity: 0, scale: 0.9 }}
+         animate={{ opacity: 1, scale: 1 }}
+         transition={{ delay, duration: 0.4 }}
+         className="relative group p-6 rounded-3xl bg-zinc-900/40 border border-white/5 hover:border-white/10 transition-all hover:-translate-y-1"
+      >
+         <div className="flex items-start justify-between mb-4">
+            <div className={cn("p-3 rounded-2xl bg-gradient-to-br border", colors[color])}>
+               <Icon className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/5 text-zinc-400 group-hover:bg-white/10 transition-colors">
+               {trend}
+            </span>
+         </div>
+         <div>
+            <h3 className="text-3xl font-bold text-white mb-1 tracking-tight">{value}</h3>
+            <p className="text-sm text-zinc-500 font-medium">{title}</p>
+         </div>
+      </motion.div>
+   );
+}
+
+function BookCard({ book, t }: any) {
+   return (
+      <Link href={`/dashboard/create-book?id=${book.id}`} className="group relative overflow-hidden rounded-3xl bg-zinc-900/40 border border-white/5 hover:border-purple-500/30 transition-all hover:bg-zinc-900/60">
+         <div className="flex sm:block h-full">
+            <div className="w-24 sm:w-full h-full sm:h-32 bg-zinc-800 relative overflow-hidden">
+               {book.coverImage ? (
+                  <Image src={book.coverImage} alt={book.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+               ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+                     <BookOpen className="w-8 h-8 text-white/10 group-hover:text-purple-400/50 transition-colors" />
+                  </div>
+               )}
+            </div>
+            <div className="p-4 flex-1 flex flex-col justify-center">
+               <h3 className="font-bold text-base text-white truncate mb-1 group-hover:text-purple-400 transition-colors">{book.title}</h3>
+               <p className="text-xs text-zinc-500 line-clamp-2 mb-3 leading-relaxed">{book.description || t('noDescription')}</p>
+               <div className="mt-auto flex items-center gap-2">
+                  <span className={cn("w-2 h-2 rounded-full", book.published ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]")} />
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{book.published ? t('published') : t('draft')}</span>
+               </div>
+            </div>
+         </div>
+      </Link>
+   );
+}
+
+function QuickAction({ href, icon: Icon, title, subtitle, color }: any) {
+   const colors: any = {
+      indigo: "group-hover:text-indigo-400 group-hover:bg-indigo-500/20",
+      purple: "group-hover:text-purple-400 group-hover:bg-purple-500/20",
+      emerald: "group-hover:text-emerald-400 group-hover:bg-emerald-500/20",
+   };
+
+   return (
+      <Link href={href} className="group flex items-center gap-4 p-4 rounded-2xl bg-zinc-900/30 border border-white/5 hover:bg-white/5 transition-all">
+         <div className={cn("p-3 rounded-xl bg-white/5 text-zinc-400 transition-all duration-300", colors[color])}>
+            <Icon className="w-5 h-5" />
+         </div>
+         <div className="flex-1">
+            <h4 className="font-bold text-white text-sm group-hover:text-white transition-colors">{title}</h4>
+            <p className="text-xs text-zinc-500">{subtitle}</p>
+         </div>
+         <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:translate-x-1 transition-transform" />
+      </Link>
+   );
 }
