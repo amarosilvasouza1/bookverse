@@ -86,7 +86,13 @@ export async function getUserCosmetics(userId: string) {
   try {
     const userCosmetics = await prisma.userCosmetic.findMany({
       where: { userId },
-      include: { cosmetic: true }
+      include: { 
+        cosmetic: {
+          include: {
+            author: { select: { username: true } }
+          }
+        }
+      }
     });
     return { success: true, data: userCosmetics };
   } catch (error) {
