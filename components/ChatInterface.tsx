@@ -626,40 +626,47 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
   };
 
   return (
-    <div className="flex h-[85vh] md:h-[75vh] bg-linear-to-br from-zinc-900/95 via-zinc-900/90 to-zinc-950/95 md:backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
+    <div className="flex h-[85vh] md:h-[75vh] bg-zinc-950 md:bg-linear-to-br md:from-zinc-900/95 md:via-zinc-900/90 md:to-zinc-950/95 md:backdrop-blur-xl border-0 md:border border-white/10 rounded-none md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50">
       {/* Sidebar */}
-      <div className={cn("w-full md:w-80 border-r border-white/10 flex flex-col bg-linear-to-b from-white/5 to-transparent", activeConversation ? "hidden md:flex" : "flex")}>
-        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5 gap-2">
+      <div className={cn("w-full md:w-80 lg:w-96 border-r border-white/5 flex flex-col bg-zinc-950 md:bg-linear-to-b md:from-white/5 md:to-transparent", activeConversation ? "hidden md:flex" : "flex")}>
+        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-zinc-900/50 gap-3">
             {/* Mobile Back to Feed Button */}
             <button 
                 onClick={onBack}
-                className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-white transition-colors"
+                className="md:hidden p-2.5 -ml-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
             >
                 <ArrowLeft className="w-5 h-5" />
             </button>
-          <div className="relative flex-1 mr-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input 
               type="text" 
-              placeholder="Search..." 
-              className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary/50 transition-colors"
+              placeholder="Search conversations..." 
+              className="w-full bg-zinc-900 border border-white/5 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 transition-all placeholder:text-zinc-600"
             />
           </div>
           <button 
             onClick={openNewChatModal}
-            className="p-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors"
+            className="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
           >
             <Plus className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {loading ? (
-            <div className="text-center text-muted-foreground p-4">Loading...</div>
+            <div className="flex flex-col items-center justify-center p-8 gap-3">
+              <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+              <span className="text-zinc-500 text-sm">Loading chats...</span>
+            </div>
           ) : conversations.length === 0 ? (
-            <div className="text-center text-muted-foreground p-8">
-              <p className="mb-2">No conversations yet.</p>
-              <button onClick={openNewChatModal} className="text-primary text-sm hover:underline">Start a chat</button>
+            <div className="flex flex-col items-center justify-center text-center p-8 pt-16">
+              <div className="w-20 h-20 rounded-full bg-zinc-900 flex items-center justify-center mb-4 border border-white/5">
+                <MessageCircle className="w-10 h-10 text-zinc-700" />
+              </div>
+              <h3 className="font-bold text-white mb-2">No messages yet</h3>
+              <p className="text-zinc-500 text-sm mb-6 max-w-[200px]">Start a conversation with your friends</p>
+              <button onClick={openNewChatModal} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-500 transition-all">New Chat</button>
             </div>
           ) : (
             conversations.map((conv) => (
@@ -667,12 +674,14 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                 key={conv.id}
                 onClick={() => handleConversationClick(conv.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left",
-                  activeConversation === conv.id ? "bg-white/10 shadow-lg" : "hover:bg-white/5"
+                  "w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 text-left group",
+                  activeConversation === conv.id 
+                    ? "bg-indigo-600/20 border border-indigo-500/30 shadow-lg shadow-indigo-500/5" 
+                    : "hover:bg-white/5 border border-transparent"
                 )}
               >
                 <div className="relative">
-                  <div className="relative w-12 h-12 rounded-full overflow-visible border border-white/10">
+                  <div className="relative w-14 h-14 rounded-full overflow-visible ring-2 ring-white/10 group-hover:ring-white/20 transition-all">
                     <UserAvatar 
                       src={conv.otherUser?.image || null} 
                       alt={conv.otherUser?.name || '?'} 
@@ -682,29 +691,32 @@ export default function ChatInterface({ onBack }: { onBack?: () => void }) {
                   </div>
                   {/* Online/Offline indicator */}
                   <div className={cn(
-                    "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-zinc-900 shadow-md",
+                    "absolute bottom-0 right-0 w-4 h-4 rounded-full border-[3px] border-zinc-950 shadow-lg",
                     (conv.isTyping || isOnline(conv.otherUser?.lastSeen)) 
-                      ? "bg-green-500 animate-pulse shadow-green-500/50" 
-                      : "bg-zinc-500"
+                      ? "bg-emerald-500 shadow-emerald-500/50" 
+                      : "bg-zinc-600"
                   )} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-0.5">
-                    <span className="font-bold text-white truncate">{conv.otherUser?.name}</span>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold text-white truncate text-base">{conv.otherUser?.name}</span>
+                    <span className="text-[11px] text-zinc-500 font-medium">
                       {conv.lastMessage ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
                     </span>
                   </div>
-                    <div className="flex justify-between items-center">
-                    <p className={cn("text-base md:text-sm truncate max-w-[140px]", conv.unreadCount > 0 ? "text-white font-medium" : "text-muted-foreground")}>
+                  <div className="flex justify-between items-center gap-2">
+                    <p className={cn(
+                      "text-sm truncate flex-1", 
+                      conv.unreadCount > 0 ? "text-white font-medium" : "text-zinc-500"
+                    )}>
                       {conv.lastMessage 
                         ? (conv.lastMessage.content 
                             ? conv.lastMessage.content 
-                            : (conv.lastMessage.mediaType === 'VIDEO' ? '🎥 Vídeo' : '📷 Foto')) 
+                            : (conv.lastMessage.mediaType === 'VIDEO' ? '🎥 Video' : '📷 Photo')) 
                         : 'Start a conversation'}
                     </p>
                     {conv.unreadCount > 0 && (
-                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                      <span className="flex items-center justify-center min-w-[22px] h-[22px] px-1.5 bg-indigo-500 text-white text-[11px] font-bold rounded-full shadow-lg shadow-indigo-500/30">
                         {conv.unreadCount}
                       </span>
                     )}

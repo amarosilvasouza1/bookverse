@@ -29,7 +29,8 @@ export async function createAuthorCosmetic(
     
     revalidatePath('/dashboard/cosmetics');
     return { success: true, data: cosmetic };
-  } catch {
+  } catch (error) {
+    console.error("Error creating cosmetic:", error);
     return { success: false, error: "Failed to create cosmetic" };
   }
 }
@@ -43,7 +44,8 @@ export async function getShopCosmetics() {
       orderBy: { createdAt: 'desc' }
     });
     return { success: true, data: cosmetics };
-  } catch {
+  } catch (error) {
+    console.error("Error fetching cosmetics:", error);
     return { success: false, error: "Failed to fetch shop" };
   }
 }
@@ -80,7 +82,8 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
 
     revalidatePath('/dashboard/cosmetics');
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("Error buying cosmetic:", error);
     return { success: false, error: "Failed to purchase" };
   }
 }
@@ -93,7 +96,8 @@ export async function getUserCosmetics(userId: string) {
       include: { cosmetic: true }
     });
     return { success: true, data: userCosmetics };
-  } catch {
+  } catch (error) {
+    console.error("Error fetching user cosmetics:", error);
     return { success: false, error: "Failed to fetch inventory" };
   }
 }
@@ -129,7 +133,7 @@ export async function equipCosmetic(userId: string, userCosmeticId: string) {
     
     revalidatePath('/dashboard/cosmetics');
     return { success: true };
-  } catch {
+  } catch (error) {
     return { success: false, error: "Failed to equip" };
   }
 }

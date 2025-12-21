@@ -23,7 +23,8 @@ export async function createBattle(theme: string) {
 
     revalidatePath('/dashboard/battles');
     return { success: true, battleId: battle.id };
-  } catch {
+  } catch (error) {
+    console.error("Create battle error:", error);
     return { success: false, error: "Failed to create battle" };
   }
 }
@@ -51,7 +52,7 @@ export async function joinBattle(battleId: string) {
 
     revalidatePath(`/dashboard/battles/${battleId}`);
     return { success: true };
-  } catch {
+  } catch (error) {
     return { success: false, error: "Failed to join" };
   }
 }
@@ -71,7 +72,8 @@ export async function getActiveBattles() {
       orderBy: { createdAt: 'desc' }
     });
     return { success: true, data: battles };
-  } catch {
+  } catch (error) {
+    console.error("Get battles error:", error);
     return { success: false, error: "Failed to list battles" };
   }
 }
@@ -89,7 +91,7 @@ export async function getBattleState(battleId: string) {
             }
         });
         return { success: true, data: battle };
-    } catch {
+    } catch (error) {
         return { success: false, error: "Failed to fetch battle" };
     }
 }
@@ -110,7 +112,7 @@ export async function startBattle(battleId: string) {
         });
         revalidatePath(`/dashboard/battles/${battleId}`);
         return { success: true };
-    } catch {
+    } catch (error) {
         return { success: false, error: "Failed to start" };
     }
 }
@@ -127,7 +129,7 @@ export async function submitBattleContent(battleId: string, content: string) {
             data: { content }
         });
         return { success: true };
-    } catch {
+    } catch (error) {
         return { success: false, error: "Failed to save" };
     }
 }
@@ -154,7 +156,7 @@ export async function voteForParticipant(battleId: string, participantId: string
          });
          revalidatePath(`/dashboard/battles/${battleId}`);
          return { success: true };
-     } catch {
+     } catch(e) {
          return { success: false, error: "Vote failed" };
      }
 }

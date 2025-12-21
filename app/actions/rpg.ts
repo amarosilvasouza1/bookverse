@@ -27,7 +27,8 @@ export async function getUserSkillTree() {
     }
 
     return { success: true, data: tree };
-  } catch {
+  } catch (error) {
+    console.error("Get skill tree error:", error);
     return { success: false, error: "Failed to fetch skills" };
   }
 }
@@ -62,7 +63,8 @@ export async function unlockSkill(skillId: string, cost: number) {
 
     revalidatePath('/dashboard/skills');
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("Unlock skill error:", error);
     return { success: false, error: "Failed to unlock skill" };
   }
 }
