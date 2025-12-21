@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, Fragment } from 'react';
-import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, ArrowLeft, Image as ImageIcon, X, Gift } from 'lucide-react';
+import { Search, MoreVertical, Send, Plus, UserPlus, ArrowRight, ArrowLeft, Image as ImageIcon, X, Gift, MessageCircle } from 'lucide-react';
 import NextImage from 'next/image';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/LanguageContext';
