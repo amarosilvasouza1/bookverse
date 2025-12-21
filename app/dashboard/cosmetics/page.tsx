@@ -6,15 +6,20 @@ import CosmeticShopClient from "./client";
 export default async function CosmeticsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
-  const user = { id: session.id, username: session.name || "User", email: session.email || "", image: session.image || null };
+  const user = { 
+    id: session.id as string, 
+    username: (session.name as string) || "User", 
+    email: (session.email as string) || "", 
+    image: (session.image as string) || null 
+  };
 
   const [shopResult, inventoryResult] = await Promise.all([
     getShopCosmetics(),
-    getUserCosmetics(user.id as string)
+    getUserCosmetics(user.id)
   ]);
 
-  const shopItems = shopResult.success ? shopResult.data : [];
-  const inventoryItems = inventoryResult.success ? inventoryResult.data : [];
+  const shopItems = (shopResult.success && shopResult.data) ? shopResult.data : [];
+  const inventoryItems = (inventoryResult.success && inventoryResult.data) ? inventoryResult.data : [];
 
   return (
     <div className="p-6 md:p-8 space-y-8">
