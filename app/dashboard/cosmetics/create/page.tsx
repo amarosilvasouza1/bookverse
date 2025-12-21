@@ -6,11 +6,9 @@ import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import { createAuthorCosmetic } from '@/app/actions/cosmetics';
 import { toast } from 'sonner';
-import { useSession } from 'next-auth/react';
 
 export default function CreateCosmeticPage() {
   const router = useRouter();
-  const { data: session } = useSession();
   const [name, setName] = useState('');
   const [type, setType] = useState<'FRAME' | 'BUBBLE'>('FRAME');
   const [price, setPrice] = useState(100);
@@ -19,10 +17,9 @@ export default function CreateCosmeticPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user) return;
-    
     setLoading(true);
-    const result = await createAuthorCosmetic(session.user.id, name, type, imageUrl, price);
+    // userId is now handled server-side
+    const result = await createAuthorCosmetic(name, type, imageUrl, price);
     
     if (result.success) {
         toast.success("Cosmetic Created!");

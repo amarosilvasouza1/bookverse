@@ -10,7 +10,7 @@ export default async function CosmeticsPage() {
 
   const [shopResult, inventoryResult] = await Promise.all([
     getShopCosmetics(),
-    getUserCosmetics(user.id)
+    getUserCosmetics(user.id as string)
   ]);
 
   const shopItems = shopResult.success ? shopResult.data : [];
@@ -25,7 +25,7 @@ export default async function CosmeticsPage() {
          </div>
          <div className="text-right">
             <p className="text-sm text-zinc-500 uppercase tracking-widest font-bold">Your Ink</p>
-            {/* @ts-ignore */}
+            {/* @ts-expect-error ink field may not exist on session user type */}
             <p className="text-2xl font-bold text-purple-400">{user.ink || 0} 💧</p>
          </div>
       </div>

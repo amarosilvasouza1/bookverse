@@ -3,15 +3,21 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { getSession } from "@/lib/auth";
+
 export async function createAuthorCosmetic(
-  userId: string, 
+  // userId: string, // Removed insecure arg
   name: string, 
   type: 'FRAME' | 'BUBBLE', 
   image: string, 
   price: number
 ) {
   try {
-    // @ts-ignore
+    const session = await getSession();
+    if (!session || !session.id) return { success: false, error: "Unauthorized" };
+    const userId = session.id as string;
+
+    // @ts-expect-error Prisma generation issue
     const cosmetic = await prisma.authorCosmetic.create({
       data: {
         authorId: userId,
@@ -33,7 +39,7 @@ export async function createAuthorCosmetic(
 
 export async function getShopCosmetics() {
   try {
-    // @ts-ignore
+    // @ts-expect-error Prisma generation issue
     const cosmetics = await prisma.authorCosmetic.findMany({
       where: { isPublic: true },
       include: { author: { select: { username: true } } },
@@ -49,13 +55,13 @@ export async function getShopCosmetics() {
 export async function buyCosmetic(userId: string, cosmeticId: string) {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    // @ts-ignore
+    // @ts-expect-error Prisma generation issue
     const cosmetic = await prisma.authorCosmetic.findUnique({ where: { id: cosmeticId } });
     
     if (!user || !cosmetic) return { success: false, error: "Not found" };
     
     // Check balance (using 'ink' if available, else fallback or fail)
-    // @ts-ignore
+    // @ts-expect-error Prisma generation issue
     const userInk = user.ink || 0;
     
     if (userInk < cosmetic.price) {
@@ -64,12 +70,12 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
 
     // Deduct ink and add item
     await prisma.$transaction([
-      // @ts-ignore
+      // @ts-expect-error Prisma generation issue
       prisma.user.update({
         where: { id: userId },
         data: { ink: { decrement: cosmetic.price } }
       }),
-      // @ts-ignore
+      // @ts-expect-error Prisma generation issue
       prisma.userCosmetic.create({
         data: {
           userId,
@@ -88,7 +94,7 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
 
 export async function getUserCosmetics(userId: string) {
   try {
-    // @ts-ignore
+    // @ts-expect-error Prisma generation issue
     const userCosmetics = await prisma.userCosmetic.findMany({
       where: { userId },
       include: { cosmetic: true }
@@ -106,7 +112,7 @@ export async function equipCosmetic(userId: string, userCosmeticId: string) {
     // Let's simplified: unequip all, equip this one.
     
     // Get the cosmetic type first
-    // @ts-ignore
+    // @ts-expect-error Prisma generation issue
     const target = await prisma.userCosmetic.findUnique({
       where: { id: userCosmeticId },
       include: { cosmetic: true }
@@ -118,7 +124,7 @@ export async function equipCosmetic(userId: string, userCosmeticId: string) {
 
     await prisma.$transaction([
       // Unequip others of same type
-      // @ts-ignore
+      // @ts-expect-error Prisma generation issue
       prisma.userCosmetic.updateMany({
         where: { 
           userId, 
@@ -128,7 +134,7 @@ export async function equipCosmetic(userId: string, userCosmeticId: string) {
         data: { equipped: false }
       }),
       // Equip new one
-      // @ts-ignore
+      // @ts-expect-error Prisma generation issue
       prisma.userCosmetic.update({
         where: { id: userCosmeticId },
         data: { equipped: true }

@@ -15,11 +15,6 @@ interface User {
     ink?: number;
 }
 
-// ... rest of code
-
-// Fix quote escaping at line 141 (in original) - search for "don't"
-// <p className="text-zinc-500 col-span-full">You don&apos;t own any cosmetics yet.</p>
-
 interface Cosmetic {
   id: string;
   name: string;
@@ -50,7 +45,6 @@ export default function CosmeticShopClient({
   const [equipping, setEquipping] = useState<string | null>(null);
 
   const handleBuy = async (id: string, price: number) => {
-    // @ts-ignore
     if ((user.ink || 0) < price) {
         toast.error("Not enough Ink!");
         return;
@@ -151,7 +145,7 @@ export default function CosmeticShopClient({
       {activeTab === 'inventory' && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
            {initialInventory.length === 0 && (
-             <p className="text-zinc-500 col-span-full">You don't own any cosmetics yet.</p>
+             <p className="text-zinc-500 col-span-full">You don&apos;t own any cosmetics yet.</p>
            )}
            {initialInventory.map((ui) => (
              <div key={ui.id} className="bg-zinc-900 border border-white/10 rounded-xl p-4 flex flex-col items-center gap-3">
