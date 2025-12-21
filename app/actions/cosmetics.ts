@@ -64,9 +64,9 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
     }
 
     await prisma.$transaction([
-      // @ts-expect-error Prisma client needs regeneration
       prisma.user.update({
         where: { id: userId },
+        // @ts-expect-error ink field needs Prisma regeneration
         data: { ink: { decrement: cosmetic.price } }
       }),
       // @ts-expect-error Prisma client needs regeneration
