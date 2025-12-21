@@ -67,8 +67,10 @@ model User {
   lastSeen DateTime? @default(now())
 
   // Gamification
-  xp               Int               @default(0)
-  level            Int               @default(1)
+  xp    Int @default(0)
+  level Int @default(1)
+  ink   Int @default(0) // New currency for cosmetics
+
   messageReactions MessageReaction[]
   commentReactions CommentReaction[]
   readingSessions  ReadingSession[]
@@ -78,6 +80,17 @@ model User {
   // Reading Lists
   readingLists        ReadingList[]
   readingRoomMessages ReadingRoomMessage[]
+
+  // RPG & Cosmetics
+  createdCosmetics AuthorCosmetic[] @relation("CreatedCosmetics")
+  ownedCosmetics   UserCosmetic[]
+  skillTree        UserSkillTree?
+
+  // Battles
+  battleParticipations BattleParticipant[]
+  battleVotes          BattleVote[]
+
+  // RPG & Cosmetics - Duplicates removed
 }
 
 model Item {
@@ -717,4 +730,74 @@ model ReadingListBook {
   @@unique([listId, bookId])
   @@index([listId])
   @@index([bookId])
+}
+
+// --- WRITING BATTLES ---
+model WritingBattle {
+  id           String              @id @default(cuid())
+  theme        String
+  status       String // "WAITING", "IN_PROGRESS", "VOTING", "FINISHED"
+  startTime    DateTime
+  endTime      DateTime?
+  participants BattleParticipant[]
+  votes        BattleVote[]
+  createdAt    DateTime            @default(now())
+}
+
+model BattleParticipant {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  battleId  String
+  battle    WritingBattle @relation(fields: [battleId], references: [id])
+  content   String?       @db.Text
+  votes     BattleVote[]
+  createdAt DateTime      @default(now())
+}
+
+model BattleVote {
+  id            String            @id @default(cuid())
+  voterId       String
+  voter         User              @relation(fields: [voterId], references: [id])
+  battleId      String
+  battle        WritingBattle     @relation(fields: [battleId], references: [id])
+  participantId String
+  participant   BattleParticipant @relation(fields: [participantId], references: [id])
+  createdAt     DateTime          @default(now())
+}
+
+// --- AUTHOR COSMETICS ---
+model AuthorCosmetic {
+  id          String         @id @default(cuid())
+  authorId    String
+  author      User           @relation("CreatedCosmetics", fields: [authorId], references: [id])
+  name        String
+  description String?
+  type        String // "FRAME", "BUBBLE"
+  image       String         @db.LongText // URL or CSS/SVG definition
+  price       Int // Cost in Ink
+  isPublic    Boolean        @default(false)
+  purchases   UserCosmetic[]
+  createdAt   DateTime       @default(now())
+}
+
+model UserCosmetic {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id])
+  cosmeticId  String
+  cosmetic    AuthorCosmetic @relation(fields: [cosmeticId], references: [id])
+  equipped    Boolean        @default(false)
+  purchasedAt DateTime       @default(now())
+}
+
+// --- READER RPG ---
+model UserSkillTree {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  points Int    @default(0) // Unspent skill points
+
+  // JSON array of unlocked skill IDs e.g. ["critic_1", "explorer_2"]
+  unlockedSkills String @default("[]") @db.Text
 }
