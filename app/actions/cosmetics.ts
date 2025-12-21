@@ -15,7 +15,6 @@ export async function createAuthorCosmetic(
     if (!session || !session.id) return { success: false, error: "Unauthorized" };
     const userId = session.id as string;
 
-    // @ts-expect-error Prisma client needs regeneration
     const cosmetic = await prisma.authorCosmetic.create({
       data: {
         authorId: userId,
@@ -37,7 +36,6 @@ export async function createAuthorCosmetic(
 
 export async function getShopCosmetics() {
   try {
-    // @ts-expect-error Prisma client needs regeneration
     const cosmetics = await prisma.authorCosmetic.findMany({
       where: { isPublic: true },
       include: { author: { select: { username: true } } },
@@ -53,7 +51,6 @@ export async function getShopCosmetics() {
 export async function buyCosmetic(userId: string, cosmeticId: string) {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    // @ts-expect-error Prisma client needs regeneration
     const cosmetic = await prisma.authorCosmetic.findUnique({ where: { id: cosmeticId } });
     
     if (!user || !cosmetic) return { success: false, error: "Not found" };
@@ -71,7 +68,6 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
         // @ts-expect-error ink field needs Prisma regeneration
         data: { ink: { decrement: cosmetic.price } }
       }),
-      // @ts-expect-error Prisma client needs regeneration
       prisma.userCosmetic.create({
         data: {
           userId,
@@ -90,7 +86,6 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
 
 export async function getUserCosmetics(userId: string) {
   try {
-    // @ts-expect-error Prisma client needs regeneration
     const userCosmetics = await prisma.userCosmetic.findMany({
       where: { userId },
       include: { cosmetic: true }
@@ -104,7 +99,6 @@ export async function getUserCosmetics(userId: string) {
 
 export async function equipCosmetic(userId: string, userCosmeticId: string) {
   try {
-    // @ts-expect-error Prisma client needs regeneration
     const target = await prisma.userCosmetic.findUnique({
       where: { id: userCosmeticId },
       include: { cosmetic: true }
@@ -115,7 +109,6 @@ export async function equipCosmetic(userId: string, userCosmeticId: string) {
     const type = target.cosmetic.type;
 
     await prisma.$transaction([
-      // @ts-expect-error Prisma client needs regeneration
       prisma.userCosmetic.updateMany({
         where: { 
           userId, 
@@ -124,7 +117,6 @@ export async function equipCosmetic(userId: string, userCosmeticId: string) {
         },
         data: { equipped: false }
       }),
-      // @ts-expect-error Prisma client needs regeneration
       prisma.userCosmetic.update({
         where: { id: userCosmeticId },
         data: { equipped: true }

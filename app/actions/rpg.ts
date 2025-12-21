@@ -10,13 +10,11 @@ export async function getUserSkillTree() {
   const userId = session.id as string;
 
   try {
-    // @ts-expect-error Prisma client needs regeneration
     let tree = await prisma.userSkillTree.findUnique({
       where: { userId }
     });
 
     if (!tree) {
-       // @ts-expect-error Prisma client needs regeneration
        tree = await prisma.userSkillTree.create({
          data: {
            userId,
@@ -39,7 +37,6 @@ export async function unlockSkill(skillId: string, cost: number) {
   const userId = session.id as string;
 
   try {
-    // @ts-expect-error Prisma client needs regeneration
     const tree = await prisma.userSkillTree.findUnique({
       where: { userId }
     });
@@ -52,7 +49,6 @@ export async function unlockSkill(skillId: string, cost: number) {
 
     unlocked.push(skillId);
 
-    // @ts-expect-error Prisma client needs regeneration
     await prisma.userSkillTree.update({
       where: { userId },
       data: {
