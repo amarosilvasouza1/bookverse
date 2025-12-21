@@ -60,43 +60,46 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
   return (
     <>
       <div className="space-y-6">
-        {/* Search, Filter, and View Toggle Bar */}
-        <div className="flex flex-col md:flex-row gap-3 p-4 bg-linear-to-r from-white/5 to-white/[0.02] rounded-2xl border border-white/10 backdrop-blur-sm">
+        {/* Search and Filter Bar - Enhanced */}
+        <div className="flex flex-col sm:flex-row gap-3 p-4 bg-zinc-900/50 rounded-2xl border border-white/5 backdrop-blur-sm">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input 
               type="text" 
               placeholder={t('searchPlaceholder')} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
+              className="w-full bg-black/40 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all placeholder:text-zinc-600"
             />
           </div>
+          
           <div className="flex gap-2">
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            {/* Filter Select */}
+            <div className="relative flex-1 sm:flex-none">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <select 
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="appearance-none bg-black/40 border border-white/10 rounded-xl pl-10 pr-8 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all [&>option]:bg-zinc-900 cursor-pointer min-w-[160px]"
+                className="appearance-none w-full sm:w-auto bg-black/40 border border-white/10 rounded-xl pl-10 pr-8 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-all cursor-pointer min-w-[140px]"
               >
-                <option value="all">{t('allStatus')}</option>
-                <option value="published">{t('publishedStatus')}</option>
-                <option value="draft">{t('draftStatus')}</option>
+                <option value="all" className="bg-zinc-900">{t('allStatus')}</option>
+                <option value="published" className="bg-zinc-900">{t('publishedStatus')}</option>
+                <option value="draft" className="bg-zinc-900">{t('draftStatus')}</option>
               </select>
             </div>
             
+            {/* View Toggle */}
             <div className="flex bg-black/40 border border-white/10 rounded-xl p-1">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === 'grid' ? 'bg-primary/20 text-primary shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-white/10'}`}
+                className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === 'grid' ? 'bg-purple-500/20 text-purple-400 shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
                 title={t('gridView')}
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === 'list' ? 'bg-primary/20 text-primary shadow-sm' : 'text-zinc-400 hover:text-white hover:bg-white/10'}`}
+                className={`p-2.5 rounded-lg transition-all duration-200 ${viewMode === 'list' ? 'bg-purple-500/20 text-purple-400 shadow-sm' : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
                 title={t('listView')}
               >
                 <List className="w-4 h-4" />
@@ -105,29 +108,31 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
           </div>
         </div>
 
+        {/* Empty State */}
         {filteredBooks.length === 0 ? (
-          <div className="rounded-3xl p-12 md:p-16 text-center border border-dashed border-white/10 bg-linear-to-br from-zinc-900/50 to-black/30">
-            <div className="w-20 h-20 bg-linear-to-br from-primary/20 to-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/20">
-              <BookOpen className="w-10 h-10 text-primary/70" />
+          <div className="rounded-3xl p-12 md:p-16 text-center border border-dashed border-white/10 bg-zinc-900/30">
+            <div className="w-24 h-24 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
+              <BookOpen className="w-12 h-12 text-purple-400/50" />
             </div>
             <h3 className="text-xl font-bold text-white mb-3">{t('noBooksFound')}</h3>
-            <p className="text-zinc-400 mb-6 max-w-sm mx-auto">
+            <p className="text-zinc-500 mb-6 max-w-sm mx-auto">
               {t('noBooksFoundDesc')}
             </p>
             <button 
               onClick={() => { setSearch(''); setFilter('all'); }}
-              className="px-6 py-2.5 bg-linear-to-r from-primary to-purple-600 text-white rounded-xl font-bold hover:from-primary/90 hover:to-purple-500 transition-all shadow-lg shadow-primary/20"
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-500/20"
             >
               {t('clearFilters')}
             </button>
           </div>
         ) : (
           viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            /* Grid View - Premium Cards */
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
               {filteredBooks.map((book) => (
-                <div key={book.id} className="group bg-linear-to-br from-zinc-900/90 to-zinc-950/90 rounded-2xl overflow-hidden border border-white/5 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 flex flex-col hover:-translate-y-1">
-                  {/* Cover Image Area */}
-                  <div className="relative aspect-2/3 bg-gray-800 overflow-hidden">
+                <div key={book.id} className="group bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 flex flex-col hover:-translate-y-1">
+                  {/* Cover Image */}
+                  <div className="relative aspect-[2/3] bg-zinc-800 overflow-hidden">
                     {book.coverImage ? (
                       <Image 
                         src={book.coverImage} 
@@ -136,27 +141,35 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                         className="object-cover group-hover:scale-105 transition-transform duration-500" 
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-br from-gray-800 to-gray-900 p-6 text-center">
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 p-6 text-center">
                         <BookOpen className="w-12 h-12 text-white/10 mb-4" />
-                        <span className="text-white/20 text-sm font-medium uppercase tracking-widest">{t('noCover')}</span>
+                        <span className="text-white/20 text-xs font-medium uppercase tracking-widest">{t('noCover')}</span>
                       </div>
                     )}
                     
-                    {/* Overlay Actions */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-xs">
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-6 gap-2">
                       <Link 
                         href={`/dashboard/create-book?id=${book.id}`}
                         className="p-3 bg-white text-black rounded-full hover:scale-110 transition-transform shadow-lg"
                         title={t('editBook')}
                       >
-                        <Edit className="w-5 h-5" />
+                        <Edit className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => setSelectedAnalyticsBook(book.id)}
                         className="p-3 bg-white/10 text-white border border-white/20 rounded-full hover:bg-white/20 hover:scale-110 transition-all backdrop-blur-md"
                         title={t('viewAnalytics')}
                       >
-                        <BarChart className="w-5 h-5" />
+                        <BarChart className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(book.id)}
+                        disabled={deletingId === book.id}
+                        className="p-3 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full hover:bg-red-500/30 hover:scale-110 transition-all backdrop-blur-md"
+                        title={t('deleteBookTitle')}
+                      >
+                        {deletingId === book.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
                       </button>
                     </div>
 
@@ -164,23 +177,23 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                     <div className="absolute top-3 right-3">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md shadow-sm ${
                         book.published 
-                          ? 'bg-green-500/20 text-green-300 border-green-500/30' 
-                          : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+                          : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                       }`}>
                         {book.published ? t('publishedStatus') : t('draftStatus')}
                       </span>
                     </div>
                   </div>
 
-                  {/* Content Area */}
+                  {/* Content */}
                   <div className="p-4 flex-1 flex flex-col">
-                    <h3 className="font-bold text-white truncate mb-1" title={book.title}>{book.title}</h3>
-                    <div className="flex items-center text-xs text-muted-foreground mb-4">
-                      <Calendar className="w-3 h-3 mr-1" />
+                    <h3 className="font-bold text-white truncate mb-1 group-hover:text-purple-400 transition-colors" title={book.title}>{book.title}</h3>
+                    <div className="flex items-center text-xs text-zinc-500">
+                      <Calendar className="w-3 h-3 mr-1.5" />
                       {new Date(book.createdAt).toLocaleDateString()}
                     </div>
 
-                    <div className="mt-auto flex items-center justify-between pt-3 border-t border-white/5">
+                    <div className="mt-auto pt-3 flex items-center justify-between border-t border-white/5">
                       <button
                         onClick={async () => {
                           if (confirm(t('startReadingParty'))) {
@@ -197,66 +210,71 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                         <Users className="w-3 h-3 mr-1" />
                         {t('readingParty')}
                       </button>
-
-                      <button 
-                        onClick={() => handleDelete(book.id)}
-                        disabled={deletingId === book.id}
-                        className="text-muted-foreground hover:text-red-400 transition-colors p-1"
-                        title={t('deleteBookTitle')}
+                      
+                      <Link 
+                        href={`/dashboard/create-book?id=${book.id}`}
+                        className="text-xs font-medium text-zinc-500 hover:text-white transition-colors"
                       >
-                        {deletingId === book.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
-                      </button>
+                        Edit →
+                      </Link>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="divide-y divide-white/5 bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
-               {filteredBooks.map((book) => (
-                 <div key={book.id} className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors group">
-                   <div className="w-12 h-16 relative bg-gray-800 rounded overflow-hidden shrink-0">
-                      {book.coverImage ? (
-                        <Image src={book.coverImage} alt={book.title} fill className="object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-800 text-white/20">
-                           <BookOpen className="w-6 h-6" />
-                        </div>
-                      )}
-                   </div>
-                   
-                   <div className="flex-1 min-w-0">
-                     <h3 className="font-bold text-white truncate">{book.title}</h3>
-                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{new Date(book.createdAt).toLocaleDateString()}</span>
-                        <span>•</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${
-                           book.published ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'
-                        }`}>
-                           {book.published ? t('publishedStatus') : t('draftStatus')}
-                        </span>
-                     </div>
-                   </div>
+            /* List View */
+            <div className="divide-y divide-white/5 bg-zinc-900/50 rounded-2xl border border-white/5 overflow-hidden">
+              {filteredBooks.map((book) => (
+                <div key={book.id} className="p-4 flex items-center gap-4 hover:bg-white/5 transition-colors group">
+                  <div className="w-14 h-20 relative bg-zinc-800 rounded-lg overflow-hidden shrink-0">
+                    {book.coverImage ? (
+                      <Image src={book.coverImage} alt={book.title} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-white/20">
+                        <BookOpen className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-white truncate group-hover:text-purple-400 transition-colors">{book.title}</h3>
+                    <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1">
+                      <span>{new Date(book.createdAt).toLocaleDateString()}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${
+                        book.published ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                      }`}>
+                        {book.published ? t('publishedStatus') : t('draftStatus')}
+                      </span>
+                    </div>
+                  </div>
 
-                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Link 
-                        href={`/dashboard/create-book?id=${book.id}`}
-                        className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
-                        title={t('editBook')}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(book.id)}
-                        disabled={deletingId === book.id}
-                        className="p-2 bg-white/10 hover:bg-red-500/20 hover:text-red-400 rounded-lg text-zinc-400 transition-colors"
-                        title={t('deleteBookTitle')}
-                      >
-                         {deletingId === book.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
-                      </button>
-                   </div>
-                 </div>
-               ))}
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Link 
+                      href={`/dashboard/create-book?id=${book.id}`}
+                      className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                      title={t('editBook')}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => setSelectedAnalyticsBook(book.id)}
+                      className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                      title={t('viewAnalytics')}
+                    >
+                      <BarChart className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book.id)}
+                      disabled={deletingId === book.id}
+                      className="p-2 bg-white/10 hover:bg-red-500/20 hover:text-red-400 rounded-lg text-zinc-400 transition-colors"
+                      title={t('deleteBookTitle')}
+                    >
+                      {deletingId === book.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )
         )}
@@ -264,16 +282,16 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
 
       {/* Analytics Modal */}
       {selectedAnalyticsBook && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-zinc-900/50">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <BarChart className="w-5 h-5 text-primary" />
+                <BarChart className="w-5 h-5 text-purple-400" />
                 {t('bookAnalytics')}
               </h2>
               <button 
                 onClick={() => setSelectedAnalyticsBook(null)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-muted-foreground hover:text-white"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
