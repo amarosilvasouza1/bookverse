@@ -76,7 +76,8 @@ model User {
   reports          Report[]
 
   // Reading Lists
-  readingLists ReadingList[]
+  readingLists        ReadingList[]
+  readingRoomMessages ReadingRoomMessage[]
 }
 
 model Item {
@@ -363,14 +364,15 @@ model Follow {
 }
 
 model Tip {
-  id         String   @id @default(cuid())
-  amount     Float
-  message    String?  @db.Text
-  createdAt  DateTime @default(now())
-  senderId   String
-  receiverId String
-  sender     User     @relation("SentTips", fields: [senderId], references: [id])
-  receiver   User     @relation("ReceivedTips", fields: [receiverId], references: [id])
+  id               String               @id @default(cuid())
+  amount           Float
+  message          String?              @db.Text
+  createdAt        DateTime             @default(now())
+  senderId         String
+  receiverId       String
+  sender           User                 @relation("SentTips", fields: [senderId], references: [id])
+  receiver         User                 @relation("ReceivedTips", fields: [receiverId], references: [id])
+  sentRoomMessages ReadingRoomMessage[]
 
   @@index([senderId])
   @@index([receiverId])
@@ -572,9 +574,26 @@ model ReadingRoom {
   host         User                     @relation(fields: [hostId], references: [id])
   book         Book                     @relation(fields: [bookId], references: [id])
   participants ReadingRoomParticipant[]
+  messages     ReadingRoomMessage[]
 
   @@index([hostId])
   @@index([bookId])
+}
+
+model ReadingRoomMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  room  ReadingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tip   Tip?        @relation(fields: [tipId], references: [id])
+  tipId String?
+
+  @@index([roomId])
+  @@index([userId])
 }
 
 model ReadingRoomParticipant {

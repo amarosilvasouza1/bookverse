@@ -75,6 +75,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         isAuthor={isAuthor}
         isSubscriber={!!hasSubscription}
         listsContainingBook={listsContainingBook}
+        userId={session?.id as string | undefined}
       />
       
       <div className="px-6 space-y-8">

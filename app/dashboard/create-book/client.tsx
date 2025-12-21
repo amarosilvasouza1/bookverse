@@ -87,7 +87,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
   // Collaborators State
-  const [activeTab, setActiveTab] = useState<'pages' | 'collaborators' | 'ai' | 'characters' | 'settings'>('pages');
+  const [activeTab, setActiveTab] = useState<'pages' | 'collaborators' | 'ai' | 'characters' | 'settings' | 'brainstorm'>('pages');
   const [collaboratorSearch, setCollaboratorSearch] = useState('');
   const [collaborators] = useState<Collaborator[]>(initialBook?.collaborators || []);
 
@@ -239,10 +239,11 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   };
 
   const handleGenerateAI = async () => {
-    if (!apiKey) {
-      setNotification({ type: 'error', message: 'API Key is required' });
-      return;
-    }
+    // We allow empty apiKey now as it falls back to server env var
+    // if (!apiKey) {
+    //   setNotification({ type: 'error', message: 'API Key is required' });
+    //   return;
+    // }
 
     if (aiMode !== 'analyze' && !aiPrompt) {
       setNotification({ type: 'error', message: 'Prompt is required' });
@@ -305,6 +306,30 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
     }
   };
 
+  const handleBrainstorm = async (prompt: string) => {
+    // We allow empty apiKey now as it falls back to server env var
+    // if (!apiKey) {
+    //   setNotification({ type: 'error', message: 'API Key is required' });
+    //   return null;
+    // }
+
+    try {
+      const { generateBookAI } = await import('@/app/actions/generate-book-ai');
+      const result = await generateBookAI(apiKey, prompt, 0, 'brainstorm'); // 0 pages for brainstorm
+      
+      if (result.error) throw new Error(result.error);
+      
+      return result.data;
+    } catch (error) {
+      console.error('Brainstorm Error:', error);
+      setNotification({ 
+        type: 'error', 
+        message: error instanceof Error ? error.message : 'Failed to brainstorm' 
+      });
+      return null;
+    }
+  };
+
   return (
     <div className="h-screen bg-[#0a0a0a] text-white overflow-hidden flex flex-col">
       {/* Notification Toast */}
@@ -333,7 +358,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
       <div className="flex-1 flex overflow-hidden relative">
         {/* Sidebar */}
         <div className={`
-          absolute md:relative z-40 h-full w-[280px] md:w-[320px] bg-[#0a0a0a] md:bg-transparent transition-transform duration-300 border-r border-white/5
+          absolute md:relative z-40 h-full w-[280px] md:w-[260px] lg:w-[320px] bg-[#0a0a0a] md:bg-transparent transition-all duration-300 border-r border-white/5
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           ${isFocusMode ? 'md:-translate-x-full md:w-0 md:border-none' : ''}
         `}>
@@ -363,6 +388,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
               <EditorSidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                handleBrainstorm={handleBrainstorm}
                 pages={pages}
                 currentPageIndex={currentPageIndex}
                 setCurrentPageIndex={setCurrentPageIndex}

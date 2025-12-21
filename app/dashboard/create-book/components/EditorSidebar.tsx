@@ -1,4 +1,5 @@
-import { Plus, Trash2, Users, Wand2, Book, User, Settings, ImageIcon, DollarSign, X, Music, Calendar, Tag } from 'lucide-react';
+import BrainstormTab from './BrainstormTab';
+import { Plus, Trash2, Users, Wand2, Book, User, Settings, ImageIcon, DollarSign, X, Music, Calendar, Tag, Lightbulb } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -25,8 +26,8 @@ interface Collaborator {
 }
 
 interface EditorSidebarProps {
-  activeTab: 'pages' | 'collaborators' | 'ai' | 'characters' | 'settings';
-  setActiveTab: (tab: 'pages' | 'collaborators' | 'ai' | 'characters' | 'settings') => void;
+  activeTab: 'pages' | 'collaborators' | 'ai' | 'characters' | 'settings' | 'brainstorm';
+  setActiveTab: (tab: 'pages' | 'collaborators' | 'ai' | 'characters' | 'settings' | 'brainstorm') => void;
   pages: Page[];
   currentPageIndex: number;
   setCurrentPageIndex: (index: number) => void;
@@ -51,6 +52,7 @@ interface EditorSidebarProps {
   setAiMode: (mode: 'complete' | 'structure' | 'page' | 'analyze') => void;
   isGenerating: boolean;
   handleGenerateAI: () => void;
+  handleBrainstorm: (prompt: string) => Promise<{ ideas: string[]; summary?: string } | null>;
   // Settings Props
   coverImage: string;
   setCoverImage: (url: string) => void;
@@ -69,7 +71,6 @@ interface EditorSidebarProps {
   ambience: string;
   setAmbience: (ambience: string) => void;
 }
-
 function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule }: { 
   page: Page, 
   index: number, 
@@ -176,6 +177,7 @@ export default function EditorSidebar({
   setAiMode,
   isGenerating,
   handleGenerateAI,
+  handleBrainstorm,
   // Settings Props
   coverImage,
   setCoverImage,
@@ -208,13 +210,14 @@ export default function EditorSidebar({
     { id: 'settings', icon: Settings, label: t('settingsTab') },
     { id: 'collaborators', icon: Users, label: t('teamTab') },
     { id: 'ai', icon: Wand2, label: t('aiTab') },
+    { id: 'brainstorm', icon: Lightbulb, label: 'Brainstorm' },
     { id: 'characters', icon: User, label: t('charsTab') },
   ] as const;
 
   return (
     <div className="h-full flex flex-col bg-[#0f0f0f]/50 backdrop-blur-xl border-r border-white/5">
       {/* Tabs */}
-      <div className="p-1 sm:p-2 grid grid-cols-5 gap-0.5 sm:gap-1 border-b border-white/5">
+      <div className="p-1 sm:p-2 grid grid-cols-6 gap-0.5 sm:gap-1 border-b border-white/5">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -564,6 +567,23 @@ export default function EditorSidebar({
               transition={{ duration: 0.2 }}
             >
               <CharacterSettings bookId={bookId || ''} />
+            </motion.div>
+          )}
+
+          {activeTab === 'brainstorm' && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+              <BrainstormTab 
+                apiKey={apiKey} 
+                setApiKey={setApiKey}
+                isGenerating={isGenerating} 
+                onGenerate={handleBrainstorm} 
+              />
             </motion.div>
           )}
         </AnimatePresence>

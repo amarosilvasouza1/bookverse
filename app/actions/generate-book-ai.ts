@@ -3,18 +3,30 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getSession } from '@/lib/auth';
 
-export async function generateBookAI(apiKey: string, prompt: string, pageCount: number = 3, mode: 'complete' | 'structure' | 'page' | 'analyze' = 'complete') {
+export async function generateBookAI(apiKey: string, prompt: string, pageCount: number = 3, mode: 'complete' | 'structure' | 'page' | 'analyze' | 'brainstorm' = 'complete') {
   try {
     const session = await getSession();
     if (!session) {
       return { error: 'Unauthorized' };
     }
 
-    if (!apiKey || !prompt) {
+    // Sanitize key: remove quotes, whitespace, newlines
+    const rawKey = apiKey?.trim() || process.env.GEMINI_API_KEY || '';
+    const finalApiKey = rawKey.replace(/["']/g, '').replace(/\s/g, '');
+
+    console.log('API Key Debug:', {
+        originalLength: rawKey.length,
+        sanitizedLength: finalApiKey.length,
+        start: finalApiKey.substring(0, 4),
+        end: finalApiKey.substring(finalApiKey.length - 4),
+        isEnv: !apiKey && !!process.env.GEMINI_API_KEY
+    });
+
+    if (!finalApiKey || !prompt) {
       return { error: 'API Key and Prompt are required' };
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey.trim());
+    const genAI = new GoogleGenerativeAI(finalApiKey);
     // gemini-2.0-flash is the only one that didn't return 404, so we stick with it and handle 429s
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
@@ -58,6 +70,19 @@ export async function generateBookAI(apiKey: string, prompt: string, pageCount: 
       Return ONLY valid JSON with the following structure:
       {
         "analysis": "Your detailed analysis and 3 bullet points for improvement..."
+      }`;
+    } else if (mode === 'brainstorm') {
+      systemPrompt = `You are a creative writing partner and brainstormer.
+      Help the user with their request (ideas, names, plot twists, world building, etc.).
+      Be creative, diverse, and inspiring.
+      Return ONLY valid JSON with the following structure:
+      {
+        "ideas": [
+           "Idea 1...",
+           "Idea 2...",
+           "Idea 3..."
+        ],
+        "summary": "A brief summary or additional context..."
       }`;
     } else {
       // Complete mode

@@ -158,7 +158,7 @@ export default function AIPanel({
 
         <button
           onClick={handleGenerateAI}
-          disabled={isGenerating || !apiKey || (aiMode !== 'analyze' && !aiPrompt)}
+          disabled={isGenerating || (aiMode !== 'analyze' && !aiPrompt)}
           className="w-full py-3 bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg shadow-purple-500/20 relative z-10 group"
         >
           {isGenerating ? (

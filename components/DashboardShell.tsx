@@ -59,27 +59,27 @@ export default function DashboardShell({
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30" suppressHydrationWarning>
       {/* Desktop Sidebar */}
-      <aside className="fixed h-screen w-64 border-r border-white/10 hidden md:flex flex-col bg-background z-50">
-        <div className="p-6 border-b border-white/10 flex flex-col gap-4">
-          <Link href="/dashboard/browse" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform duration-300">
+      <aside className="fixed h-screen border-r border-white/10 hidden md:flex flex-col bg-background z-50 transition-all duration-300 w-20 lg:w-64">
+        <div className="p-6 border-b border-white/10 flex flex-col gap-4 items-center lg:items-stretch">
+          <Link href="/dashboard/browse" className="flex items-center gap-3 group justify-center lg:justify-start">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-105 transition-transform duration-300 shrink-0">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-linear-to-r from-white to-white/60 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-linear-to-r from-white to-white/60 bg-clip-text text-transparent hidden lg:block">
               BookVerse
             </span>
           </Link>
           {/* <GlobalSearchInput /> Removed per user request */}
         </div>
 
-        <div className="px-4 py-2">
-           <div className="flex items-center justify-between px-4 py-2 bg-white/5 rounded-lg mb-2">
-             <span className="text-xs font-medium text-zinc-400">Notifications</span>
+        <div className="px-2 lg:px-4 py-2">
+           <div className="flex items-center justify-center lg:justify-between px-2 lg:px-4 py-2 bg-white/5 rounded-lg mb-2">
+             <span className="text-xs font-medium text-zinc-400 hidden lg:block">Notifications</span>
              <NotificationBell userId={userId} placement="bottom-left" />
            </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-2 lg:p-4 space-y-2 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -87,22 +87,23 @@ export default function DashboardShell({
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group relative overflow-hidden',
+                  'flex items-center px-3 lg:px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group relative overflow-hidden justify-center lg:justify-start',
                   isActive 
                     ? 'text-white bg-primary/10 shadow-inner' 
                     : 'text-muted-foreground hover:text-white hover:bg-white/5'
                 )}
+                title={item.name}
               >
                 {isActive && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-full" />
                 )}
                 <item.icon className={cn(
-                  "w-5 h-5 mr-3 transition-colors",
+                  "w-5 h-5 lg:mr-3 transition-colors shrink-0",
                   isActive ? "text-primary" : "text-muted-foreground group-hover:text-white"
                 )} />
-                <span className="flex-1">{item.name}</span>
+                <span className="flex-1 hidden lg:block truncate">{item.name}</span>
                 {item.badge && item.badge > 0 ? (
-                    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center absolute top-1 right-1 lg:static">
                         {item.badge > 99 ? '99+' : item.badge}
                     </span>
                 ) : null}
@@ -114,17 +115,19 @@ export default function DashboardShell({
         <div className="p-4 border-t border-white/10 bg-background space-y-2">
           <Link 
             href="/dashboard/create-book"
-            className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white bg-linear-to-r from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="flex items-center justify-center w-full px-0 lg:px-4 py-3 text-sm font-bold text-white bg-linear-to-r from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            title={t('createBook')}
           >
-            <PlusCircle className="w-5 h-5 mr-2" />
-            {t('createBook')}
+            <PlusCircle className="w-5 h-5 lg:mr-2" />
+            <span className="hidden lg:inline">{t('createBook')}</span>
           </Link>
           <button 
             onClick={handleSignOut}
-            className="flex items-center w-full px-4 py-3 text-sm font-medium text-muted-foreground hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
+            className="flex items-center justify-center lg:justify-start w-full px-0 lg:px-4 py-3 text-sm font-medium text-muted-foreground hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10"
+            title={t('signOut')}
           >
-            <LogOut className="w-5 h-5 mr-3" />
-            {t('signOut')}
+            <LogOut className="w-5 h-5 lg:mr-3" />
+            <span className="hidden lg:inline">{t('signOut')}</span>
           </button>
         </div>
       </aside>
@@ -192,8 +195,8 @@ export default function DashboardShell({
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 min-h-screen pb-20 pt-16 md:pt-0 md:pb-0 overflow-x-hidden">
-        <div className="p-0 md:p-4 lg:p-8 overflow-x-hidden" suppressHydrationWarning={true}>
+      <main className="flex-1 md:ml-20 lg:ml-64 min-h-screen pb-20 pt-16 md:pt-0 md:pb-0 overflow-x-hidden bg-[#0A0A0A] transition-all duration-300">
+        <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto overflow-x-hidden" suppressHydrationWarning={true}>
           {children}
         </div>
       </main>

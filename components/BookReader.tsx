@@ -39,6 +39,7 @@ interface BookReaderProps {
   isAuthor: boolean;
   isSubscriber: boolean;
   listsContainingBook?: string[];
+  userId?: string;
 }
 
 type Theme = 'light' | 'dark' | 'sepia';
@@ -63,7 +64,7 @@ interface Bookmark {
   createdAt: Date;
 }
 
-export function BookReader({ book, canRead, isSubscriber, isAuthor, listsContainingBook = [] }: BookReaderProps) {
+export function BookReader({ book, canRead, isSubscriber, isAuthor, listsContainingBook = [], userId }: BookReaderProps) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [fontFamily, setFontFamily] = useState<FontFamily>('sans');
   const [fontSize, setFontSize] = useState(18);
@@ -587,6 +588,7 @@ export function BookReader({ book, canRead, isSubscriber, isAuthor, listsContain
           isHost={roomState.isHost}
           participantCount={roomState.participants.length}
           hostName={roomState.hostName || 'Host'}
+          currentUserId={userId}
         />
       )}
 

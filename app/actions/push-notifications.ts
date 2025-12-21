@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { createNotification } from './notification';
 
+import { sendPushToUser } from '@/lib/push';
+
 // Send notification to all followers when a new chapter is published
 export async function notifyNewChapter(bookId: string, chapterTitle: string) {
   const session = await getSession();
@@ -29,17 +31,31 @@ export async function notifyNewChapter(bookId: string, chapterTitle: string) {
       select: { followerId: true }
     });
 
-    // Create notifications for each follower
+    const notificationMessage = `${book.author.name || book.author.username} published a new chapter: "${chapterTitle}" in "${book.title}"`;
+    const notificationLink = `/dashboard/books/${bookId}`;
+
+    // Create notifications for each follower (DB)
     const notifications = followers.map(f => 
       createNotification(
         f.followerId,
         'NEW_CHAPTER',
-        `${book.author.name || book.author.username} published a new chapter: "${chapterTitle}" in "${book.title}"`,
-        `/dashboard/books/${bookId}`
+        notificationMessage,
+        notificationLink
       )
     );
 
     await Promise.all(notifications);
+
+    // Send Web Push to all followers
+    const pushPromises = followers.map(f => 
+      sendPushToUser(f.followerId, {
+        title: `New Chapter in ${book.title}`,
+        message: `"${chapterTitle}" is now available!`,
+        link: notificationLink
+      })
+    );
+
+    await Promise.allSettled(pushPromises);
 
     return { success: true, notifiedCount: followers.length };
   } catch (error) {
