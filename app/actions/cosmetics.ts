@@ -55,7 +55,6 @@ export async function buyCosmetic(userId: string, cosmeticId: string) {
     
     if (!user || !cosmetic) return { success: false, error: "Not found" };
     
-    // @ts-expect-error ink field may not exist in current Prisma types
     const userInk = user.ink || 0;
     
     if (userInk < cosmetic.price) {
