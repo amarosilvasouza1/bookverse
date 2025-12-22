@@ -24,6 +24,9 @@ export async function updateSession(request: NextRequest) {
     name: 'session',
     value: await signToken(parsed),
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
   return res;

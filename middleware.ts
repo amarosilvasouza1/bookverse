@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from './lib/jwt';
+import { updateSession } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -33,6 +34,12 @@ export async function middleware(request: NextRequest) {
   // Redirect to dashboard if accessing login/register while authenticated
   if ((path === '/login' || path === '/register') && isAuthenticated) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Refresh session if authenticated
+  if (isAuthenticated && !isPublicPath) {
+    const response = await updateSession(request);
+    if (response) return response;
   }
 
   return NextResponse.next();

@@ -11,6 +11,7 @@ import { followUser } from '@/app/actions/social';
 import { toast } from 'sonner';
 import CreateStatusModal from './CreateStatusModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Community {
   id: string;
@@ -64,6 +65,7 @@ interface SocialMainProps {
 }
 
 export default function SocialMain({ communities, statuses, suggestedUsers }: SocialMainProps) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'feed' | 'chat'>('feed');
   const [viewingStatus, setViewingStatus] = useState<Status | null>(null);
   const [showCreateStatus, setShowCreateStatus] = useState(false);
@@ -97,7 +99,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
              animate={{ opacity: 1, y: 0 }}
              className="text-3xl md:text-4xl font-bold mb-1 bg-linear-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent tracking-tight"
           >
-            Social Hub
+            {t('socialHub')}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
@@ -105,7 +107,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
             transition={{ delay: 0.1 }}
             className="text-muted-foreground text-sm md:text-base font-medium"
           >
-            Connect, share, and explore the community.
+            {t('socialHubDesc')}
           </motion.p>
         </div>
         
@@ -126,7 +128,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
               />
             )}
             <Layout className="w-4 h-4" />
-            Feed
+            {t('feed')}
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -143,7 +145,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
               />
             )}
             <MessageCircle className="w-4 h-4" />
-            Messages
+            {t('messages')}
           </button>
         </div>
       </div>
@@ -165,7 +167,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
               <div className="bg-zinc-900/30 backdrop-blur-md border border-white/5 rounded-3xl p-6 md:p-8">
                 <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-purple-400" />
-                  Recent Stories
+                  {t('recentStories')}
                 </h2>
                 <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
                   {/* My Status */}
@@ -178,7 +180,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
                     <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-dashed border-zinc-700 flex items-center justify-center bg-white/5 group-hover:bg-white/10 group-hover:border-purple-500/50 transition-colors">
                       <Plus className="w-6 h-6 md:w-8 md:h-8 text-zinc-500 group-hover:text-white transition-colors" />
                     </div>
-                    <span className="text-xs font-medium text-zinc-500 group-hover:text-white transition-colors">Add Story</span>
+                    <span className="text-xs font-medium text-zinc-500 group-hover:text-white transition-colors">{t('addStory')}</span>
                   </motion.div>
 
                   {statuses.map((status, i) => (
@@ -216,7 +218,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
               <div className="space-y-4">
                  <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1 flex items-center gap-2">
                    <TrendingUp className="w-4 h-4 text-pink-400" />
-                   Suggested Authors
+                   {t('suggestedAuthors')}
                  </h2>
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {suggestedUsers.map((user, i) => (
@@ -231,14 +233,14 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                   <Users className="w-6 h-6 text-purple-400" />
-                  Trending Communities
+                  {t('trendingCommunities')}
                 </h2>
                 <Link 
                   href="/dashboard/communities/create"
                   className="px-6 py-2.5 bg-white text-black rounded-xl text-sm font-bold hover:bg-zinc-200 transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] text-center flex items-center justify-center gap-2 group"
                 >
                   <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                  Create Community
+                  {t('createCommunity')}
                 </Link>
               </div>
               
@@ -262,7 +264,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
                             {community.name.substring(0, 2).toUpperCase()}
                           </div>
                           <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-zinc-400 uppercase tracking-wider group-hover:bg-purple-500/10 group-hover:text-purple-300 transition-colors">
-                            Community
+                            {t('community')}
                           </div>
                         </div>
                         
@@ -271,7 +273,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
                             {community.name}
                           </h3>
                           <p className="text-sm text-zinc-400 line-clamp-2 mb-6 leading-relaxed group-hover:text-zinc-300 transition-colors">
-                            {community.description || 'Join this community to connect with others and share your passion for books.'}
+                            {community.description || t('defaultCommunityDesc')}
                           </p>
                         </div>
                         
@@ -287,7 +289,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
                             </span>
                           </div>
                           <span className="text-xs font-bold text-purple-400 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0 flex items-center gap-1">
-                            Join <ArrowRight className="w-3 h-3" />
+                            {t('join')} <ArrowRight className="w-3 h-3" />
                           </span>
                         </div>
                       </div>
@@ -315,6 +317,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
 }
 
 function SuggestedUserCard({ user, delay }: { user: SuggestedUser, delay: number }) {
+  const { t } = useLanguage();
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -328,11 +331,11 @@ function SuggestedUserCard({ user, delay }: { user: SuggestedUser, delay: number
         setIsFollowing(false);
         toast.error(result.error);
       } else {
-        toast.success(`Seguindo ${user.name || user.username}`);
+        toast.success(t('followingUser').replace('{name}', user.name || user.username));
       }
     } catch {
       setIsFollowing(false);
-      toast.error('Falha ao atualizar status de seguir');
+      toast.error(t('failedToUpdateFollow'));
     } finally {
       setLoading(false);
     }
@@ -357,12 +360,12 @@ function SuggestedUserCard({ user, delay }: { user: SuggestedUser, delay: number
         </div>
       </Link>
       
-      <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
         <Link href={`/dashboard/profile/${user.username}`} className="font-bold text-sm text-white hover:text-purple-400 transition-colors truncate block">
           {user.name || user.username}
         </Link>
         <p className="text-xs text-zinc-500 truncate">
-          {user._count.followers} followers • {user._count.books} books
+          {user._count.followers} {t('followers')} • {user._count.books} {t('books')}
         </p>
       </div>
 
@@ -376,7 +379,7 @@ function SuggestedUserCard({ user, delay }: { user: SuggestedUser, delay: number
             : "bg-white text-black hover:bg-zinc-200 hover:scale-105 active:scale-95 shadow-lg shadow-white/5"
         )}
       >
-        {isFollowing ? 'Following' : 'Follow'}
+        {isFollowing ? t('following') : t('follow')}
       </button>
     </motion.div>
   );

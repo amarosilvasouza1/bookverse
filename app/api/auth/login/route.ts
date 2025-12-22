@@ -46,8 +46,9 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 1 day
       path: '/',
+      maxAge: 60 * 60 * 24, // 1 day
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
 
     return response;

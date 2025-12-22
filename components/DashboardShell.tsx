@@ -40,7 +40,7 @@ export default function DashboardShell({
     { name: t('overview'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('browse'), href: '/dashboard/browse', icon: BookOpen },
     { name: t('myBooks'), href: '/dashboard/books', icon: BookOpen },
-    { name: 'Social', href: '/dashboard/social', icon: MessageCircle, badge: unreadMessages },
+    { name: t('social'), href: '/dashboard/social', icon: MessageCircle, badge: unreadMessages },
     { name: t('leaderboard'), href: '/dashboard/leaderboard', icon: Trophy },
     { name: t('settings'), href: '/dashboard/settings', icon: Settings },
     { name: 'Subscription', href: '/dashboard/subscription', icon: Zap },
@@ -145,7 +145,7 @@ export default function DashboardShell({
             
             {/* Main Items */}
             {navigation.filter(item => 
-              [t('overview'), t('browse'), t('myBooks'), 'Social'].includes(item.name)
+              ['/dashboard', '/dashboard/browse', '/dashboard/books', '/dashboard/social'].includes(item.href)
             ).map((item) => {
               const isActive = pathname === item.href;
               return (

@@ -230,7 +230,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
                         className={`flex-1 px-4 py-3 text-xs font-semibold tracking-wide transition-all relative whitespace-nowrap
                         ${activeTab === tab ? 'text-white bg-white/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
                     >
-                        {tab.toUpperCase()}
+                        {t(tab).toUpperCase()}
                         {activeTab === tab && (
                             <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-indigo-500" />
                         )}
