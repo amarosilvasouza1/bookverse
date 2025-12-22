@@ -753,7 +753,7 @@ const translations = {
     backToHome: 'Voltar para Início',
     loginFailed: 'Falha no login',
     errorOccurred: 'Ocorreu um erro. Por favor, tente novamente.',
-    errorOccurred: 'Ocorreu um erro. Por favor, tente novamente.',
+
     joinCommunitySubtitle: 'Junte-se à comunidade BookVerse hoje',
     usernameLabel: 'Nome de Usuário',
     usernamePlaceholder: 'usuario_unico',
