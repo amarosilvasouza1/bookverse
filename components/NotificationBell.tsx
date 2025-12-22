@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, Check, Heart, MessageCircle, UserPlus, Info, AtSign, Smile, Book, FileText, X, CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import { getNotifications, markAsRead, markAllAsRead } from '@/app/actions/notification';
@@ -23,17 +24,55 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'social' | 'books' | 'system'>('all');
   const [isMobile, setIsMobile] = useState(false);
   const prevCountRef = useRef(0);
+  const [mounted, setMounted] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-  // Check mobile screen size
+  // Handle client-side mounting for Portal
   useEffect(() => {
+    setMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  const updateDropdownPosition = useCallback(() => {
+    if (!buttonRef.current || isMobile) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const scrollTop = window.scrollY;
+    
+    // Default to bottom-right alignment relative to button
+    let top = rect.bottom + 8 + scrollTop;
+    let left = rect.right - 400; // 400px width
+
+    if (placement === 'bottom-left') {
+        left = rect.left;
+    } else if (placement === 'top-right') {
+        top = rect.top - 400 - 8 + scrollTop; // Height needs estimation or ref
+    }
+
+    // Safety check for screen edges
+    if (left < 10) left = 10;
+    if (left + 400 > window.innerWidth - 10) left = window.innerWidth - 410;
+
+    setDropdownPosition({ top, left });
+  }, [placement, isMobile]);
+
+  useEffect(() => {
+    if (isOpen) {
+        updateDropdownPosition();
+        window.addEventListener('scroll', updateDropdownPosition, true);
+        window.addEventListener('resize', updateDropdownPosition);
+    }
+    return () => {
+        window.removeEventListener('scroll', updateDropdownPosition, true);
+        window.removeEventListener('resize', updateDropdownPosition);
+    };
+  }, [isOpen, updateDropdownPosition]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -42,7 +81,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
         setNotifications(result.data);
         const newUnreadCount = result.unreadCount || 0;
         
-        // Play sound if new notification arrived
+        // Play sound using Audio constructor which works in client
         if (newUnreadCount > prevCountRef.current) {
           try {
             const audio = new Audio('/notification.mp3'); 
@@ -64,21 +103,26 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    const interval = setInterval(fetchNotifications, 30000); 
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+        // Since we are portaling, we check if click is outside BOTH the dropdown AND the trigger button
+        if (
+            dropdownRef.current && 
+            !dropdownRef.current.contains(event.target as Node) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(event.target as Node)
+        ) {
+            setIsOpen(false);
+        }
     };
     if (isOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  // Prevent body scroll when open on mobile
   useEffect(() => {
     if (isMobile && isOpen) {
         document.body.style.overflow = 'hidden';
@@ -94,33 +138,14 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     setUnreadCount(prev => Math.max(0, prev - 1));
     prevCountRef.current = Math.max(0, prevCountRef.current - 1);
-    
     await markAsRead(id);
   };
 
   const handleMarkAllAsRead = async () => {
-    // Optimistic update
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     setUnreadCount(0);
     prevCountRef.current = 0;
-    
     await markAllAsRead(userId);
-  };
-
-  const getPlacementClasses = () => {
-    if (isMobile) return ''; // Handled by fixed positioning
-
-    switch (placement) {
-      case 'top-right':
-        return 'bottom-full right-0 mb-4 origin-bottom-right';
-      case 'top-center':
-        return 'bottom-full left-1/2 -translate-x-1/2 mb-4 origin-bottom';
-      case 'bottom-left':
-        return 'top-full left-0 mt-4 origin-top-left';
-      case 'bottom-right':
-      default:
-        return 'top-full right-0 mt-4 origin-top-right';
-    }
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -144,34 +169,29 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
     }
   };
 
-  return (
-    <div className="relative" ref={dropdownRef} suppressHydrationWarning={true}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`relative p-2.5 rounded-full transition-all duration-300 group
-            ${isOpen ? 'bg-white/20 text-white' : 'hover:bg-white/10 text-zinc-400 hover:text-white'}`}
-      >
-        <Bell className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'scale-110' : 'group-hover:scale-110'}`} />
-        {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121212] animate-pulse" />
-        )}
-      </button>
-
-      {isOpen && (
-        <>
-            {/* Desktop Dropdown / Mobile Sheet Overlay */}
-            {isMobile && (
-                <div 
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] animate-in fade-in duration-200" 
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
-            
+  const DropdownContent = (
+    <>
+        {/* Mobile Sheet Overlay */}
+        {isMobile && isOpen && (
             <div 
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] animate-in fade-in duration-200" 
+                onClick={() => setIsOpen(false)}
+            />
+        )}
+        
+        {/* Dropdown / Sheet */}
+        {isOpen && (
+            <div 
+                ref={dropdownRef}
+                style={!isMobile ? { 
+                    position: 'absolute',
+                    top: dropdownPosition.top,
+                    left: dropdownPosition.left
+                } : undefined}
                 className={`
                     ${isMobile 
-                        ? 'fixed inset-x-0 bottom-0 top-[15vh] z-[100] rounded-t-3xl border-t border-white/10' 
-                        : `absolute ${getPlacementClasses()} w-[400px] z-50 rounded-2xl border border-white/10`
+                        ? 'fixed inset-x-0 bottom-0 top-[15vh] z-[9999] rounded-t-3xl border-t border-white/10' 
+                        : `z-[9999] w-[400px] rounded-2xl border border-white/10`
                     }
                     bg-[#0a0a0a]/90 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5
                     animate-in fade-in duration-200 ${isMobile ? 'slide-in-from-bottom-20' : 'zoom-in-95'}
@@ -296,8 +316,25 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
                     )}
                 </div>
             </div>
-        </>
-      )}
-    </div>
+        )}
+    </>
+  );
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`relative p-2.5 rounded-full transition-all duration-300 group
+            ${isOpen ? 'bg-white/20 text-white' : 'hover:bg-white/10 text-zinc-400 hover:text-white'}`}
+      >
+        <Bell className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'scale-110' : 'group-hover:scale-110'}`} />
+        {unreadCount > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121212] animate-pulse" />
+        )}
+      </button>
+
+      {mounted && createPortal(DropdownContent, document.body)}
+    </>
   );
 }
