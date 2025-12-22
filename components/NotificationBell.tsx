@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, Heart, MessageCircle, UserPlus, Info, AtSign, Smile, Book, FileText, X, CheckCheck } from 'lucide-react';
 import Link from 'next/link';
 import { getNotifications, markAsRead, markAllAsRead } from '@/app/actions/notification';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,7 +24,16 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'social' | 'books' | 'system'>('all');
+  const [isMobile, setIsMobile] = useState(false);
   const prevCountRef = useRef(0);
+
+  // Check mobile screen size
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -36,9 +45,9 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
         // Play sound if new notification arrived
         if (newUnreadCount > prevCountRef.current) {
           try {
-            const audio = new Audio('/notification.mp3'); // Assuming file exists or will exist. If not, it just won't play.
+            const audio = new Audio('/notification.mp3'); 
             audio.volume = 0.5;
-            audio.play().catch(() => {}); // catch errors if autoplay is blocked
+            audio.play().catch(() => {});
           } catch (_e) {
             // ignore audio errors
           }
@@ -55,8 +64,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
 
   useEffect(() => {
     fetchNotifications();
-    // Poll every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
@@ -66,11 +74,22 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
-  const handleMarkAsRead = async (id: string) => {
+  // Prevent body scroll when open on mobile
+  useEffect(() => {
+    if (isMobile && isOpen) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobile, isOpen]);
+
+  const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     // Optimistic update
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     setUnreadCount(prev => Math.max(0, prev - 1));
@@ -89,117 +108,196 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
   };
 
   const getPlacementClasses = () => {
+    if (isMobile) return ''; // Handled by fixed positioning
+
     switch (placement) {
       case 'top-right':
-        return 'bottom-full right-0 mb-2 origin-bottom-right';
+        return 'bottom-full right-0 mb-4 origin-bottom-right';
       case 'top-center':
-        return 'bottom-full left-1/2 -translate-x-1/2 mb-2 origin-bottom';
+        return 'bottom-full left-1/2 -translate-x-1/2 mb-4 origin-bottom';
       case 'bottom-left':
-        return 'top-full left-0 mt-2 origin-top-left';
+        return 'top-full left-0 mt-4 origin-top-left';
       case 'bottom-right':
       default:
-        return 'top-full right-0 mt-2 origin-top-right';
+        return 'top-full right-0 mt-4 origin-top-right';
     }
   };
 
   const filteredNotifications = notifications.filter(n => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'social') return ['LIKE', 'COMMENT', 'FOLLOW', 'MENTION', 'REACTION'].includes(n.type); // Added MENTION, REACTION
+    if (activeTab === 'social') return ['LIKE', 'COMMENT', 'FOLLOW', 'MENTION', 'REACTION'].includes(n.type);
     if (activeTab === 'books') return ['BOOK_UPDATE', 'NEW_CHAPTER'].includes(n.type);
     if (activeTab === 'system') return ['SYSTEM'].includes(n.type);
     return true;
   });
 
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'LIKE': return <Heart className="w-4 h-4 text-red-400" fill="currentColor" />;
+      case 'COMMENT': return <MessageCircle className="w-4 h-4 text-blue-400" />;
+      case 'FOLLOW': return <UserPlus className="w-4 h-4 text-emerald-400" />;
+      case 'MENTION': return <AtSign className="w-4 h-4 text-orange-400" />;
+      case 'REACTION': return <Smile className="w-4 h-4 text-yellow-400" />;
+      case 'BOOK_UPDATE': return <Book className="w-4 h-4 text-purple-400" />;
+      case 'NEW_CHAPTER': return <FileText className="w-4 h-4 text-indigo-400" />;
+      default: return <Info className="w-4 h-4 text-zinc-400" />;
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef} suppressHydrationWarning={true}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-white/10 transition-colors"
+        className={`relative p-2.5 rounded-full transition-all duration-300 group
+            ${isOpen ? 'bg-white/20 text-white' : 'hover:bg-white/10 text-zinc-400 hover:text-white'}`}
       >
-        <Bell className="w-5 h-5 text-zinc-400 hover:text-white" />
+        <Bell className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'scale-110' : 'group-hover:scale-110'}`} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#0a0a0a]" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#121212] animate-pulse" />
         )}
       </button>
 
       {isOpen && (
-        <div className={`absolute ${getPlacementClasses()} w-80 md:w-96 max-w-[90vw] bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 flex flex-col`}>
-          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
-            <h3 className="font-semibold text-white">{t('notifications')}</h3>
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllAsRead}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
-              >
-                {t('markAllAsRead')}
-              </button>
+        <>
+            {/* Desktop Dropdown / Mobile Sheet Overlay */}
+            {isMobile && (
+                <div 
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] animate-in fade-in duration-200" 
+                    onClick={() => setIsOpen(false)}
+                />
             )}
-          </div>
-
-          <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide shrink-0">
-            {(['all', 'social', 'books', 'system'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap
-                  ${activeTab === tab ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          <div className="max-h-[50vh] overflow-y-auto">
-            {loading ? (
-              <div className="p-8 text-center text-zinc-500 text-sm">{t('loadingNotifications')}</div>
-            ) : filteredNotifications.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500 text-sm">{t('noNotificationsYet')}</div>
-            ) : (
-              <div className="divide-y divide-white/5">
-                {filteredNotifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-4 hover:bg-white/5 transition-colors ${!notification.read ? 'bg-white/5' : ''}`}
-                  >
-                    <div className="flex gap-3">
-                      <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${!notification.read ? 'bg-indigo-500' : 'bg-transparent'}`} />
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm text-zinc-200 leading-snug">
-                          {notification.message}
-                        </p>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs text-zinc-500">
-                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                          </span>
-                          {!notification.read && (
+            
+            <div 
+                className={`
+                    ${isMobile 
+                        ? 'fixed inset-x-0 bottom-0 top-[15vh] z-[100] rounded-t-3xl border-t border-white/10' 
+                        : `absolute ${getPlacementClasses()} w-[400px] z-50 rounded-2xl border border-white/10`
+                    }
+                    bg-[#0a0a0a]/90 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5
+                    animate-in fade-in duration-200 ${isMobile ? 'slide-in-from-bottom-20' : 'zoom-in-95'}
+                `}
+            >
+                {/* Header */}
+                <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0 bg-white/5 relative">
+                     {isMobile && (
+                         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-white/20 rounded-full" />
+                     )}
+                    <h3 className="font-bold text-white text-lg tracking-tight mt-1">{t('notifications')}</h3>
+                    <div className="flex items-center gap-3">
+                        {unreadCount > 0 && (
                             <button
-                              onClick={() => handleMarkAsRead(notification.id)}
-                              className="text-zinc-500 hover:text-white"
-                              title={t('markAsRead')}
+                                onClick={handleMarkAllAsRead}
+                                className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-indigo-500/10 transition-colors"
                             >
-                              <Check className="w-3 h-3" />
+                                <CheckCheck className="w-3.5 h-3.5" />
+                                {t('markAllAsRead')}
                             </button>
-                          )}
-                        </div>
-                        {notification.link && (
-                          <Link
-                            href={notification.link}
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            className="block mt-2 text-xs text-indigo-400 hover:text-indigo-300 font-medium"
-                          >
-                            {t('viewDetails')}
-                          </Link>
                         )}
-                      </div>
+                        {isMobile && (
+                            <button onClick={() => setIsOpen(false)} className="p-1 rounded-full hover:bg-white/10">
+                                <X className="w-5 h-5 text-zinc-400" />
+                            </button>
+                        )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-white/5 overflow-x-auto scrollbar-hide shrink-0 bg-[#0a0a0a]/50">
+                    {(['all', 'social', 'books', 'system'] as const).map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`flex-1 px-4 py-3 text-xs font-semibold tracking-wide transition-all relative whitespace-nowrap
+                        ${activeTab === tab ? 'text-white bg-white/5' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
+                    >
+                        {tab.toUpperCase()}
+                        {activeTab === tab && (
+                            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-indigo-500" />
+                        )}
+                    </button>
+                    ))}
+                </div>
+
+                {/* List */}
+                <div className={`overflow-y-auto custom-scrollbar ${isMobile ? 'flex-1 pb-10' : 'max-h-[60vh]'} p-2 space-y-2`}>
+                    {loading ? (
+                        <div className="p-10 flex flex-col items-center justify-center text-zinc-500 gap-3">
+                             <div className="w-6 h-6 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+                             <span className="text-sm font-medium">{t('loadingNotifications')}</span>
+                        </div>
+                    ) : filteredNotifications.length === 0 ? (
+                        <div className="p-12 text-center flex flex-col items-center gap-4 text-zinc-500 opacity-60">
+                            <Bell className="w-10 h-10 stroke-[1.5]" />
+                            <p className="text-sm font-medium">{t('noNotificationsYet')}</p>
+                        </div>
+                    ) : (
+                        filteredNotifications.map((notification) => (
+                            <div
+                                key={notification.id}
+                                className={`
+                                    group relative p-3 rounded-xl border transition-all duration-200
+                                    ${!notification.read 
+                                        ? 'bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border-indigo-500/30' 
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10'
+                                    }
+                                `}
+                            >
+                                <div className="flex gap-3.5">
+                                    {/* Icon Container */}
+                                    <div className={`
+                                        w-10 h-10 rounded-full flex items-center justify-center shrink-0 border mt-0.5
+                                        ${!notification.read ? 'bg-indigo-500/20 border-indigo-500/30' : 'bg-black/40 border-white/5'}
+                                    `}>
+                                        {getIcon(notification.type)}
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm leading-snug mb-1 ${!notification.read ? 'text-white font-medium' : 'text-zinc-300'}`}>
+                                            {notification.message}
+                                        </p>
+                                        
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                            </span>
+                                            
+                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                 {!notification.read && (
+                                                    <button
+                                                        onClick={(e) => handleMarkAsRead(notification.id, e)}
+                                                        className="p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                                                        title={t('markAsRead')}
+                                                    >
+                                                        <Check className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {notification.link && (
+                                            <Link
+                                                href={notification.link}
+                                                onClick={() => handleMarkAsRead(notification.id)}
+                                                className="absolute inset-0 z-0"
+                                            >
+                                                <span className="sr-only">{t('viewDetails')}</span>
+                                            </Link>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Read Status Indicator */}
+                                    {!notification.read && (
+                                        <div className="absolute top-4 right-3 w-1.5 h-1.5 bg-indigo-400 rounded-full shadow-[0_0_8px_rgba(129,140,248,0.5)]" />
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </>
       )}
     </div>
   );
 }
-
