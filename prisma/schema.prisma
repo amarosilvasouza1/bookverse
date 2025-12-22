@@ -70,6 +70,7 @@ model User {
   battleVotes          BattleVote[]
   authorCosmetics      AuthorCosmetic[]
   userCosmetics        UserCosmetic[]
+  skillTree            UserSkillTree?
 }
 
 model Item {
@@ -715,6 +716,16 @@ model BattleVote {
   @@index([voterId])
   @@index([battleId])
   @@index([participantId])
+}
+
+model UserSkillTree {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  points         Int      @default(0)
+  unlockedSkills String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AuthorCosmetic {
