@@ -1296,7 +1296,7 @@ const translations = {
     backToHome: 'ホームに戻る',
     loginFailed: 'ログインに失敗しました',
     errorOccurred: 'エラーが発生しました。もう一度お試しください。',
-    errorOccurred: 'エラーが発生しました。もう一度お試しください。',
+
     joinCommunitySubtitle: '今すぐBookVerseコミュニティに参加しましょう',
     usernameLabel: 'ユーザー名',
     usernamePlaceholder: 'unique_username',
