@@ -66,6 +66,8 @@ model User {
   sentTips             Tip[]                     @relation("SentTips")
   userAchievements     UserAchievement[]
   items                UserItem[]
+  battleParticipations BattleParticipant[]
+  battleVotes          BattleVote[]
 }
 
 model Item {
@@ -672,28 +674,45 @@ model ReadingListBook {
 }
 
 model WritingBattle {
-  id        String    @id @default(cuid())
-  theme     String
-  status    String
-  startTime DateTime
-  endTime   DateTime?
-  createdAt DateTime  @default(now())
+  id           String              @id @default(cuid())
+  theme        String
+  status       String
+  startTime    DateTime
+  endTime      DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  participants BattleParticipant[]
+  votes        BattleVote[]
 }
 
 model BattleParticipant {
-  id        String   @id @default(cuid())
-  userId    String
-  battleId  String
-  content   String?  @db.Text
-  createdAt DateTime @default(now())
+  id          String        @id @default(cuid())
+  userId      String
+  battleId    String
+  content     String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  battle      WritingBattle @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  battleVotes BattleVote[]
+
+  @@index([userId])
+  @@index([battleId])
 }
 
 model BattleVote {
-  id            String   @id @default(cuid())
+  id            String            @id @default(cuid())
   voterId       String
   battleId      String
   participantId String
-  createdAt     DateTime @default(now())
+  createdAt     DateTime          @default(now())
+  voter         User              @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  battle        WritingBattle     @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  participant   BattleParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@index([voterId])
+  @@index([battleId])
+  @@index([participantId])
 }
 
 model AuthorCosmetic {
