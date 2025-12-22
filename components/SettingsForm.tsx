@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Instagram, Globe, Terminal, Shield, Bell, Box, Sparkles, ChevronRight, LogOut } from 'lucide-react';
+import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Instagram, Globe, Terminal, Shield, Bell, Box, Sparkles, ChevronRight } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -121,16 +121,16 @@ export default function SettingsForm({ user }: SettingsFormProps) {
         throw new Error(result.error);
       }
 
-      setNotification({ type: 'success', message: 'Profile updated successfully!' });
+      setNotification({ type: 'success', message: t('profileUpdated') || 'Profile updated successfully!' });
       router.refresh();
       
     } catch (error) {
       console.error('Profile update error:', error);
       
       if (error instanceof Error && error.name === 'AbortError') {
-        setNotification({ type: 'error', message: 'Upload timed out. Try a smaller image.' });
+        setNotification({ type: 'error', message: t('uploadTimeout') || 'Upload timed out. Try a smaller image.' });
       } else {
-        setNotification({ type: 'error', message: 'Something went wrong. Please try again.' });
+        setNotification({ type: 'error', message: t('genericError') || 'Something went wrong. Please try again.' });
       }
     } finally {
       setSaving(false);
@@ -163,7 +163,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 min-h-screen" suppressHydrationWarning>
       
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
