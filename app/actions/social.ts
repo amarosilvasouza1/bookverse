@@ -69,7 +69,7 @@ export async function followUser(targetUserId: string) {
         userId: targetUserId,
         type: 'FOLLOW',
         message: `${session.username || 'Someone'} started following you`,
-        link: `/dashboard/profile/${session.username || ''}`
+        link: session.username ? `/dashboard/profile/${session.username}` : `/dashboard/social`
       }
     });
 

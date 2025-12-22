@@ -254,7 +254,7 @@ export default function SocialMain({ communities, statuses, suggestedUsers }: So
                   >
                     <Link 
                       href={`/dashboard/communities/${community.id}`}
-                      className="group relative block bg-zinc-900/40 border border-white/5 hover:border-purple-500/30 rounded-[2rem] p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden h-full"
+                      className="group relative block bg-zinc-900/40 border border-white/5 hover:border-purple-500/30 rounded-4xl p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden h-full"
                     >
                       <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       

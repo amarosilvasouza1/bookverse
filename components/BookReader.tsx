@@ -404,7 +404,7 @@ export function BookReader({ book, canRead, isAuthor, isSubscriber: _isSubscribe
                 <div className="mb-16 mt-8 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
                     <span className="text-xs font-bold uppercase tracking-[0.4em] opacity-40 mb-4 block text-indigo-500">Chapter {currentPage + 1}</span>
                     <h2 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-8">{activePage.title}</h2>
-                    <div className="w-24 h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent mx-auto rounded-full" />
+                    <div className="w-24 h-1 bg-linear-to-r from-transparent via-indigo-500/20 to-transparent mx-auto rounded-full" />
                 </div>
             )}
 
@@ -544,7 +544,7 @@ export function BookReader({ book, canRead, isAuthor, isSubscriber: _isSubscribe
 
        {/* Bookmark Modal */}
        {showBookmarkModal && (
-        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 content-center" onClick={() => setShowBookmarkModal(false)}>
+        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 content-center" onClick={() => setShowBookmarkModal(false)}>
           <div 
             className={`w-full max-w-md rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200 ${isDark ? 'bg-[#111] border border-white/10 text-white' : 'bg-white text-zinc-900 border border-zinc-200'}`}
             onClick={e => e.stopPropagation()}

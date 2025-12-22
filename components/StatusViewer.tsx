@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { X, ChevronRight, BookOpen } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -68,7 +68,7 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="relative w-full md:max-w-md h-[100dvh] md:h-[90vh] md:rounded-3xl overflow-hidden bg-zinc-900 flex flex-col shadow-2xl border border-white/10"
+        className="relative w-full md:max-w-md h-dvh md:h-[90vh] md:rounded-3xl overflow-hidden bg-zinc-900 flex flex-col shadow-2xl border border-white/10"
       >
         
         {/* Progress Bar */}
@@ -82,7 +82,7 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
         </div>
 
         {/* Close Button & Header Overlay */}
-        <div className="absolute top-0 left-0 right-0 p-4 z-30 bg-gradient-to-b from-black/80 to-transparent pt-6">
+        <div className="absolute top-0 left-0 right-0 p-4 z-30 bg-linear-to-b from-black/80 to-transparent pt-6">
           <div className="flex items-center justify-between">
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full border border-white/20 overflow-hidden relative shadow-lg">
@@ -124,7 +124,7 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
                    className="absolute inset-0"
                  >
                    <Image src={data.coverImage} alt="" fill className="object-cover opacity-40 blur-2xl" />
-                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+                   <div className="absolute inset-0 bg-linear-to-b from-black/40 via-transparent to-black/80" />
                  </motion.div>
                )}
 
@@ -216,7 +216,7 @@ export default function StatusViewer({ status, onClose }: StatusViewerProps) {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             transition={{ delay: 0.4 }}
-            className="absolute bottom-0 left-0 right-0 p-6 z-30 bg-gradient-to-t from-black via-black/80 to-transparent pt-12"
+            className="absolute bottom-0 left-0 right-0 p-6 z-30 bg-linear-to-t from-black via-black/80 to-transparent pt-12"
           >
             <Link 
               href={`/dashboard/books/${data.bookId}`} // Fixed path to /books/

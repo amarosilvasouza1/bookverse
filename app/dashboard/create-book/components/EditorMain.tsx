@@ -134,7 +134,7 @@ export default function EditorMain({
               </div>
             </div>
 
-            <div className="w-12 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto rounded-full" />
+            <div className="w-12 h-1 bg-linear-to-r from-transparent via-white/20 to-transparent mx-auto rounded-full" />
 
             {/* Chapter Title Input */}
             <div className="relative max-w-2xl mx-auto">

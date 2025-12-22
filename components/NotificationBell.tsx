@@ -87,7 +87,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
             const audio = new Audio('/notification.mp3'); 
             audio.volume = 0.5;
             audio.play().catch(() => {});
-          } catch (_e) {
+          } catch {
             // ignore audio errors
           }
         }
@@ -174,7 +174,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
         {/* Mobile Sheet Overlay */}
         {isMobile && isOpen && (
             <div 
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] animate-in fade-in duration-200" 
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-9998 animate-in fade-in duration-200" 
                 onClick={() => setIsOpen(false)}
             />
         )}
@@ -190,8 +190,8 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
                 } : undefined}
                 className={`
                     ${isMobile 
-                        ? 'fixed inset-x-0 bottom-0 top-[15vh] z-[9999] rounded-t-3xl border-t border-white/10' 
-                        : `z-[9999] w-[400px] rounded-2xl border border-white/10`
+                        ? 'fixed inset-x-0 bottom-0 top-[15vh] z-9999 rounded-t-3xl border-t border-white/10' 
+                        : `z-9999 w-[400px] rounded-2xl border border-white/10`
                     }
                     bg-[#0a0a0a]/90 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/5
                     animate-in fade-in duration-200 ${isMobile ? 'slide-in-from-bottom-20' : 'zoom-in-95'}
@@ -257,7 +257,7 @@ export default function NotificationBell({ userId, placement = 'bottom-right' }:
                                 className={`
                                     group relative p-3 rounded-xl border transition-all duration-200
                                     ${!notification.read 
-                                        ? 'bg-gradient-to-br from-indigo-500/10 to-purple-500/5 border-indigo-500/30' 
+                                        ? 'bg-linear-to-br from-indigo-500/10 to-purple-500/5 border-indigo-500/30' 
                                         : 'bg-white/5 border-white/5 hover:bg-white/10'
                                     }
                                 `}

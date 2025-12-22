@@ -330,8 +330,8 @@ export async function requestFollowBack(targetUserId: string) {
     data: {
       userId: targetUserId,
       type: 'FOLLOW_REQUEST',
-      message: `${session.name} wants to chat and is requesting you to follow them back.`,
-      link: `/dashboard/profile/${session.username}` // Link to my profile
+      message: `${session.name || session.username} wants to chat and is requesting you to follow them back.`,
+      link: session.username ? `/dashboard/profile/${session.username}` : `/dashboard/social` // Link to my profile
     }
   });
 
