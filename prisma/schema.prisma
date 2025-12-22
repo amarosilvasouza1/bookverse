@@ -8,89 +8,64 @@ datasource db {
 }
 
 model User {
-  id                   String            @id @default(cuid())
+  id                   String                    @id @default(cuid())
   name                 String?
-  username             String            @unique
-  email                String            @unique
+  username             String                    @unique
+  email                String                    @unique
   password             String
-  image                String?           @db.LongText
-  role                 Role              @default(USER)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  image                String?                   @db.LongText
+  role                 Role                      @default(USER)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  banner               String?                   @db.LongText
+  bio                  String?                   @db.Text
+  socialLinks          String?                   @db.Text
+  geminiApiKey         String?                   @db.Text
+  balance              Float                     @default(0)
+  tags                 String?                   @db.Text
+  pushSubscription     Json?
+  lastSeen             DateTime?                 @default(now())
+  notificationSettings String?                   @db.Text
+  level                Int                       @default(1)
+  xp                   Int                       @default(0)
+  ink                  Int                       @default(0)
+  activities           Activity[]
   books                Book[]
+  bookCollaborators    BookCollaborator[]
+  bookmarks            Bookmark[]
+  chatSessions         ChatSession[]
   comments             Comment[]
-  communities          Community[]       @relation("CreatedCommunities")
+  commentReactions     CommentReaction[]
+  communities          Community[]               @relation("CreatedCommunities")
   joinedCommunities    CommunityMember[]
+  conversations        ConversationParticipant[]
+  messages             DirectMessage[]
+  following            Follow[]                  @relation("Follower")
+  followers            Follow[]                  @relation("Following")
+  receivedGifts        Gift[]                    @relation("ReceivedGifts")
+  sentGifts            Gift[]                    @relation("SentGifts")
+  likes                Like[]
+  messageReactions     MessageReaction[]
+  notifications        Notification[]
   posts                Post[]
+  postLikes            PostLike[]
+  purchases            Purchase[]
+  sales                Purchase[]                @relation("Seller")
+  readingLists         ReadingList[]
+  readingProgress      ReadingProgress[]
+  hostedRooms          ReadingRoom[]
+  readingRoomMessages  ReadingRoomMessage[]
+  joinedRooms          ReadingRoomParticipant[]
+  readingSessions      ReadingSession[]
+  redemptionCodes      RedemptionCode[]
+  reports              Report[]
+  reviews              Review[]
+  statuses             Status[]
   subscription         Subscription?
-  bio                  String?           @db.Text
-  banner               String?           @db.LongText
-  socialLinks          String?           @db.Text // JSON string for social links
-  geminiApiKey         String?           @db.Text // User's Gemini API Key
-  notificationSettings String?           @db.Text // JSON string for notification settings
-  balance              Float             @default(0) // User's wallet balance
-  tags                 String?           @db.Text // Comma-separated tags: BETA, DEV, VIP
-
-  purchases         Purchase[]
-  sales             Purchase[]         @relation("Seller")
-  bookCollaborators BookCollaborator[]
-  likes             Like[]
-  reviews           Review[]
-  followers         Follow[]           @relation("Following")
-  following         Follow[]           @relation("Follower")
-  sentTips          Tip[]              @relation("SentTips")
-  receivedTips      Tip[]              @relation("ReceivedTips")
-  userAchievements  UserAchievement[]
-
-  // New Features Relations
-  chatSessions    ChatSession[]
-  readingProgress ReadingProgress[]
-  hostedRooms     ReadingRoom[]
-  joinedRooms     ReadingRoomParticipant[]
-  activities      Activity[]
-  notifications   Notification[]
-  postLikes       PostLike[]
-  statuses        Status[]
-  conversations   ConversationParticipant[]
-  messages        DirectMessage[]
-
-  // Store & Inventory
-  items           UserItem[]
-  redemptionCodes RedemptionCode[]
-
-  pushSubscription Json? // For web push notifications
-
-  // Gifts
-  sentGifts     Gift[] @relation("SentGifts")
-  receivedGifts Gift[] @relation("ReceivedGifts")
-
-  lastSeen DateTime? @default(now())
-
-  // Gamification
-  xp    Int @default(0)
-  level Int @default(1)
-  ink   Int @default(0) // New currency for cosmetics
-
-  messageReactions MessageReaction[]
-  commentReactions CommentReaction[]
-  readingSessions  ReadingSession[]
-  bookmarks        Bookmark[]
-  reports          Report[]
-
-  // Reading Lists
-  readingLists        ReadingList[]
-  readingRoomMessages ReadingRoomMessage[]
-
-  // RPG & Cosmetics
-  createdCosmetics AuthorCosmetic[] @relation("CreatedCosmetics")
-  ownedCosmetics   UserCosmetic[]
-  skillTree        UserSkillTree?
-
-  // Battles
-  battleParticipations BattleParticipant[]
-  battleVotes          BattleVote[]
-
-  // RPG & Cosmetics - Duplicates removed
+  receivedTips         Tip[]                     @relation("ReceivedTips")
+  sentTips             Tip[]                     @relation("SentTips")
+  userAchievements     UserAchievement[]
+  items                UserItem[]
 }
 
 model Item {
@@ -98,12 +73,12 @@ model Item {
   name            String
   description     String
   price           Float
-  type            String // FRAME, BACKGROUND
-  rarity          String // COMMON, RARE, EPIC, LEGENDARY
-  data            Json? // { cssClass: string, animation: string }
+  type            String
+  rarity          String
+  data            Json?
   createdAt       DateTime         @default(now())
-  users           UserItem[]
   redemptionCodes RedemptionCode[]
+  users           UserItem[]
 }
 
 model UserItem {
@@ -112,9 +87,8 @@ model UserItem {
   itemId     String
   equipped   Boolean  @default(false)
   acquiredAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, itemId])
   @@index([userId])
@@ -124,8 +98,8 @@ model UserItem {
 model Status {
   id        String   @id @default(cuid())
   userId    String
-  type      String // 'BOOK_PUBLISH', 'CHAPTER_RELEASE'
-  data      Json // { bookId, bookTitle, coverImage, chapterTitle, releaseDate }
+  type      String
+  data      Json
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -137,20 +111,18 @@ model Conversation {
   id           String                    @id @default(cuid())
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
+  typingAt     DateTime?
+  typingUserId String?
   participants ConversationParticipant[]
   messages     DirectMessage[]
-
-  // Typing indicator
-  typingUserId String?
-  typingAt     DateTime?
 }
 
 model ConversationParticipant {
   id             String       @id @default(cuid())
   userId         String
   conversationId String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, conversationId])
   @@index([userId])
@@ -158,45 +130,38 @@ model ConversationParticipant {
 }
 
 model DirectMessage {
-  id             String   @id @default(cuid())
-  content        String   @db.Text
+  id             String            @id @default(cuid())
+  content        String            @db.Text
   senderId       String
   conversationId String
-  createdAt      DateTime @default(now())
-  read           Boolean  @default(false)
-
-  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  mediaUrl  String? @db.LongText
-  mediaType String? // IMAGE, VIDEO
-
-  // Gift Relation
-  giftId String?
-  gift   Gift?   @relation(fields: [giftId], references: [id])
-
-  // Reply & Edit Support
-  editedAt  DateTime?
-  replyToId String?
-  replyTo   DirectMessage?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  replies   DirectMessage[] @relation("ReplyTo")
-
-  reactions MessageReaction[]
+  createdAt      DateTime          @default(now())
+  read           Boolean           @default(false)
+  mediaType      String?
+  mediaUrl       String?           @db.LongText
+  giftId         String?
+  editedAt       DateTime?
+  replyToId      String?
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  gift           Gift?             @relation(fields: [giftId], references: [id])
+  replyTo        DirectMessage?    @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies        DirectMessage[]   @relation("ReplyTo")
+  sender         User              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reactions      MessageReaction[]
 
   @@index([conversationId])
   @@index([senderId])
   @@index([replyToId])
+  @@index([giftId], map: "DirectMessage_giftId_fkey")
 }
 
 model MessageReaction {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   messageId String
   userId    String
-  type      String // EMOJI: HEART, LAUGH, CRY, FIRE, THUMBSUP
-  createdAt DateTime @default(now())
-
-  message DirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  createdAt DateTime      @default(now())
+  message   DirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId, type])
   @@index([messageId])
@@ -207,8 +172,8 @@ model PostLike {
   id        String   @id @default(cuid())
   postId    String
   userId    String
-  type      String   @default("HEART") // HEART, LAUGH, CRY, FIRE
   createdAt DateTime @default(now())
+  type      String   @default("HEART")
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -221,8 +186,8 @@ model Achievement {
   id            String            @id @default(cuid())
   name          String
   description   String
-  icon          String // Lucide icon name or emoji
-  criteriaType  String // BOOK_COUNT, POST_COUNT, READ_COUNT
+  icon          String
+  criteriaType  String
   criteriaValue Int
   xpReward      Int
   createdAt     DateTime          @default(now())
@@ -234,8 +199,8 @@ model UserAchievement {
   userId        String
   achievementId String
   unlockedAt    DateTime    @default(now())
-  user          User        @relation(fields: [userId], references: [id])
   achievement   Achievement @relation(fields: [achievementId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
 
   @@unique([userId, achievementId])
   @@index([userId])
@@ -245,13 +210,13 @@ model UserAchievement {
 model Purchase {
   id        String   @id @default(cuid())
   bookId    String
-  book      Book     @relation(fields: [bookId], references: [id])
   buyerId   String
-  buyer     User     @relation(fields: [buyerId], references: [id])
   sellerId  String
-  seller    User     @relation("Seller", fields: [sellerId], references: [id])
   amount    Float
   createdAt DateTime @default(now())
+  book      Book     @relation(fields: [bookId], references: [id])
+  buyer     User     @relation(fields: [buyerId], references: [id])
+  seller    User     @relation("Seller", fields: [sellerId], references: [id])
 
   @@index([bookId])
   @@index([buyerId])
@@ -259,36 +224,34 @@ model Purchase {
 }
 
 model Book {
-  id            String             @id @default(cuid())
-  title         String
-  description   String             @db.Text
-  coverImage    String?            @db.LongText
-  content       String             @db.LongText
-  price         Float              @default(0)
-  isPremium     Boolean            @default(false)
-  allowDownload Boolean            @default(false)
-  ambience      String? // New field for immersive reading sound
-  published     Boolean            @default(false)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  authorId      String
-  genre         String?
-  tags          String?            @db.Text // Comma-separated tags
-  author        User               @relation(fields: [authorId], references: [id])
-  weeklyFree    WeeklyFree[]
-  purchases     Purchase[]
-  pages         BookPage[]
-  collaborators BookCollaborator[]
-  likes         Like[]
-  reviews       Review[]
-
-  // New Features Relations
+  id               String             @id @default(cuid())
+  title            String
+  description      String             @db.Text
+  coverImage       String?            @db.LongText
+  content          String             @db.LongText
+  price            Float              @default(0)
+  isPremium        Boolean            @default(false)
+  published        Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  authorId         String
+  genre            String?
+  allowDownload    Boolean            @default(false)
+  ambience         String?
+  tags             String?            @db.Text
+  author           User               @relation(fields: [authorId], references: [id])
+  collaborators    BookCollaborator[]
+  pages            BookPage[]
+  bookmarks        Bookmark[]
   characters       Character[]
+  likes            Like[]
+  purchases        Purchase[]
+  readingListBooks ReadingListBook[]
   readingProgress  ReadingProgress[]
   readingRooms     ReadingRoom[]
   readingSessions  ReadingSession[]
-  bookmarks        Bookmark[]
-  readingListBooks ReadingListBook[]
+  reviews          Review[]
+  weeklyFree       WeeklyFree[]
 
   @@index([authorId], map: "Book_authorId_fkey")
 }
@@ -299,9 +262,8 @@ model BookCollaborator {
   userId    String
   role      String   @default("EDITOR")
   createdAt DateTime @default(now())
-
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([bookId, userId])
   @@index([bookId])
@@ -313,10 +275,10 @@ model BookPage {
   title       String?
   content     String    @db.LongText
   pageNumber  Int
-  scheduledAt DateTime? // For scheduled release
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   bookId      String
+  scheduledAt DateTime?
   book        Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([bookId, pageNumber])
@@ -383,9 +345,9 @@ model Tip {
   createdAt        DateTime             @default(now())
   senderId         String
   receiverId       String
-  sender           User                 @relation("SentTips", fields: [senderId], references: [id])
-  receiver         User                 @relation("ReceivedTips", fields: [receiverId], references: [id])
   sentRoomMessages ReadingRoomMessage[]
+  receiver         User                 @relation("ReceivedTips", fields: [receiverId], references: [id])
+  sender           User                 @relation("SentTips", fields: [senderId], references: [id])
 
   @@index([senderId])
   @@index([receiverId])
@@ -395,10 +357,10 @@ model Community {
   id          String            @id @default(cuid())
   name        String
   description String?
-  privacy     String            @default("OPEN") // OPEN, CLOSED
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   creatorId   String
+  privacy     String            @default("OPEN")
   creator     User              @relation("CreatedCommunities", fields: [creatorId], references: [id])
   members     CommunityMember[]
   posts       Post[]
@@ -410,9 +372,9 @@ model CommunityMember {
   id          String    @id @default(cuid())
   userId      String
   communityId String
-  role        String    @default("MEMBER") // MEMBER, ADMIN
-  status      String    @default("APPROVED") // PENDING, APPROVED, REJECTED
   joinedAt    DateTime  @default(now())
+  role        String    @default("MEMBER")
+  status      String    @default("APPROVED")
   community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id])
 
@@ -427,13 +389,12 @@ model Post {
   updatedAt   DateTime   @updatedAt
   communityId String
   authorId    String
+  mediaType   String?
+  mediaUrl    String?    @db.LongText
   comments    Comment[]
-  likes       PostLike[]
   author      User       @relation(fields: [authorId], references: [id])
   community   Community  @relation(fields: [communityId], references: [id])
-
-  mediaUrl  String? @db.LongText
-  mediaType String? // IMAGE, VIDEO
+  likes       PostLike[]
 
   @@index([authorId], map: "Post_authorId_fkey")
   @@index([communityId], map: "Post_communityId_fkey")
@@ -457,11 +418,10 @@ model CommentReaction {
   id        String   @id @default(cuid())
   commentId String
   userId    String
-  type      String // HEART, LAUGH, CRY, FIRE
+  type      String
   createdAt DateTime @default(now())
-
-  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId, type])
   @@index([commentId])
@@ -479,52 +439,42 @@ model WeeklyFree {
   @@index([bookId], map: "WeeklyFree_bookId_fkey")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-// --- New Features Models ---
-
 model Character {
-  id          String   @id @default(cuid())
-  name        String
-  description String   @db.Text
-  personality String   @db.Text // Context for AI
-  avatar      String?  @db.LongText
-  bookId      String
-  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id           String        @id @default(cuid())
+  name         String
+  description  String        @db.Text
+  personality  String        @db.Text
+  avatar       String?       @db.LongText
+  bookId       String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  book         Book          @relation(fields: [bookId], references: [id], onDelete: Cascade)
   chatSessions ChatSession[]
 
   @@index([bookId])
 }
 
 model ChatSession {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   userId      String
   characterId String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  messages  ChatMessage[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  messages    ChatMessage[]
+  character   Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([characterId])
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   sessionId String
-  role      String // USER, ASSISTANT
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-
-  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
 }
@@ -536,11 +486,9 @@ model ReadingProgress {
   pageNumber     Int      @default(1)
   scrollPosition Float    @default(0)
   updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
-
-  totalTimeRead Int @default(0) // in seconds
+  totalTimeRead  Int      @default(0)
+  book           Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bookId])
   @@index([bookId])
@@ -553,9 +501,8 @@ model ReadingSession {
   startTime DateTime  @default(now())
   endTime   DateTime?
   pagesRead Int       @default(0)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  book      Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([bookId])
@@ -568,55 +515,52 @@ model Bookmark {
   pageNumber Int
   note       String?  @db.Text
   createdAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([bookId])
 }
 
 model ReadingRoom {
-  id          String   @id @default(cuid())
-  hostId      String
-  bookId      String
-  currentPage Int      @default(1)
-  status      String   @default("ACTIVE") // ACTIVE, ENDED
-  createdAt   DateTime @default(now())
-
-  host         User                     @relation(fields: [hostId], references: [id])
+  id           String                   @id @default(cuid())
+  hostId       String
+  bookId       String
+  currentPage  Int                      @default(1)
+  status       String                   @default("ACTIVE")
+  createdAt    DateTime                 @default(now())
   book         Book                     @relation(fields: [bookId], references: [id])
-  participants ReadingRoomParticipant[]
+  host         User                     @relation(fields: [hostId], references: [id])
   messages     ReadingRoomMessage[]
+  participants ReadingRoomParticipant[]
 
   @@index([hostId])
   @@index([bookId])
 }
 
 model ReadingRoomMessage {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   roomId    String
   userId    String
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-
-  room  ReadingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tip   Tip?        @relation(fields: [tipId], references: [id])
-  tipId String?
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+  tipId     String?
+  room      ReadingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  tip       Tip?        @relation(fields: [tipId], references: [id])
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
   @@index([userId])
+  @@index([tipId], map: "ReadingRoomMessage_tipId_fkey")
 }
 
 model ReadingRoomParticipant {
-  id       String   @id @default(cuid())
+  id       String      @id @default(cuid())
   roomId   String
   userId   String
-  joinedAt DateTime @default(now())
-
-  room ReadingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime    @default(now())
+  room     ReadingRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([roomId, userId])
   @@index([userId])
@@ -625,11 +569,11 @@ model ReadingRoomParticipant {
 model Activity {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String // PUBLISH_BOOK, REVIEW_BOOK, LIKE_BOOK, FOLLOW_USER
-  entityId  String // ID of the book, user, etc.
-  metadata  Json? // Store extra data like book title, rating, etc.
+  type      String
+  entityId  String
+  metadata  Json?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -637,44 +581,43 @@ model Activity {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String // LIKE, COMMENT, FOLLOW, SYSTEM
+  type      String
   message   String
   read      Boolean  @default(false)
   link      String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model RedemptionCode {
   id        String    @id @default(cuid())
-  code      String    @unique // The "ID" the user will type
+  code      String    @unique
   itemId    String
-  item      Item      @relation(fields: [itemId], references: [id])
   isUsed    Boolean   @default(false)
   usedBy    String?
-  user      User?     @relation(fields: [usedBy], references: [id])
   createdAt DateTime  @default(now())
   usedAt    DateTime?
+  item      Item      @relation(fields: [itemId], references: [id])
+  user      User?     @relation(fields: [usedBy], references: [id])
 
   @@index([itemId])
   @@index([usedBy])
 }
 
 model Gift {
-  id         String   @id @default(cuid())
+  id         String          @id @default(cuid())
   senderId   String
   receiverId String
-  type       String // MONEY, FRAME, CUSTOM, SUBSCRIPTION
-  data       Json // { amount: number, note: string, etc. }
-  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, RETURNED
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime // Auto-return after 3 days
-
-  sender   User            @relation("SentGifts", fields: [senderId], references: [id])
-  receiver User            @relation("ReceivedGifts", fields: [receiverId], references: [id])
-  message  DirectMessage[]
+  type       String
+  data       Json
+  status     String          @default("PENDING")
+  createdAt  DateTime        @default(now())
+  expiresAt  DateTime
+  message    DirectMessage[]
+  receiver   User            @relation("ReceivedGifts", fields: [receiverId], references: [id])
+  sender     User            @relation("SentGifts", fields: [senderId], references: [id])
 
   @@index([senderId])
   @@index([receiverId])
@@ -683,121 +626,97 @@ model Gift {
 model Report {
   id          String    @id @default(cuid())
   reporterId  String
-  contentType String // POST, COMMENT, BOOK, MESSAGE, USER
+  contentType String
   contentId   String
-  reason      String // SPAM, HARASSMENT, INAPPROPRIATE, COPYRIGHT, OTHER
+  reason      String
   details     String?   @db.Text
-  status      String    @default("PENDING") // PENDING, RESOLVED, DISMISSED
-  action      String? // WARN, REMOVE, BAN
+  status      String    @default("PENDING")
+  action      String?
   resolvedAt  DateTime?
   resolvedBy  String?
   createdAt   DateTime  @default(now())
-
-  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reporter    User      @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@index([reporterId])
   @@index([status])
   @@index([contentType, contentId])
 }
 
-// Reading Lists
 model ReadingList {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   name      String
-  icon      String? // Emoji or icon name
-  color     String? // Hex color for list
-  isDefault Boolean  @default(false) // "Read Later", "Favorites" are defaults
+  icon      String?
+  color     String?
+  isDefault Boolean           @default(false)
   userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  books ReadingListBook[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  books     ReadingListBook[]
 
   @@index([userId])
 }
 
 model ReadingListBook {
-  id      String   @id @default(cuid())
+  id      String      @id @default(cuid())
   listId  String
   bookId  String
-  addedAt DateTime @default(now())
-  note    String?  @db.Text // Optional note about the book
-
-  list ReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
-  book Book        @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  addedAt DateTime    @default(now())
+  note    String?     @db.Text
+  book    Book        @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  list    ReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
 
   @@unique([listId, bookId])
   @@index([listId])
   @@index([bookId])
 }
 
-// --- WRITING BATTLES ---
 model WritingBattle {
-  id           String              @id @default(cuid())
-  theme        String
-  status       String // "WAITING", "IN_PROGRESS", "VOTING", "FINISHED"
-  startTime    DateTime
-  endTime      DateTime?
-  participants BattleParticipant[]
-  votes        BattleVote[]
-  createdAt    DateTime            @default(now())
+  id        String    @id @default(cuid())
+  theme     String
+  status    String
+  startTime DateTime
+  endTime   DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model BattleParticipant {
-  id        String        @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  user      User          @relation(fields: [userId], references: [id])
   battleId  String
-  battle    WritingBattle @relation(fields: [battleId], references: [id])
-  content   String?       @db.Text
-  votes     BattleVote[]
-  createdAt DateTime      @default(now())
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
 }
 
 model BattleVote {
-  id            String            @id @default(cuid())
+  id            String   @id @default(cuid())
   voterId       String
-  voter         User              @relation(fields: [voterId], references: [id])
   battleId      String
-  battle        WritingBattle     @relation(fields: [battleId], references: [id])
   participantId String
-  participant   BattleParticipant @relation(fields: [participantId], references: [id])
-  createdAt     DateTime          @default(now())
+  createdAt     DateTime @default(now())
 }
 
-// --- AUTHOR COSMETICS ---
 model AuthorCosmetic {
-  id          String         @id @default(cuid())
+  id          String   @id @default(cuid())
   authorId    String
-  author      User           @relation("CreatedCosmetics", fields: [authorId], references: [id])
   name        String
   description String?
-  type        String // "FRAME", "BUBBLE"
-  image       String         @db.LongText // URL or CSS/SVG definition
-  price       Int // Cost in Ink
-  isPublic    Boolean        @default(false)
-  purchases   UserCosmetic[]
-  createdAt   DateTime       @default(now())
+  type        String
+  image       String   @db.LongText
+  price       Int
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
 model UserCosmetic {
-  id          String         @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
-  user        User           @relation(fields: [userId], references: [id])
   cosmeticId  String
-  cosmetic    AuthorCosmetic @relation(fields: [cosmeticId], references: [id])
-  equipped    Boolean        @default(false)
-  purchasedAt DateTime       @default(now())
+  equipped    Boolean  @default(false)
+  purchasedAt DateTime @default(now())
 }
 
-// --- READER RPG ---
-model UserSkillTree {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-  points Int    @default(0) // Unspent skill points
-
-  // JSON array of unlocked skill IDs e.g. ["critic_1", "explorer_2"]
-  unlockedSkills String @default("[]") @db.Text
+enum Role {
+  USER
+  ADMIN
 }

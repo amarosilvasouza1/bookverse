@@ -25,6 +25,7 @@ export default async function Home() {
       coverImage: true,
       author: {
         select: {
+          name: true,
           username: true,
         },
       },
