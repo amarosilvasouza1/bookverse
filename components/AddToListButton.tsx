@@ -105,12 +105,12 @@ export default function AddToListButton({ bookId, listsContainingBook, compact }
         }}
         className={`flex items-center justify-center gap-2 transition-all group ${
           compact 
-            ? 'p-2 rounded-lg hover:bg-white/10' 
+            ? 'p-2 rounded-lg hover:bg-indigo-500/20' 
             : 'px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white'
         }`}
         title={t('addToList') || 'Add to List'}
       >
-        <BookMarked className={`w-4 h-4 ${containingLists.size > 0 ? 'text-primary fill-current' : 'text-muted-foreground group-hover:text-white'}`} />
+        <BookMarked className={`w-4 h-4 ${containingLists.size > 0 ? 'text-primary fill-current' : 'text-muted-foreground group-hover:text-indigo-500'}`} />
         {!compact && (containingLists.size > 0 ? (t('savedToList') || 'Saved') : (t('addToList') || 'Add to List'))}
       </button>
 

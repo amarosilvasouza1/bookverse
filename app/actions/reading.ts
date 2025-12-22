@@ -185,3 +185,53 @@ export async function updateBookmarkNote(bookmarkId: string, note: string) {
     return { error: 'Failed to update bookmark' };
   }
 }
+
+// --- Reading Progress ---
+
+export async function saveReadingProgress(bookId: string, pageNumber: number) {
+  const session = await getSession();
+  if (!session?.id) return { error: 'Unauthorized' };
+
+  try {
+    await prisma.readingProgress.upsert({
+      where: {
+        userId_bookId: {
+          userId: session.id as string,
+          bookId
+        }
+      },
+      update: {
+        pageNumber,
+        updatedAt: new Date()
+      },
+      create: {
+        userId: session.id as string,
+        bookId,
+        pageNumber
+      }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to save progress:', error);
+    return { error: 'Failed to save progress' };
+  }
+}
+
+export async function getReadingProgress(bookId: string) {
+  const session = await getSession();
+  if (!session?.id) return { success: false, pageNumber: 0 };
+
+  try {
+    const progress = await prisma.readingProgress.findUnique({
+      where: {
+        userId_bookId: {
+          userId: session.id as string,
+          bookId
+        }
+      }
+    });
+    return { success: true, pageNumber: progress?.pageNumber || 0 };
+  } catch (error) {
+    return { success: false, pageNumber: 0 };
+  }
+}

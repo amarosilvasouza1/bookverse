@@ -331,54 +331,61 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
   };
 
   return (
-    <div className="h-screen bg-[#0a0a0a] text-white overflow-hidden flex flex-col">
+    <div className="h-screen bg-[#050505] text-white overflow-hidden flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+      {/* Background Ambience - Subtle Gradient */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/5 rounded-full blur-[120px]" />
+      </div>
+
       {/* Notification Toast */}
       {notification && (
-        <div className={`fixed top-6 right-6 z-60 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top-5 fade-in duration-300 backdrop-blur-md border ${
+        <div className={`fixed top-6 right-6 z-60 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top-5 fade-in duration-300 backdrop-blur-xl border border-white/5 ${
           notification.type === 'success' 
-            ? 'bg-green-500/10 border-green-500/20 text-green-400' 
-            : 'bg-red-500/10 border-red-500/20 text-red-400'
+            ? 'bg-green-500/10 text-green-400' 
+            : 'bg-red-500/10 text-red-400'
         }`}>
           {notification.type === 'success' ? <BookOpen className="w-5 h-5" /> : <X className="w-5 h-5" />}
           <p className="font-medium text-sm">{notification.message}</p>
         </div>
       )}
 
-      {/* Top Bar (Mobile Only or Minimal) */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-[#0a0a0a]">
-        <Link href="/dashboard" className="text-zinc-400 hover:text-white">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <span className="font-bold text-sm truncate max-w-[150px]">{title || t('untitled')}</span>
-        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-zinc-400">
+      {/* Mobile Header - Glassmorphic */}
+      <div className="md:hidden relative z-50 flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/5 text-zinc-400 hover:text-white transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <span className="font-semibold text-sm truncate max-w-[150px] text-zinc-200">{title || t('untitled')}</span>
+        </div>
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+          className={`p-2 rounded-full transition-colors ${mobileMenuOpen ? 'text-white bg-white/10' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+        >
           <Menu className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative z-10">
         {/* Sidebar */}
         <div className={`
-          absolute md:relative z-40 h-full w-[280px] md:w-[260px] lg:w-[320px] bg-[#0a0a0a] md:bg-transparent transition-all duration-300 border-r border-white/5
-          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          ${isFocusMode ? 'md:-translate-x-full md:w-0 md:border-none' : ''}
+          absolute md:relative z-40 h-full w-[280px] md:w-[80px] lg:w-[300px] bg-[#050505]/95 md:bg-transparent transition-all duration-300 ease-[bezier(0.25,0.1,0.25,1)]
+          ${mobileMenuOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full md:translate-x-0'}
+          ${isFocusMode ? 'md:-translate-x-full md:w-0 md:opacity-0' : ''}
+          border-r border-white/5 backdrop-blur-xl md:backdrop-blur-none
         `}>
           <div className="h-full flex flex-col">
-            <div className="p-4 border-b border-white/5 flex items-center gap-3">
+            <div className="hidden md:flex p-4 lg:p-6 border-b border-white/5 items-center gap-3">
               <button 
-                onClick={() => {
-                  if (mobileMenuOpen) {
-                    setMobileMenuOpen(false);
-                  } else {
-                    router.push('/dashboard');
-                  }
-                }}
-                className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-white"
+                onClick={() => router.push('/dashboard')}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors text-zinc-500 hover:text-white group"
+                title={t('backToDashboard')}
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               </button>
-              <div>
-                <h1 className="text-sm font-bold text-white leading-none">{t('bookEditor')}</h1>
-                <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider">
+              <div className="hidden lg:block">
+                <h1 className="text-sm font-bold text-white leading-none tracking-tight">{t('bookEditor')}</h1>
+                <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest font-medium">
                   {bookId ? t('editingMode') : t('draftMode')}
                 </p>
               </div>
@@ -434,16 +441,16 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
         </div>
 
         {/* Main Editor */}
-        <div className="flex-1 h-full relative bg-[#0a0a0a] md:bg-linear-to-br md:from-[#0a0a0a] md:to-[#111]">
+        <div className="flex-1 h-full relative">
           {/* Overlay for mobile menu */}
           {mobileMenuOpen && (
             <div 
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm z-30 md:hidden"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-30 md:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
           )}
 
-          <div className="h-full p-2 sm:p-4 md:p-8 max-w-6xl mx-auto">
+          <div className="h-full w-full">
             <EditorMain
               title={title}
               setTitle={setTitle}

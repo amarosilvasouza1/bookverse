@@ -61,8 +61,24 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
     select: { id: true }
   }).then(lists => lists.map(l => l.id)) : [];
 
+  // Fetch initial reading page
+  let initialPage = 0;
+  if (session) {
+    const progress = await prisma.readingProgress.findUnique({
+      where: {
+        userId_bookId: {
+          userId: session.id as string,
+          bookId: id
+        }
+      }
+    });
+    if (progress) {
+        initialPage = progress.pageNumber;
+    }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto pb-20">
+    <div className="pb-20">
       <BookReader 
         book={{
           ...book,
@@ -76,9 +92,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         isSubscriber={!!hasSubscription}
         listsContainingBook={listsContainingBook}
         userId={session?.id as string | undefined}
+        initialPage={initialPage}
       />
       
-      <div className="px-6 space-y-8">
+      <div className="max-w-4xl mx-auto px-6 space-y-8">
         {/* Author Section */}
         <div className="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center gap-4">

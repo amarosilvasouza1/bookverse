@@ -98,9 +98,9 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule
     <div ref={setNodeRef} style={style} className="relative group mb-2">
       <button
         onClick={onClick}
-        className={`w-full text-left p-3 pl-4 rounded-xl border transition-all duration-200 group-hover:border-white/10 ${
+        className={`w-full text-left p-3 pl-4 rounded-xl border transition-all duration-300 group-hover:border-white/10 ${
           isActive
-            ? 'bg-white/10 border-white/20 text-white shadow-lg backdrop-blur-sm'
+            ? 'bg-linear-to-r from-indigo-500/10 to-purple-500/5 border-indigo-500/20 text-white shadow-lg backdrop-blur-sm'
             : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
         }`}
       >
@@ -142,7 +142,7 @@ function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule
             />
           </div>
         </div>
-        <p className="text-sm font-serif truncate opacity-80 pl-1 border-l-2 border-white/5 group-hover:border-white/10">
+        <p className={`text-sm font-serif truncate pl-1 border-l-2 transition-colors ${isActive ? 'border-indigo-500 opacity-100' : 'border-white/5 group-hover:border-white/10 opacity-70'}`}>
           {page.title || t('untitledPage')}
         </p>
       </button>
@@ -215,21 +215,30 @@ export default function EditorSidebar({
   ] as const;
 
   return (
-    <div className="h-full flex flex-col bg-[#0f0f0f]/50 backdrop-blur-xl border-r border-white/5">
+    <div className="h-full flex flex-col bg-[#050505]/50 backdrop-blur-xl border-t md:border-t-0 border-white/5">
       {/* Tabs */}
       <div className="p-1 sm:p-2 grid grid-cols-6 gap-0.5 sm:gap-1 border-b border-white/5">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex flex-col items-center justify-center py-2 sm:py-3 px-0.5 sm:px-1 rounded-lg transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center py-2 sm:py-3 px-0.5 sm:px-1 rounded-lg transition-all duration-300 relative overflow-hidden ${
               activeTab === tab.id
-                ? 'bg-white/10 text-white shadow-inner'
+                ? 'text-white bg-white/5'
                 : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
             }`}
           >
-            <tab.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 sm:mb-1 ${activeTab === tab.id ? 'text-indigo-400' : ''}`} />
-            <span className="text-[8px] sm:text-[10px] font-medium uppercase tracking-wider truncate w-full text-center">{tab.label}</span>
+            {activeTab === tab.id && (
+              <motion.div 
+                layoutId="activeTab"
+                className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent rounded-lg"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <tab.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 mb-0.5 sm:mb-1 relative z-10 transition-colors ${activeTab === tab.id ? 'text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]' : ''}`} />
+            <span className={`text-[8px] sm:text-[10px] font-medium uppercase tracking-wider truncate w-full text-center relative z-10 transition-colors ${activeTab === tab.id ? 'text-white' : ''}`}>
+              {tab.label}
+            </span>
           </button>
         ))}
       </div>
@@ -246,8 +255,8 @@ export default function EditorSidebar({
               className="space-y-4"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">{t('structure')}</h3>
-                <span className="text-xs text-zinc-600">{pages.length} {t('pagesCountLabel')}</span>
+                <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em]">{t('structure')}</h3>
+                <span className="text-[10px] text-zinc-600 font-mono border border-white/5 px-1.5 py-0.5 rounded">{pages.length} {t('pagesCountLabel')}</span>
               </div>
               
               <DndContext 
@@ -275,7 +284,7 @@ export default function EditorSidebar({
               
               <button
                 onClick={handleAddPage}
-                className="w-full py-3 border border-dashed border-white/10 rounded-xl text-zinc-500 hover:border-indigo-500/50 hover:text-indigo-400 hover:bg-indigo-500/5 transition-all flex items-center justify-center gap-2 text-sm font-medium group"
+                className="w-full py-4 border border-dashed border-white/10 rounded-xl text-zinc-500 hover:border-indigo-500/30 hover:text-indigo-400 hover:bg-indigo-500/5 transition-all flex items-center justify-center gap-2 text-xs font-medium group uppercase tracking-wider"
               >
                 <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 {t('addNewPage')}
