@@ -68,6 +68,8 @@ model User {
   items                UserItem[]
   battleParticipations BattleParticipant[]
   battleVotes          BattleVote[]
+  authorCosmetics      AuthorCosmetic[]
+  userCosmetics        UserCosmetic[]
 }
 
 model Item {
@@ -716,23 +718,33 @@ model BattleVote {
 }
 
 model AuthorCosmetic {
-  id          String   @id @default(cuid())
-  authorId    String
-  name        String
-  description String?
-  type        String
-  image       String   @db.LongText
-  price       Int
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id            String         @id @default(cuid())
+  authorId      String
+  name          String
+  description   String?
+  type          String
+  image         String         @db.LongText
+  price         Int
+  isPublic      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  userCosmetics UserCosmetic[]
+
+  @@index([authorId])
 }
 
 model UserCosmetic {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   userId      String
   cosmeticId  String
-  equipped    Boolean  @default(false)
-  purchasedAt DateTime @default(now())
+  equipped    Boolean        @default(false)
+  purchasedAt DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cosmetic    AuthorCosmetic @relation(fields: [cosmeticId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cosmeticId])
+  @@index([userId])
+  @@index([cosmeticId])
 }
 
 enum Role {
