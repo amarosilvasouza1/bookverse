@@ -70,6 +70,7 @@ interface EditorSidebarProps {
   setAllowDownload: (allow: boolean) => void;
   ambience: string;
   setAmbience: (ambience: string) => void;
+  unlockedSkills?: string[];
 }
 function SortablePageItem({ page, index, isActive, onClick, onDelete, onSchedule }: { 
   page: Page, 
@@ -195,6 +196,7 @@ export default function EditorSidebar({
   setAllowDownload,
   ambience,
   setAmbience,
+  unlockedSkills = [],
 }: EditorSidebarProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -575,7 +577,7 @@ export default function EditorSidebar({
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.2 }}
             >
-              <CharacterSettings bookId={bookId || ''} />
+              <CharacterSettings bookId={bookId || ''} unlockedSkills={unlockedSkills} />
             </motion.div>
           )}
 

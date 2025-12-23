@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookOpen, MessageCircle, Settings, LogOut, PlusCircle, Zap, Trophy, User } from 'lucide-react';
+import { LayoutDashboard, BookOpen, MessageCircle, Settings, LogOut, PlusCircle, Zap, Trophy, Brain, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/context/LanguageContext';
+import { toast } from 'sonner';
+import { ChangelogModal } from './ChangelogModal';
 import NotificationBell from './NotificationBell';
 import { getTotalUnreadMessageCount } from '@/app/actions/chat';
 import { useState, useEffect } from 'react';
@@ -20,6 +22,26 @@ export default function DashboardShell({
   const pathname = usePathname();
   const { t } = useLanguage();
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
+
+  // Show system update notification
+  useEffect(() => {
+    const hasSeenUpdate = localStorage.getItem('has_seen_v0.020.1');
+    if (!hasSeenUpdate) {
+      setTimeout(() => {
+        toast(t('systemUpdate'), {
+            description: t('clickToSee'),
+            action: {
+                label: t('whatsNew'),
+                onClick: () => setShowChangelog(true)
+            },
+            duration: 8000,
+        });
+        localStorage.setItem('has_seen_v0.020.1', 'true');
+      }, 1500);
+    }
+  }, [t]);
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -40,11 +62,18 @@ export default function DashboardShell({
     { name: t('overview'), href: '/dashboard', icon: LayoutDashboard },
     { name: t('browse'), href: '/dashboard/browse', icon: BookOpen },
     { name: t('myBooks'), href: '/dashboard/books', icon: BookOpen },
+    { name: t('readingRooms'), href: '/dashboard/reading-rooms', icon: Users, badge: 2 }, // Mock badge for "Live"
     { name: t('social'), href: '/dashboard/social', icon: MessageCircle, badge: unreadMessages },
     { name: t('leaderboard'), href: '/dashboard/leaderboard', icon: Trophy },
+    { name: t('skills'), href: '/dashboard/skills', icon: Brain },
     { name: t('settings'), href: '/dashboard/settings', icon: Settings },
-    { name: 'Subscription', href: '/dashboard/subscription', icon: Zap },
+    { name: t('subscription'), href: '/dashboard/subscription', icon: Zap },
   ];
+
+  // Mobile Hotbar Items (Overview, Books, Social, Create) + More
+  const mobileMainItems = navigation.filter(item => 
+    ['/dashboard', '/dashboard/browse', '/dashboard/social'].includes(item.href)
+  );
 
   const handleSignOut = async () => {
     try {
@@ -58,8 +87,9 @@ export default function DashboardShell({
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans selection:bg-primary/30" suppressHydrationWarning>
       
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar (unchanged) */}
       <aside className="fixed h-screen border-r border-white/5 hidden md:flex flex-col bg-zinc-950/50 backdrop-blur-xl z-50 transition-all duration-300 w-20 lg:w-64">
+        {/* ... (Sidebar content kept same as desktop doesn't change) ... */}
         <div className="p-6 border-b border-white/5 flex flex-col gap-4 items-center lg:items-stretch">
           <Link href="/dashboard" className="flex items-center gap-3 group justify-center lg:justify-start">
             <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.3)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] group-hover:scale-105 transition-all duration-300 shrink-0">
@@ -136,98 +166,140 @@ export default function DashboardShell({
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation - "Hotbar" Style */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50 pointer-events-none">
-        
-        {/* Floating Glass Bar */}
-        <div className="mx-2 mb-2 pointer-events-auto">
-          <nav className="flex items-center justify-between px-1 py-2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-            
-            {/* Main Items */}
-            {navigation.filter(item => 
-              ['/dashboard', '/dashboard/browse', '/dashboard/books', '/dashboard/social'].includes(item.href)
-            ).map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'flex flex-col items-center justify-center min-w-[64px] h-14 rounded-xl transition-all duration-300 relative group flex-1',
-                    isActive ? 'bg-primary/10' : 'hover:bg-white/5'
-                  )}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="mobileActive"
-                      className="absolute inset-0 bg-primary/10 rounded-xl"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                  
-                  <div className="relative z-10 flex flex-col items-center justify-center gap-0.5 w-full">
-                    <item.icon className={cn(
-                      "w-5 h-5 transition-all duration-300", 
-                      isActive ? "text-primary scale-100" : "text-zinc-500 group-hover:text-zinc-300 mb-0.5"
-                    )} />
-                    
-                    <span className={cn(
-                      "text-[10px] font-medium transition-all duration-300 max-w-full truncate px-1",
-                      isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-400"
-                    )}>
-                      {item.name}
-                    </span>
-
-                    {item.badge && item.badge > 0 && (
-                      <span className="absolute top-0 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-black">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-            
-            {/* Settings Item */}
-            <Link
-              href="/dashboard/settings"
-               className={cn(
-                'flex flex-col items-center justify-center min-w-[64px] h-14 rounded-xl transition-all duration-300 relative group flex-1',
-                pathname === '/dashboard/settings' ? 'bg-primary/10' : 'hover:bg-white/5'
-              )}
-            >
-              <div className="relative z-10 flex flex-col items-center justify-center gap-0.5 w-full">
-                <Settings className={cn(
-                  "w-5 h-5 transition-all duration-300", 
-                  pathname === '/dashboard/settings' ? "text-primary scale-100" : "text-zinc-500 group-hover:text-zinc-300 mb-0.5"
-                )} />
-                <span className={cn(
-                  "text-[10px] font-medium transition-all duration-300",
-                  pathname === '/dashboard/settings' ? "text-white" : "text-zinc-500 group-hover:text-zinc-400"
-                )}>
-                  {t('settings')}
-                </span>
-                {pathname === '/dashboard/settings' && (
+      {/* Mobile Component Container */}
+      <div className="md:hidden">
+        {/* Expanded Menu Overlay */}
+        <AnimatePresence>
+            {isMobileMenuOpen && (
+                <>
                     <motion.div 
-                      layoutId="mobileActive"
-                      className="absolute inset-0 bg-primary/10 rounded-xl -z-10"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-60"
+                        onClick={() => setIsMobileMenuOpen(false)}
                     />
-                )}
-              </div>
-            </Link>
+                    <motion.div
+                        initial={{ y: "100%" }}
+                        animate={{ y: 0 }}
+                        exit={{ y: "100%" }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="fixed bottom-0 left-0 right-0 z-70 bg-[#111] border-t border-white/10 rounded-t-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto"
+                    >
+                        <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-6" />
+                        
+                        <div className="grid grid-cols-4 gap-4 mb-8">
+                             {navigation.map((item) => (
+                                <Link 
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="flex flex-col items-center gap-2 p-2 rounded-xl active:bg-white/5 transition-colors"
+                                >
+                                    <div className={cn(
+                                        "w-14 h-14 rounded-2xl flex items-center justify-center border border-white/5 shadow-lg",
+                                        pathname === item.href ? "bg-primary/20 border-primary/50" : "bg-zinc-900"
+                                    )}>
+                                        <item.icon className={cn("w-6 h-6", pathname === item.href ? "text-primary" : "text-zinc-400")} />
+                                    </div>
+                                    <span className="text-[10px] font-medium text-center text-zinc-400 px-1 leading-tight">{item.name}</span>
+                                </Link>
+                             ))}
+                        </div>
 
-            {/* Floating Create Button */}
-            <Link
-              href="/dashboard/create-book"
-              className="flex items-center justify-center w-12 h-12 bg-linear-to-r from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/25 active:scale-95 transition-all ml-1 shrink-0"
-            >
-              <PlusCircle className="w-6 h-6 text-white" />
-            </Link>
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">Actions</h3>
+                             <Link href="/dashboard/create-book" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary border border-primary/20 font-bold text-sm">
+                                <PlusCircle className="w-5 h-5" />
+                                {t('createBook')}
+                             </Link>
+                             <button onClick={handleSignOut} className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-bold text-sm">
+                                <LogOut className="w-5 h-5" />
+                                {t('signOut')}
+                             </button>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
 
-          </nav>
+        {/* Floating Bottom Hotbar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+            <div className="mx-2 mb-2 pointer-events-auto">
+            <nav className="flex items-center justify-between px-1 py-2 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                
+                {mobileMainItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                        key={item.name}
+                        href={item.href}
+                        className={cn(
+                            'flex flex-col items-center justify-center min-w-[64px] h-14 rounded-xl transition-all duration-300 relative group flex-1',
+                            isActive ? 'bg-primary/10' : 'hover:bg-white/5'
+                        )}
+                        >
+                        {isActive && (
+                            <motion.div
+                            layoutId="mobileActive"
+                            className="absolute inset-0 bg-primary/10 rounded-xl"
+                            initial={false}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            />
+                        )}
+                        
+                        <div className="relative z-10 flex flex-col items-center justify-center gap-0.5 w-full">
+                            <item.icon className={cn(
+                            "w-5 h-5 transition-all duration-300", 
+                            isActive ? "text-primary scale-100" : "text-zinc-500 group-hover:text-zinc-300 mb-0.5"
+                            )} />
+                            
+                            <span className={cn(
+                            "text-[10px] font-medium transition-all duration-300 max-w-full truncate px-1",
+                            isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-400"
+                            )}>
+                            {item.name}
+                            </span>
+
+                            {item.badge && item.badge > 0 && (
+                            <span className="absolute top-0 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-black">
+                                {item.badge}
+                            </span>
+                            )}
+                        </div>
+                        </Link>
+                    );
+                })}
+                
+                {/* More Button */}
+                <button
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className={cn(
+                        'flex flex-col items-center justify-center min-w-[64px] h-14 rounded-xl transition-all duration-300 relative group flex-1',
+                        isMobileMenuOpen ? 'bg-white/10' : 'hover:bg-white/5'
+                    )}
+                >
+                    <div className="relative z-10 flex flex-col items-center justify-center gap-0.5 w-full">
+                        <div className="grid grid-cols-2 gap-0.5 w-5 h-5">
+                            <div className="bg-zinc-500 rounded-[1px] w-full h-full group-hover:bg-zinc-300" />
+                            <div className="bg-zinc-500 rounded-[1px] w-full h-full group-hover:bg-zinc-300" />
+                            <div className="bg-zinc-500 rounded-[1px] w-full h-full group-hover:bg-zinc-300" />
+                            <div className="bg-zinc-500 rounded-[1px] w-full h-full group-hover:bg-zinc-300" />
+                        </div>
+                        <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-400 mt-0.5">{t('more')}</span>
+                    </div>
+                </button>
+
+                {/* Floating Create Button */}
+                <Link
+                href="/dashboard/create-book"
+                className="flex items-center justify-center w-12 h-12 bg-linear-to-r from-primary to-purple-600 rounded-xl shadow-lg shadow-primary/25 active:scale-95 transition-all ml-1 shrink-0"
+                >
+                <PlusCircle className="w-6 h-6 text-white" />
+                </Link>
+
+            </nav>
+            </div>
         </div>
       </div>
 
@@ -250,6 +322,10 @@ export default function DashboardShell({
           {children}
         </div>
       </main>
+      <ChangelogModal 
+        isOpen={showChangelog} 
+        onClose={() => setShowChangelog(false)} 
+      />
     </div>
   );
 }

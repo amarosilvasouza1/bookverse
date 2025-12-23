@@ -1,23 +1,33 @@
-import { getSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { getUserSkillTree } from "@/app/actions/rpg";
-import SkillTreeClient from "./client";
+import { Suspense } from 'react';
+import { getUserSkillTree } from '@/app/actions/skills';
+import SkillTreeCanvas from './components/SkillTreeCanvas';
+import { Loader2 } from 'lucide-react';
+
+import SkillsHeader from './components/SkillsHeader';
 
 export default async function SkillsPage() {
-  const session = await getSession();
-  if (!session) redirect("/login");
-
-  const result = await getUserSkillTree();
-  const tree = result.success ? result.data : { points: 0, unlockedSkills: "[]" };
+  const { data, error } = await getUserSkillTree();
+  
+  if (error || !data) {
+    return (
+      <div className="flex h-full items-center justify-center p-8 text-center text-red-400">
+        <p>Failed to load skill tree data. Please try again later.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
-      <div className="space-y-2">
-         <h1 className="text-3xl font-bold text-white">Reader Skills</h1>
-         <p className="text-zinc-400">Unlock abilities to enhance your reading and writing journey.</p>
+    <div className="flex flex-col h-full space-y-6 p-4 md:p-8">
+      <SkillsHeader />
+
+      <div className="flex-1 w-full max-w-5xl mx-auto">
+        <Suspense fallback={<div className="flex items-center justify-center h-[500px]"><Loader2 className="animate-spin text-cyan-500 w-8 h-8" /></div>}>
+          <SkillTreeCanvas 
+            unlockedSkills={data.unlockedSkills} 
+            points={data.points} 
+          />
+        </Suspense>
       </div>
-      
-      <SkillTreeClient initialData={tree} />
     </div>
   );
 }

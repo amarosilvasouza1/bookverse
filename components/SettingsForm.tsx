@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Instagram, Globe, Terminal, Shield, Bell, Box, Sparkles, ChevronRight } from 'lucide-react';
+import { Save, Loader2, User, Image as ImageIcon, Link as LinkIcon, Twitter, Instagram, Globe, Terminal, Shield, Bell, Box, Sparkles, ChevronRight, type LucideIcon } from 'lucide-react';
 import ImageUpload from '@/components/ImageUpload';
 import { useLanguage } from '@/context/LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -148,18 +148,18 @@ export default function SettingsForm({ user }: SettingsFormProps) {
       router.refresh();
       setNotification({ type: 'success', message: currentEquipped ? 'Item unequipped' : 'Item equipped' });
     } catch {
-      setNotification({ type: 'error', message: 'Failed to update item' });
+      setNotification({ type: 'error', message: t('genericError') });
     } finally {
       setSaving(false);
     }
   };
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'inventory', label: 'Inventory', icon: Box },
-    { id: 'preferences', label: 'Preferences', icon: Sparkles },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'profile', label: t('tabProfile'), icon: User },
+    { id: 'inventory', label: t('tabInventory'), icon: Box },
+    { id: 'preferences', label: t('tabPreferences'), icon: Sparkles },
+    { id: 'notifications', label: t('tabNotifications'), icon: Bell },
+    { id: 'security', label: t('tabSecurity'), icon: Shield },
   ];
 
   return (
@@ -172,7 +172,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
             {t('profileSettings') || 'Settings'}
           </h1>
           <p className="text-zinc-400 text-sm md:text-base max-w-md leading-relaxed">
-            Manage your account preferences, personalize your profile, and configure your experience.
+            {t('settingsPageDesc')}
           </p>
         </div>
         
@@ -183,7 +183,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
           className="md:hidden w-full flex items-center justify-center px-6 py-3 bg-indigo-600/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-indigo-500 transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/20 active:scale-95"
         >
           {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? t('saving') : t('saveChanges')}
         </button>
       </div>
 
@@ -315,7 +315,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                            label={t('displayName') || 'Display Name'}
                            value={formData.name}
                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                           placeholder="How should people call you?"
+                           placeholder={t('displayNamePlaceholder')}
                         />
                         <InputGroup 
                            label={t('username') || 'Username'}
@@ -330,7 +330,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                           value={formData.bio}
                           onChange={(e) => setFormData({...formData, bio: e.target.value})}
                           className="w-full h-32 bg-zinc-900/50 border border-white/5 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 resize-none transition-all"
-                          placeholder="Tell your story..."
+                          placeholder={t('bioPlaceholder')}
                         />
                       </div>
                     </div>
@@ -345,7 +345,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                             ...formData, 
                             socialLinks: {...formData.socialLinks, twitter: v}
                           })}
-                          placeholder="Twitter URL"
+                          placeholder={t('twitterUrlPlaceholder')}
                       />
                       <SocialInput 
                           icon={Instagram} 
@@ -354,7 +354,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                             ...formData, 
                             socialLinks: {...formData.socialLinks, instagram: v}
                           })}
-                          placeholder="Instagram URL"
+                          placeholder={t('instagramUrlPlaceholder')}
                       />
                       <SocialInput 
                           icon={Globe} 
@@ -363,7 +363,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                             ...formData, 
                             socialLinks: {...formData.socialLinks, website: v}
                           })}
-                          placeholder="Website URL"
+                          placeholder={t('websiteUrlPlaceholder')}
                       />
                     </div>
                   </SectionCard>
@@ -374,11 +374,11 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                 <div className="p-6 md:p-8 rounded-3xl bg-zinc-900/30 border border-white/5 backdrop-blur-xl space-y-8">
                   <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Inventory</h2>
-                        <p className="text-zinc-400 text-sm">Manage your cosmetics and collectibles</p>
+                        <h2 className="text-2xl font-bold text-white mb-2">{t('inventoryTitle')}</h2>
+                        <p className="text-zinc-400 text-sm">{t('inventoryDesc')}</p>
                     </div>
                     <div className="px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-full text-sm font-medium">
-                        {user.items?.length || 0} Items Owned
+                        {user.items?.length || 0} {t('itemsOwned')}
                     </div>
                   </div>
 
@@ -390,8 +390,8 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                                 <Box className="w-8 h-8 text-zinc-600" />
                             </div>
                             <div>
-                                <h3 className="text-zinc-300 font-medium">Empty Inventory</h3>
-                                <p className="text-zinc-500 text-sm mt-1">Visit the shop to get some cool items!</p>
+                                <h3 className="text-zinc-300 font-medium">{t('emptyInventoryTitle')}</h3>
+                                <p className="text-zinc-500 text-sm mt-1">{t('emptyInventoryDesc')}</p>
                             </div>
                         </div>
                      ) : (
@@ -415,7 +415,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                                                 : "bg-indigo-600 text-white hover:bg-indigo-500"
                                         )}
                                     >
-                                        {userItem.equipped ? 'Unequip' : 'Equip'}
+                                        {userItem.equipped ? t('unequip') : t('equip')}
                                     </button>
                                 </div>
                             ))}
@@ -436,7 +436,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                           ].map(lang => (
                              <button
                                 key={lang.code}
-                                onClick={() => setLanguage(lang.code as any)}
+                                onClick={() => setLanguage(lang.code as 'en' | 'pt' | 'jp')}
                                 className={cn(
                                    "p-4 rounded-xl border text-left transition-all",
                                    language === lang.code 
@@ -451,22 +451,22 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                        </div>
                     </SectionCard>
 
-                    <SectionCard title="AI Configuration" icon={Sparkles}>
+                    <SectionCard title={t('aiConfigTitle')} icon={Sparkles}>
                        <InputGroup
-                          label="Gemini API Key"
+                          label={t('geminiKeyLabel')}
                           value={formData.geminiApiKey}
                           onChange={(e) => setFormData({...formData, geminiApiKey: e.target.value})}
                           type="password"
                           placeholder="sk-..."
                        />
-                       <p className="text-xs text-zinc-500 mt-2">Required for AI-powered features. Your key is encrypted securely.</p>
+                       <p className="text-xs text-zinc-500 mt-2">{t('geminiKeyDesc')}</p>
                     </SectionCard>
                  </>
               )}
 
               {activeTab === 'notifications' && (
                  <>
-                    <SectionCard title="Email & In-App" icon={Bell}>
+                    <SectionCard title={t('emailInAppTitle')} icon={Bell}>
                        <div className="space-y-1">
                           {[
                              { key: 'newFollowers', title: t('newFollowers'), desc: t('newFollowersDesc') },
@@ -480,12 +480,12 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                                    <p className="text-xs text-zinc-500 mt-0.5">{item.desc}</p>
                                 </div>
                                 <Toggle 
-                                   checked={(formData.notificationSettings as any)[item.key]} 
+                                   checked={(formData.notificationSettings as unknown as NotificationSettings)[item.key as keyof NotificationSettings]} 
                                    onCheckedChange={() => setFormData({
                                       ...formData,
                                       notificationSettings: {
-                                         ...formData.notificationSettings as any,
-                                         [item.key]: !(formData.notificationSettings as any)[item.key]
+                                         ...(formData.notificationSettings as unknown as NotificationSettings),
+                                         [item.key]: !(formData.notificationSettings as unknown as NotificationSettings)[item.key as keyof NotificationSettings]
                                       }
                                    })}
                                 />
@@ -494,7 +494,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
                        </div>
                     </SectionCard>
 
-                    <SectionCard title="Push Notifications" icon={Bell}>
+                    <SectionCard title={t('pushNotificationsTitle')} icon={Bell}>
                         <div className="p-4 bg-zinc-900/50 rounded-xl border border-white/5">
                            <PushNotificationToggle />
                         </div>
@@ -503,21 +503,21 @@ export default function SettingsForm({ user }: SettingsFormProps) {
               )}
 
               {activeTab === 'security' && (
-                 <SectionCard title="Security" icon={Shield}>
+                 <SectionCard title={t('securityTitle')} icon={Shield}>
                     <div className="space-y-6">
                        <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-xl border border-white/5">
                           <div>
-                             <h4 className="font-medium text-zinc-200">Password</h4>
-                             <p className="text-xs text-zinc-500">Last changed 3 months ago</p>
+                             <h4 className="font-medium text-zinc-200">{t('passwordLabel')}</h4>
+                             <p className="text-xs text-zinc-500">{t('passwordChanged')}</p>
                           </div>
-                          <button className="px-4 py-2 bg-zinc-800 text-zinc-300 text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors">Change</button>
+                          <button className="px-4 py-2 bg-zinc-800 text-zinc-300 text-sm font-medium rounded-lg hover:bg-zinc-700 transition-colors">{t('change')}</button>
                        </div>
 
                        <div className="p-4 bg-red-500/5 border border-red-500/10 rounded-xl">
-                          <h4 className="font-bold text-red-400 mb-1 text-sm">Danger Zone</h4>
-                          <p className="text-xs text-red-400/60 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+                          <h4 className="font-bold text-red-400 mb-1 text-sm">{t('dangerZone')}</h4>
+                          <p className="text-xs text-red-400/60 mb-4">{t('deleteAccountWarning')}</p>
                           <button className="px-4 py-2 bg-red-500/10 text-red-400 text-sm font-medium rounded-lg hover:bg-red-500/20 transition-colors border border-red-500/20">
-                             Delete Account
+                             {t('deleteAccount')}
                           </button>
                        </div>
                     </div>
@@ -549,7 +549,7 @@ export default function SettingsForm({ user }: SettingsFormProps) {
 }
 
 // Sub-components for cleaner code
-function SectionCard({ title, icon: Icon, children }: { title: string, icon: any, children: React.ReactNode }) {
+function SectionCard({ title, icon: Icon, children }: { title: string, icon: LucideIcon, children: React.ReactNode }) {
    return (
       <div className="p-6 md:p-8 rounded-3xl bg-zinc-900/30 border border-white/5 backdrop-blur-xl relative overflow-hidden group">
          <div className="absolute top-0 right-0 p-32 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-indigo-500/10 transition-colors duration-700" />
@@ -582,7 +582,7 @@ function InputGroup({ label, ...props }: { label: string } & React.InputHTMLAttr
    );
 }
 
-function SocialInput({ icon: Icon, value, onChange, placeholder }: { icon: any, value: string, onChange: (v: string) => void, placeholder: string }) {
+function SocialInput({ icon: Icon, value, onChange, placeholder }: { icon: LucideIcon, value: string, onChange: (v: string) => void, placeholder: string }) {
    return (
       <div className="relative group">
          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-indigo-400 transition-colors">

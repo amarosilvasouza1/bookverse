@@ -18,11 +18,32 @@ interface UserAvatarProps {
   size?: number;
   rarity?: string | null;
   className?: string;
+  animatedBorder?: boolean;
 }
 
-export default function UserAvatar({ src, alt, size = 40, rarity, className }: UserAvatarProps) {
-  // If no rarity/frame, just render simple avatar
+export default function UserAvatar({ src, alt, size = 40, rarity, className, animatedBorder }: UserAvatarProps) {
+  // If no rarity/frame, just render simple avatar (with optional animated border)
   if (!rarity) {
+    if (animatedBorder) {
+      return (
+        <div 
+          className={cn("relative shrink-0 rounded-full flex items-center justify-center p-[2px] overflow-hidden", className)}
+          style={{ width: size, height: size }}
+        >
+          <div className="absolute inset-0 bg-linear-to-r from-pink-500 via-purple-500 to-cyan-500 animate-[spin_3s_linear_infinite]" />
+          <div className="relative w-full h-full rounded-full overflow-hidden bg-zinc-900 border border-white/10">
+             {src ? (
+                <Image src={src} alt={alt} fill className="object-cover" unoptimized={isGoogleImage(src)} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-zinc-400 font-bold select-none">
+                {alt.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div 
         className={cn("relative shrink-0 rounded-full border border-white/10 overflow-hidden", className)}

@@ -1,20 +1,20 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
-export async function createRoom(bookId: string) {
-  try {
-    const session = await getSession();
-    if (!session) return { error: 'Unauthorized' };
+export async function createReadingRoom(bookId: string, isPrivate: boolean = false) {
+  const session = await getSession();
+  if (!session?.id) return { error: 'Unauthorized' };
 
-    // Create room and add creator as participant
+  try {
     const room = await prisma.readingRoom.create({
       data: {
         hostId: session.id as string,
         bookId,
         status: 'ACTIVE',
+        isPrivate,
         participants: {
           create: {
             userId: session.id as string,
@@ -23,150 +23,185 @@ export async function createRoom(bookId: string) {
       },
     });
 
+    revalidatePath('/dashboard/reading-rooms');
     return { success: true, roomId: room.id };
   } catch (error) {
-    console.error('Create Room Error:', error);
+    console.error('Error creating room:', error);
     return { error: 'Failed to create room' };
   }
 }
 
-export async function joinRoom(roomId: string) {
+export async function getActiveRooms() {
   try {
-    const session = await getSession();
-    if (!session) return { error: 'Unauthorized' };
-
-    // Check if room exists and is active
-    const room = await prisma.readingRoom.findUnique({
-      where: { id: roomId },
+    const rooms = await prisma.readingRoom.findMany({
+      where: { status: 'ACTIVE' },
+      include: {
+        book: {
+          select: { title: true, coverImage: true, author: { select: { name: true } } }
+        },
+        host: {
+          select: { name: true, image: true, username: true }
+        },
+        _count: {
+          select: { participants: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
     });
+    return rooms;
+  } catch {
+    return [];
+  }
+}
 
-    if (!room || room.status !== 'ACTIVE') {
-      return { error: 'Room not found or inactive' };
-    }
+export async function joinRoom(roomId: string) {
+  const session = await getSession();
+  if (!session?.id) return { error: 'Unauthorized' };
 
-    // Add user to participants if not already joined
-    await prisma.readingRoomParticipant.upsert({
+  try {
+    // Check if already joined
+    const existing = await prisma.readingRoomParticipant.findUnique({
       where: {
         roomId_userId: {
           roomId,
           userId: session.id as string,
         }
-      },
-      update: {},
-      create: {
-        roomId,
-        userId: session.id as string,
       }
     });
 
+    if (!existing) {
+      await prisma.readingRoomParticipant.create({
+        data: {
+          roomId,
+          userId: session.id as string,
+        }
+      });
+    }
+
+    revalidatePath(`/dashboard/reading-rooms/${roomId}`);
     return { success: true };
   } catch (error) {
-    console.error('Join Room Error:', error);
+    console.error('Error joining room:', error);
     return { error: 'Failed to join room' };
   }
 }
 
 export async function leaveRoom(roomId: string) {
-  try {
     const session = await getSession();
-    if (!session) return { error: 'Unauthorized' };
-
-    await prisma.readingRoomParticipant.deleteMany({
-      where: {
-        roomId,
-        userId: session.id as string,
-      }
-    });
-
-    // If host leaves, maybe end room? For now, let's keep it simple.
-    // Ideally we should check if no participants left and delete room.
-
-    return { success: true };
-  } catch (error) {
-    console.error('Leave Room Error:', error);
-    return { error: 'Failed to leave room' };
-  }
-}
-
-export async function getRoomState(roomId: string) {
-  try {
-    const room = await prisma.readingRoom.findUnique({
-      where: { id: roomId },
-      include: {
-        host: {
-          select: { name: true, image: true }
-        },
-        participants: {
-          include: {
-            user: {
-              select: { id: true, name: true, image: true }
-            }
-          }
+    if (!session?.id) return;
+  
+    try {
+      await prisma.readingRoomParticipant.deleteMany({
+        where: {
+          roomId,
+          userId: session.id as string,
         }
-      }
-    });
-
-    if (!room) return { error: 'Room not found' };
-
-    const session = await getSession();
-    const isHost = session?.id === room.hostId;
-    const isParticipant = room.participants.some(p => p.userId === session?.id);
-
-    return { 
-      success: true, 
-      data: {
-        currentPage: room.currentPage,
-        status: room.status,
-        host: room.host,
-        participants: room.participants.map(p => p.user),
-        isHost,
-        isParticipant
-      }
-    };
-  } catch (error) {
-    console.error('Get Room State Error:', error);
-    return { error: 'Failed to fetch room state' };
-  }
+      });
+      revalidatePath(`/dashboard/reading-rooms/${roomId}`);
+    } catch (error) {
+      console.error('Error leaving room:', error);
+    }
 }
 
-export async function updateRoomPage(roomId: string, pageNumber: number) {
-  try {
+export async function getRoomDetails(roomId: string) {
     const session = await getSession();
-    if (!session) return { error: 'Unauthorized' };
+    if (!session?.id) return { error: 'Unauthorized' };
 
-    const room = await prisma.readingRoom.findUnique({
-      where: { id: roomId },
-    });
+    try {
+        const room = await prisma.readingRoom.findUnique({
+            where: { id: roomId },
+            include: {
+                book: {
+                    include: {
+                        pages: { orderBy: { pageNumber: 'asc' } },
+                        author: { select: { name: true, username: true } }
+                    }
+                },
+                host: { select: { id: true, name: true, image: true } },
+                participants: {
+                    include: {
+                        user: { select: { id: true, name: true, image: true, username: true } }
+                    },
+                    orderBy: { joinedAt: 'asc' }
+                },
+                messages: {
+                    include: {
+                        user: { select: { id: true, name: true, image: true } }
+                    },
+                    orderBy: { createdAt: 'asc' },
+                    take: 50,
+                }
+            }
+        });
 
-    if (!room) return { error: 'Room not found' };
-    if (room.hostId !== session.id) return { error: 'Only host can update page' };
+        if (!room) return { error: 'Room not found' };
+        
+        // ensure user is participant
+        const isParticipant = room.participants.some(p => p.userId === session.id);
+        if (!isParticipant) {
+             // auto-join if not (for smoother UX) or return error
+             // For now, assume client calls joinRoom first or we auto-join here:
+             // Let's stick to client calling joinRoom for clarity, but UI will likely handle it.
+        }
 
-    await prisma.readingRoom.update({
-      where: { id: roomId },
-      data: { currentPage: pageNumber },
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Update Room Page Error:', error);
-    return { error: 'Failed to update page' };
-  }
+        return { success: true, room };
+    } catch (error) {
+        console.error('Error fetching room:', error);
+        return { error: 'Failed to fetch room' };
+    }
 }
 
-export async function getRooms() {
-  try {
-    const rooms = await prisma.readingRoom.findMany({
-      where: { status: 'ACTIVE' },
-      include: {
-        book: { select: { title: true, coverImage: true } },
-        host: { select: { name: true, image: true } },
-        participants: true,
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    return { success: true, data: rooms };
-  } catch (error) {
-    console.error('Get Rooms Error:', error);
-    return { error: 'Failed to fetch rooms' };
-  }
+export async function sendRoomMessage(roomId: string, content: string) {
+    const session = await getSession();
+    if (!session?.id) return { error: 'Unauthorized' };
+
+    try {
+        const message = await prisma.readingRoomMessage.create({
+            data: {
+                roomId,
+                userId: session.id as string,
+                content,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                        username: true
+                    }
+                }
+            }
+        });
+        revalidatePath(`/dashboard/reading-rooms/${roomId}`);
+        return { success: true, message };
+    } catch (error) {
+        console.error('Error sending message:', error);
+        return { error: 'Failed to send message' };
+    }
+}
+
+export async function syncRoomProgress(roomId: string, page: number) {
+    const session = await getSession();
+    if (!session?.id) return { error: 'Unauthorized' };
+
+    // Only host can sync? Or anyone? Typically host.
+    try {
+        const room = await prisma.readingRoom.findUnique({
+            where: { id: roomId },
+            select: { hostId: true }
+        });
+
+        if (!room || room.hostId !== session.id) return { error: 'Only host can sync progress' };
+
+        await prisma.readingRoom.update({
+            where: { id: roomId },
+            data: { currentPage: page }
+        });
+
+        revalidatePath(`/dashboard/reading-rooms/${roomId}`);
+        return { success: true };
+    } catch {
+        return { error: 'Failed to sync' };
+    }
 }

@@ -44,7 +44,8 @@ async function getUserProfile(username: string, currentUserId?: string) {
           userAchievements: true,
           followers: true,
         }
-      }
+      },
+      skillTree: true,
     }
   });
 
@@ -74,6 +75,14 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
   const isFollowing = user.followers?.length > 0;
   const isOwnProfile = session?.id === user.id;
   const socialLinks = user.socialLinks ? JSON.parse(user.socialLinks) : {};
+
+  // Parse Skills for Cosmetics
+  const unlockedSkills = user.skillTree?.unlockedSkills 
+    ? JSON.parse(user.skillTree.unlockedSkills) 
+    : [];
+  
+  const hasRainbowName = unlockedSkills.includes('grand_archmage');
+  const hasAnimatedAvatar = unlockedSkills.includes('trendsetter');
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] pb-20 -mx-4 -mt-4 md:-mx-8 md:-mt-8">
@@ -107,6 +116,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
                 size={160} // w-40 h-40 = 160px
                 rarity={user.items[0]?.item.rarity}
                 className="w-32 h-32 md:w-40 md:h-40 border-4 border-[#0a0a0a]"
+                animatedBorder={hasAnimatedAvatar}
               />
             </div>
 
@@ -115,7 +125,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ us
                 <div className="flex items-center gap-2 justify-center md:justify-start">
                   <h1 className={cn(
                     "text-2xl md:text-3xl font-bold",
-                    user.tags?.includes('BETA') ? "text-yellow-400 drop-shadow-md" : "text-white"
+                    user.tags?.includes('BETA') ? "text-yellow-400 drop-shadow-md" : "text-white",
+                    hasRainbowName && "bg-linear-to-r from-red-500 via-green-500 to-blue-500 bg-clip-text text-transparent animate-[pulse_3s_ease-in-out_infinite]"
                   )}>
                     {user.name || username}
                   </h1>

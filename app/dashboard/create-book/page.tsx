@@ -78,7 +78,19 @@ async function CreateBook({ searchParams }: { searchParams: Promise<{ id?: strin
     geminiApiKey: user.geminiApiKey || undefined
   } : undefined;
 
-  return <CreateBookClient initialBook={sanitizedBook} user={sanitizedUser} />;
+  // Fetch User Skills
+  let unlockedSkills: string[] = [];
+  if (session.id) {
+    const skillTree = await prisma.userSkillTree.findUnique({
+      where: { userId: session.id as string },
+      select: { unlockedSkills: true }
+    });
+    if (skillTree?.unlockedSkills) {
+      unlockedSkills = JSON.parse(skillTree.unlockedSkills);
+    }
+  }
+
+  return <CreateBookClient initialBook={sanitizedBook} user={sanitizedUser} unlockedSkills={unlockedSkills} />;
 }
 
 export default function Page({ searchParams }: { searchParams: Promise<{ id?: string }> }) {

@@ -533,6 +533,7 @@ model ReadingRoom {
   bookId       String
   currentPage  Int                      @default(1)
   status       String                   @default("ACTIVE")
+  isPrivate    Boolean                  @default(false)
   createdAt    DateTime                 @default(now())
   book         Book                     @relation(fields: [bookId], references: [id])
   host         User                     @relation(fields: [hostId], references: [id])

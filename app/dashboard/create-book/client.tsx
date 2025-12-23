@@ -50,10 +50,21 @@ interface Book {
 interface CreateBookClientProps {
   initialBook?: Book;
   user?: User;
+  unlockedSkills?: string[];
 }
 
-export default function CreateBookClient({ initialBook, user }: CreateBookClientProps) {
+export default function CreateBookClient({ initialBook, user, unlockedSkills = [] }: CreateBookClientProps) {
   const router = useRouter();
+// ... (skip unchanged lines) ...
+              <EditorSidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                handleBrainstorm={handleBrainstorm}
+                // ... props ...
+                ambience={ambience}
+                setAmbience={setAmbience}
+                unlockedSkills={unlockedSkills}
+              />
   const { t } = useLanguage();
   const bookId = initialBook?.id;
 
@@ -435,6 +446,7 @@ export default function CreateBookClient({ initialBook, user }: CreateBookClient
                 setAllowDownload={setAllowDownload}
                 ambience={ambience}
                 setAmbience={setAmbience}
+                unlockedSkills={unlockedSkills}
               />
             </div>
           </div>

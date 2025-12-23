@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Edit2, X, User } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, User, Wand2 } from 'lucide-react';
 import { createCharacter, updateCharacter, deleteCharacter, getCharacters } from '@/app/actions/character';
 import ImageUpload from './ImageUpload';
 import Image from 'next/image';
@@ -16,9 +16,16 @@ interface Character {
 
 interface CharacterSettingsProps {
   bookId: string;
+  unlockedSkills?: string[];
 }
 
-export default function CharacterSettings({ bookId }: CharacterSettingsProps) {
+const PERSONALITY_TRAITS = [
+  "Brave", "Cowardly", "Ambitious", "Lazy", "Honest", "Deceptive", "Loyal", "Treacherous",
+  "Optimistic", "Pessimistic", "Generous", "Greedy", "Wise", "Foolish", "Patient", "Impulsive",
+  "Kind", "Cruel", "Humble", "Arrogant", "Vengeful", "Forgiving", "Curious", "Indifferent"
+];
+
+export default function CharacterSettings({ bookId, unlockedSkills = [] }: CharacterSettingsProps) {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -88,6 +95,15 @@ export default function CharacterSettings({ bookId }: CharacterSettingsProps) {
     setLoading(false);
   };
 
+  const handleGeneratePersonality = () => {
+    // Pick 3 random unique traits
+    const shuffled = [...PERSONALITY_TRAITS].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 3);
+    setPersonality(selected.join(', '));
+  };
+
+  const hasPsychologistSkill = unlockedSkills.includes('character_psychologist');
+
   if (!bookId) {
     return <div className="p-4 text-center text-muted-foreground">Please save the book first to add characters.</div>;
   }
@@ -156,7 +172,25 @@ export default function CharacterSettings({ bookId }: CharacterSettingsProps) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Personality & Context (Hidden from readers, used by AI)</label>
+            <div className="flex justify-between items-center">
+                <label className="text-xs font-medium text-muted-foreground">Personality & Context (Hidden from readers, used by AI)</label>
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (hasPsychologistSkill) handleGeneratePersonality();
+                    }}
+                    disabled={!hasPsychologistSkill}
+                    className={`text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-md border transition-all ${
+                        hasPsychologistSkill 
+                        ? 'text-purple-400 border-purple-500/30 hover:bg-purple-500/10 cursor-pointer' 
+                        : 'text-zinc-600 border-zinc-700 opacity-50 cursor-not-allowed'
+                    }`}
+                    title={hasPsychologistSkill ? "Generate random personality traits" : "Unlock 'Character Psychologist' skill to use this feature"}
+                >
+                    <Wand2 className="w-3 h-3" />
+                    {hasPsychologistSkill ? 'Generate' : 'Locked'}
+                </button>
+            </div>
             <textarea
               placeholder="e.g. Sarcastic, loyal to the king, hates dragons. Knows the secret of the dungeon."
               value={personality}

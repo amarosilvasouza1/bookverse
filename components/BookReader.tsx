@@ -10,7 +10,7 @@ import { buyBook } from '@/app/actions/buy-book';
 
 import AddToListButton from './AddToListButton';
 
-interface BookReaderProps {
+export interface BookReaderProps {
   book: {
     id: string;
     title: string;
@@ -19,6 +19,7 @@ interface BookReaderProps {
     allowDownload: boolean;
     ambience: string | null;
     price: number;
+    authorId: string;
     pages: {
       title: string | null;
       content: string;

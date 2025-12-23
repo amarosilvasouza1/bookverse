@@ -189,6 +189,56 @@ const translations = {
     emailDigest: 'Email Digest',
     emailDigestDesc: 'Receive a weekly summary of activity',
     security: 'Security',
+    // Settings Tabs & Layout
+    tabProfile: 'Profile',
+    tabInventory: 'Inventory',
+    tabPreferences: 'Preferences',
+    tabNotifications: 'Notifications',
+    tabSecurity: 'Security',
+    settingsPageDesc: 'Manage your account preferences, personalize your profile, and configure your experience.',
+    profileUpdated: 'Profile updated successfully!',
+    uploadTimeout: 'Upload timed out. Try a smaller image.',
+    genericError: 'Something went wrong. Please try again.',
+    
+    // Profile Inputs
+    displayNamePlaceholder: 'How should people call you?',
+    twitterUrlPlaceholder: 'Twitter URL',
+    instagramUrlPlaceholder: 'Instagram URL',
+    websiteUrlPlaceholder: 'Website URL',
+
+    // Inventory Tab
+    inventoryTitle: 'Inventory',
+    inventoryDesc: 'Manage your cosmetics and collectibles',
+    itemsOwned: 'Items Owned',
+    emptyInventoryTitle: 'Empty Inventory',
+    emptyInventoryDesc: 'Visit the shop to get some cool items!',
+    equip: 'Equip',
+    unequip: 'Unequip',
+
+    // Preferences Tab
+    aiConfigTitle: 'AI Configuration',
+    geminiKeyLabel: 'Gemini API Key',
+    geminiKeyDesc: 'Required for AI-powered features. Your key is encrypted securely.',
+
+    // Notifications Tab
+    emailInAppTitle: 'Email & In-App',
+    pushNotificationsTitle: 'Push Notifications',
+
+    // Security Tab
+    securityTitle: 'Security',
+    passwordChanged: 'Last changed 3 months ago',
+    change: 'Change',
+    changePassword: 'Change Password',
+    dangerZone: 'Danger Zone',
+    deleteAccountWarning: 'Once you delete your account, there is no going back. Please be certain.',
+    deleteAccount: 'Delete Account',
+
+    // Changelog
+    systemUpdate: 'System Update',
+    clickToSee: 'Click to see what\'s new in v0.020.1',
+    whatsNew: 'What\'s New',
+    versionHistory: 'Version History',
+    
     // Subscription Page
     upgradeToPremium: 'Upgrade to Premium',
     upgradeTitle: 'Unlock Your Full Potential',
@@ -512,6 +562,64 @@ const translations = {
     company: 'Company',
     footerDesc: 'Empowering the next generation of storytellers with world-class tools and a supportive community.',
     rightsReserved: '© 2025 BookVerse Inc. All rights reserved.',
+    // Navigation & Common
+    skills: 'Skills',
+    readingRooms: 'Reading Rooms',
+    more: 'More',
+    actions: 'Actions',
+    subscription: 'Subscription',
+    
+    // Skills Page
+    skillTreeTitle: 'Skill Tree',
+    skillTreeDesc: 'Unlock special abilities and cosmetic upgrades by leveling up.',
+    loadingSkills: 'Loading skill tree...',
+    failedToLoadSkills: 'Failed to load skill tree data.',
+
+    // Skills Nodes
+    noviceWriter: 'Novice Writer',
+    noviceWriterDesc: 'Begin your journey as an author.',
+    prolificAuthor: 'Prolific Author',
+    prolificAuthorDesc: 'Writing gives +10% more XP.',
+    storyteller: 'Master Storyteller',
+    storytellerDesc: 'Unlock "Beta Reader" AI Analysis mode.',
+    worldBuilder: 'World Builder',
+    worldBuilderDesc: 'Create up to 50 Characters per book (Limit increased).',
+    avidReader: 'Avid Reader',
+    avidReaderDesc: 'Reading gives +10% more XP.',
+    socialButterfly: 'Social Butterfly',
+    socialButterflyDesc: 'Unlock "Golden Name" in comments and chat.',
+    critic: 'Literary Critic',
+    criticDesc: 'Unlock capability to rate books with half-stars.',
+    legend: 'Literary Legend',
+    legendDesc: 'Unlock "Platinum" profile theme.',
+
+    // New Skills
+    plotArchitect: 'Plot Architect',
+    plotArchitectDesc: 'Unlock "Outline Mode" visualizer.',
+    characterPsychologist: 'Character Psychologist',
+    characterPsychologistDesc: 'Unlock "Character Traits" randomizer.',
+    marathonWriter: 'Marathon Writer',
+    marathonWriterDesc: '+5% Writing Speed Bonus.',
+    trendsetter: 'Trendsetter',
+    trendsetterDesc: 'Unlock "Animated Profile Picture" border.',
+    bookClubHost: 'Book Club Host',
+    bookClubHostDesc: 'Ability to create Private Reading Rooms.',
+    generousSoul: 'Generous Soul',
+    generousSoulDesc: 'Unlock "Gift Animation" effects.',
+    grandArchmage: 'Grand Archmage',
+    grandArchmageDesc: 'Unlock "Rainbow User Name" effect.',
+    readingRoomsTitle: 'Reading Rooms',
+    readingRoomsDesc: 'Join live reading sessions with other authors and readers.',
+    startRoom: 'Start a Room',
+    noActiveRooms: 'No active rooms right now. Be the first to start one!',
+    selectBookToRead: 'Select a Book to Read',
+    createRoom: 'Create Room',
+    cancel: 'Cancel',
+    joinRoom: 'Join Room',
+    live: 'LIVE',
+    hostedBy: 'Hosted by {name}',
+    participants: 'Participants',
+
   },
   pt: {
     overview: 'Visão Geral',
@@ -522,6 +630,66 @@ const translations = {
     signOut: 'Sair',
     bookVerse: 'BookVerse',
     browse: 'Explorar',
+    // Navigation & Common
+    skills: 'Habilidades',
+    readingRooms: 'Salas de Leitura',
+    more: 'Mais',
+    actions: 'Ações',
+    subscription: 'Assinatura',
+    
+    // Skills Page
+    skillTreeTitle: 'Árvore de Habilidades',
+    skillTreeDesc: 'Desbloqueie habilidades especiais e cosméticos subindo de nível.',
+    loadingSkills: 'Carregando árvore de habilidades...',
+    failedToLoadSkills: 'Falha ao carregar dados da árvore de habilidades.',
+    
+    // Skills Nodes
+    noviceWriter: 'Escritor Iniciante',
+    noviceWriterDesc: 'Comece sua jornada como autor.',
+    prolificAuthor: 'Autor Prolífico',
+    prolificAuthorDesc: 'Escrever dá +10% mais XP.',
+    storyteller: 'Mestre Contador de Histórias',
+    storytellerDesc: 'Desbloqueie o modo de análise de IA "Leitor Beta".',
+    worldBuilder: 'Construtor de Mundos',
+    worldBuilderDesc: 'Crie até 50 personagens por livro (Limite aumentado).',
+    avidReader: 'Leitor Ávido',
+    avidReaderDesc: 'Ler dá +10% mais XP.',
+    socialButterfly: 'Borboleta Social',
+    socialButterflyDesc: 'Desbloqueie "Nome Dourado" nos comentários e chat.',
+    critic: 'Crítico Literário',
+    criticDesc: 'Desbloqueie a capacidade de avaliar livros com meias estrelas.',
+    legend: 'Lenda Literária',
+    legendDesc: 'Desbloqueie o tema de perfil "Platina".',
+
+    // New Skills
+    plotArchitect: 'Arquiteto de Enredos',
+    plotArchitectDesc: 'Desbloqueie o visualizador "Modo Estrutura".',
+    characterPsychologist: 'Psicólogo de Personagens',
+    characterPsychologistDesc: 'Desbloqueie o randomizador "Traços de Personagem".',
+    marathonWriter: 'Escritor Maratonista',
+    marathonWriterDesc: 'Bônus de +5% na velocidade de escrita.',
+    trendsetter: 'Criador de Tendências',
+    trendsetterDesc: 'Desbloqueie a borda "Foto de Perfil Animada".',
+    bookClubHost: 'Anfitrião de Clube do Livro',
+    bookClubHostDesc: 'Habilidade de criar Salas de Leitura Privadas.',
+    generousSoul: 'Alma Generosa',
+    generousSoulDesc: 'Desbloqueie efeitos de "Animação de Presente".',
+    grandArchmage: 'Grande Arquimago',
+    grandArchmageDesc: 'Desbloqueie o efeito "Nome de Usuário Arco-íris".',
+
+    // Reading Rooms
+    readingRoomsTitle: 'Salas de Leitura',
+    readingRoomsDesc: 'Participe de sessões de leitura ao vivo com outros autores e leitores.',
+    startRoom: 'Iniciar Sala',
+    noActiveRooms: 'Nenhuma sala ativa no momento. Seja o primeiro a iniciar uma!',
+    selectBookToRead: 'Selecione um Livro para Ler',
+    createRoom: 'Criar Sala',
+    cancel: 'Cancelar',
+    joinRoom: 'Entrar na Sala',
+    live: 'AO VIVO',
+    hostedBy: 'Hospedado por {name}',
+    participants: 'Participantes',
+
     // Settings Page
     profileSettings: 'Configurações do Perfil',
     visualIdentity: 'Identidade Visual',
@@ -677,7 +845,57 @@ const translations = {
     emailDigestDesc: 'Receber um resumo semanal de atividades',
     security: 'Segurança',
     // Subscription Page
-    upgradeToPremium: 'Atualizar para Premium',
+
+    // Settings Tabs & Layout
+    tabProfile: 'Perfil',
+    tabInventory: 'Inventário',
+    tabPreferences: 'Preferências',
+    tabNotifications: 'Notificações',
+    tabSecurity: 'Segurança',
+    settingsPageDesc: 'Gerencie suas preferências, personalize seu perfil e configure sua experiência.',
+    profileUpdated: 'Perfil atualizado com sucesso!',
+    uploadTimeout: 'Tempo limite de upload excedido. Tente uma imagem menor.',
+    genericError: 'Algo deu errado. Por favor, tente novamente.',
+    
+    // Profile Inputs
+    displayNamePlaceholder: 'Como as pessoas devem chamar você?',
+    twitterUrlPlaceholder: 'URL do Twitter',
+    instagramUrlPlaceholder: 'URL do Instagram',
+    websiteUrlPlaceholder: 'URL do Website',
+
+    // Inventory Tab
+    inventoryTitle: 'Inventário',
+    inventoryDesc: 'Gerencie seus cosméticos e colecionáveis',
+    itemsOwned: 'Itens',
+    emptyInventoryTitle: 'Inventário Vazio',
+    emptyInventoryDesc: 'Visite a loja para adquirir itens incríveis!',
+    equip: 'Equipar',
+    unequip: 'Desequipar',
+
+    // Preferences Tab
+    aiConfigTitle: 'Configuração de IA',
+    geminiKeyLabel: 'Chave API Gemini',
+    geminiKeyDesc: 'Necessário para recursos de IA. Sua chave é criptografada com segurança.',
+
+    // Notifications Tab
+    emailInAppTitle: 'Email e No App',
+    pushNotificationsTitle: 'Notificações Push',
+
+    // Security Tab
+    securityTitle: 'Segurança',
+    passwordChanged: 'Alterada há 3 meses',
+    change: 'Alterar',
+    changePassword: 'Alterar Senha',
+    dangerZone: 'Zona de Perigo',
+    deleteAccountWarning: 'Ao excluir sua conta, não há como voltar atrás. Tenha certeza.',
+    deleteAccount: 'Excluir Conta',
+
+    // Changelog
+    systemUpdate: 'Atualização do Sistema',
+    clickToSee: 'Clique para ver as novidades da v0.020.1',
+    whatsNew: 'O que há de novo',
+    versionHistory: 'Histórico de Versões',
+
     upgradeTitle: 'Desbloqueie Todo Seu Potencial',
     upgradeSubtitle: 'Tenha acesso ilimitado a livros premium, recursos exclusivos e apoie a plataforma.',
     monthly: 'Mensal',
@@ -1040,6 +1258,33 @@ const translations = {
     signOut: 'サインアウト',
     bookVerse: 'ブックバース',
     browse: '閲覧',
+    
+    // Navigation & Common
+    skills: 'スキル',
+    readingRooms: '読書室',
+    more: 'その他',
+    actions: 'アクション',
+    subscription: 'サブスクリプション',
+    
+    // Skills Page
+    skillTreeTitle: 'スキルツリー',
+    skillTreeDesc: 'レベルアップして特別な能力や外見のアップグレードを解除しましょう。',
+    loadingSkills: 'スキルツリーを読み込み中...',
+    failedToLoadSkills: 'スキルツリーのデータを読み込めませんでした。',
+
+    // Reading Rooms
+    readingRoomsTitle: '読書室',
+    readingRoomsDesc: '他の著者や読者と一緒にライブ読書セッションに参加しましょう。',
+    startRoom: '部屋を作成',
+    noActiveRooms: '現在アクティブな部屋はありません。最初の部屋を作成しましょう！',
+    selectBookToRead: '読む本を選択',
+    createRoom: '部屋を作成',
+    cancel: 'キャンセル',
+    joinRoom: '部屋に入る',
+    live: 'ライブ',
+    hostedBy: '{name} が主催',
+    participants: '参加者',
+
     // Settings Page
     profileSettings: 'プロフィール設定',
     visualIdentity: 'ビジュアルアイデンティティ',
@@ -1230,7 +1475,57 @@ const translations = {
     emailDigestDesc: 'アクティビティの週次概要を受け取る',
     security: 'セキュリティ',
     // Subscription Page
-    upgradeToPremium: 'プレミアムにアップグレード',
+
+    // Settings Tabs & Layout
+    tabProfile: 'プロフィール',
+    tabInventory: 'インベントリ',
+    tabPreferences: '設定',
+    tabNotifications: '通知',
+    tabSecurity: 'セキュリティ',
+    settingsPageDesc: 'アカウント設定の管理、プロフィールのカスタマイズ、体験の設定を行います。',
+    profileUpdated: 'プロフィールが正常に更新されました！',
+    uploadTimeout: 'アップロードがタイムアウトしました。小さい画像を試してください。',
+    genericError: 'エラーが発生しました。もう一度お試しください。',
+    
+    // Profile Inputs
+    displayNamePlaceholder: '何と呼ばれたいですか？',
+    twitterUrlPlaceholder: 'Twitter URL',
+    instagramUrlPlaceholder: 'Instagram URL',
+    websiteUrlPlaceholder: 'Webサイト URL',
+
+    // Inventory Tab
+    inventoryTitle: 'インベントリ',
+    inventoryDesc: 'コスメティックやコレクションを管理します',
+    itemsOwned: '所持アイテム',
+    emptyInventoryTitle: 'インベントリは空です',
+    emptyInventoryDesc: 'ショップにアクセスして、素敵なアイテムを手に入れましょう！',
+    equip: '装備',
+    unequip: '外す',
+
+    // Preferences Tab
+    aiConfigTitle: 'AI設定',
+    geminiKeyLabel: 'Gemini APIキー',
+    geminiKeyDesc: 'AI機能に必要です。キーは安全に暗号化されます。',
+
+    // Notifications Tab
+    emailInAppTitle: 'メール & アプリ内',
+    pushNotificationsTitle: 'プッシュ通知',
+
+    // Security Tab
+    securityTitle: 'セキュリティ',
+    passwordChanged: '3ヶ月前に変更',
+    change: '変更',
+    changePassword: 'パスワードを変更',
+    dangerZone: '危険ゾーン',
+    deleteAccountWarning: 'アカウントを削除すると、元に戻すことはできません。ご注意ください。',
+    deleteAccount: 'アカウント削除',
+
+    // Changelog
+    systemUpdate: 'システムアップデート',
+    clickToSee: 'v0.020.1の新機能を見る',
+    whatsNew: '新着情報',
+    versionHistory: 'バージョン履歴',
+
     upgradeTitle: '可能性を最大限に引き出す',
     upgradeSubtitle: 'プレミアム書籍への無制限アクセス、限定機能、プラットフォームのサポートを手に入れましょう。',
     monthly: '月額',
@@ -1545,6 +1840,41 @@ const translations = {
     whyBookVerse: 'なぜBookVerse？',
     everythingYouNeed: '成功するために必要なすべて',
     everythingSubtitle: 'クリエイターに最も強力なツールを、読者に最も没入感のある体験を提供します。',
+    
+    // Skills Nodes
+    noviceWriter: '新米作家',
+    noviceWriterDesc: '作家としての旅を始めましょう。',
+    prolificAuthor: '多作な作家',
+    prolificAuthorDesc: '執筆でXPが+10%増加します。',
+    storyteller: '物語の達人',
+    storytellerDesc: '「ベータリーダー」AI分析モードを解除します。',
+    worldBuilder: '世界構築者',
+    worldBuilderDesc: '1冊につき最大50人のキャラクターを作成できます（上限増加）。',
+    avidReader: '熱心な読書家',
+    avidReaderDesc: '読書でXPが+10%増加します。',
+    socialButterfly: '社交家',
+    socialButterflyDesc: 'コメントとチャットで「ゴールデンネーム」を解除します。',
+    critic: '文芸評論家',
+    criticDesc: 'ハーフスターで本を評価する機能を解除します。',
+    legend: '文学の伝説',
+    legendDesc: '「プラチナ」プロフィールテーマを解除します。',
+
+    // New Skills
+    plotArchitect: 'プロットアーキテクト',
+    plotArchitectDesc: '「アウトラインモード」ビジュアライザーを解除します。',
+    characterPsychologist: 'キャラクター心理学者',
+    characterPsychologistDesc: '「キャラクター特性」ランダマイザーを解除します。',
+    marathonWriter: 'マラソン作家',
+    marathonWriterDesc: '執筆速度ボーナス+5%。',
+    trendsetter: 'トレンドセッター',
+    trendsetterDesc: '「アニメーションプロフィール写真」ボーダーを解除します。',
+    bookClubHost: '読書クラブ主催者',
+    bookClubHostDesc: 'プライベート読書室を作成する能力。',
+    generousSoul: '寛大な魂',
+    generousSoulDesc: '「ギフトアニメーション」エフェクトを解除します。',
+    grandArchmage: '大魔導師',
+    grandArchmageDesc: '「レインボーユーザー名」エフェクトを解除します。',
+
     featureEditorTitle: '強力なエディター',
     featureEditorDesc: '豊富なフォーマット、メディア埋め込み、自動保存を備えた、気を散らすもののない執筆。',
     featureCommunityTitle: 'コミュニティファースト',

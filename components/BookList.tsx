@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Search, Edit, Trash, BookOpen, Loader2, BarChart, X, Users, Calendar, Filter, LayoutGrid, List } from 'lucide-react';
 import Link from 'next/link';
 import { deleteBook } from '@/app/actions/delete-book';
-import { createRoom } from '@/app/actions/reading-room';
+import { createReadingRoom } from '@/app/actions/reading-room';
 import { useRouter } from 'next/navigation';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import Image from 'next/image';
@@ -111,7 +111,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
         {/* Empty State */}
         {filteredBooks.length === 0 ? (
           <div className="rounded-3xl p-12 md:p-16 text-center border border-dashed border-white/10 bg-zinc-900/30">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
+            <div className="w-24 h-24 bg-linear-to-br from-purple-500/10 to-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
               <BookOpen className="w-12 h-12 text-purple-400/50" />
             </div>
             <h3 className="text-xl font-bold text-white mb-3">{t('noBooksFound')}</h3>
@@ -132,7 +132,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
               {filteredBooks.map((book) => (
                 <div key={book.id} className="group bg-zinc-900 rounded-2xl overflow-hidden border border-white/5 hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 flex flex-col hover:-translate-y-1">
                   {/* Cover Image */}
-                  <div className="relative aspect-[2/3] bg-zinc-800 overflow-hidden">
+                  <div className="relative aspect-2/3 bg-zinc-800 overflow-hidden">
                     {book.coverImage ? (
                       <Image 
                         src={book.coverImage} 
@@ -141,14 +141,14 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                         className="object-cover group-hover:scale-105 transition-transform duration-500" 
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 p-6 text-center">
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-linear-to-br from-zinc-800 to-zinc-900 p-6 text-center">
                         <BookOpen className="w-12 h-12 text-white/10 mb-4" />
                         <span className="text-white/20 text-xs font-medium uppercase tracking-widest">{t('noCover')}</span>
                       </div>
                     )}
                     
                     {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-6 gap-2">
+                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-6 gap-2">
                       <Link 
                         href={`/dashboard/create-book?id=${book.id}`}
                         className="p-3 bg-white text-black rounded-full hover:scale-110 transition-transform shadow-lg"
@@ -197,7 +197,7 @@ export default function BookList({ initialBooks }: { initialBooks: Book[] }) {
                       <button
                         onClick={async () => {
                           if (confirm(t('startReadingParty'))) {
-                            const result = await createRoom(book.id);
+                            const result = await createReadingRoom(book.id);
                             if (result.success) {
                               router.push(`/dashboard/books/${book.id}/read?roomId=${result.roomId}`);
                             } else {
