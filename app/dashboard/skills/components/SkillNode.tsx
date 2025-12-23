@@ -18,7 +18,7 @@ export default function SkillNode({ skill, status, onUnlock, isUnlocking }: Skil
   const [isHovered, setIsHovered] = useState(false);
   
   // Dynamic Icon
-  const IconComponent = (Icons as Record<string, React.ElementType>)[skill.icon] || Icons.HelpCircle;
+  const IconComponent = (Icons as unknown as Record<string, React.ElementType>)[skill.icon] || Icons.HelpCircle;
 
   return (
     <div 
