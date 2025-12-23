@@ -25,6 +25,7 @@ export interface Message {
 export interface Participant {
     userId: string;
     user: UserType | null;
+    joinedAt?: string | Date; // Ensure type compatibility
 }
 
 interface RoomChatProps {

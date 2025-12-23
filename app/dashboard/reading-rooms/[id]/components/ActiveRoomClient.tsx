@@ -9,8 +9,8 @@ interface ActiveRoomClientProps {
   room: {
     book: BookReaderProps['book'];
     id: string;
-    messages: Message[];
-    participants: Participant[];
+    messages: (Message & { createdAt: string | Date })[];
+    participants: (Participant & { joinedAt?: string | Date })[];
     currentPage: number | null;
   };
   currentUserId: string;

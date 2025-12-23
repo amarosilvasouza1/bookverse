@@ -20,7 +20,7 @@ export default async function ReadingRoomsPage() {
   let unlockedSkills: string[] = [];
   if (session?.id) {
     const skillTree = await prisma.userSkillTree.findUnique({
-      where: { userId: session.id },
+      where: { userId: session.id as string },
       select: { unlockedSkills: true }
     });
     if (skillTree?.unlockedSkills) {

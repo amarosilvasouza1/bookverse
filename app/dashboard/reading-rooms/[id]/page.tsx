@@ -18,5 +18,29 @@ export default async function RoomPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  return <ActiveRoomClient room={result.room} currentUserId={session.id as string} />;
+  // Transform room data to match client props (convert Dates to strings)
+  // Transform room data to match client props (convert Dates to strings)
+  const roomForClient = {
+    ...result.room,
+    book: {
+      ...result.room.book,
+      pages: result.room.book.pages.map(page => ({
+        title: page.title,
+        content: page.content,
+        pageNumber: page.pageNumber,
+        scheduledAt: page.scheduledAt ? page.scheduledAt.toISOString() : undefined,
+      }))
+    },
+    messages: result.room.messages.map(msg => ({
+      ...msg,
+      createdAt: msg.createdAt.toISOString(),
+      updatedAt: undefined // Ensure we don't pass dates if they exist
+    })),
+    participants: result.room.participants.map(p => ({
+      ...p,
+      joinedAt: p.joinedAt.toISOString()
+    }))
+  };
+
+  return <ActiveRoomClient room={roomForClient} currentUserId={session.id as string} />;
 }

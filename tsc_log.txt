@@ -1,0 +1,6 @@
+﻿app/dashboard/reading-rooms/page.tsx(23,16): error TS2322: Type '{}' is not assignable to type 'string'.
+app/dashboard/skills/components/SkillNode.tsx(21,26): error TS2352: Conversion of type 'typeof import("C:/Users/fnbse/OneDrive/\u00C1rea de Trabalho/book/node_modules/lucide-react/dist/lucide-react")' to type 'Record<string, ElementType<any, keyof IntrinsicElements>>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'createLucideIcon' is incompatible with index signature.
+    Type '(iconName: string, iconNode: IconNode) => ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not comparable to type 'ElementType<any, keyof IntrinsicElements>'.
+      Type '(iconName: string, iconNode: IconNode) => ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>' is not comparable to type 'FunctionComponent<any>'.
+        Target signature provides too few arguments. Expected 2 or more, but got 1.
