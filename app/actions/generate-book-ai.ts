@@ -28,7 +28,7 @@ export async function generateBookAI(apiKey: string, prompt: string, pageCount: 
 
     const genAI = new GoogleGenerativeAI(finalApiKey);
     // gemini-2.0-flash is the only one that didn't return 404, so we stick with it and handle 429s
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     let systemPrompt = '';
     
