@@ -1,11 +1,11 @@
-import { getRooms } from '@/app/actions/reading-room';
+import { getActiveRooms } from '@/app/actions/reading-room';
 import Link from 'next/link';
 import { Users, BookOpen, Clock } from 'lucide-react';
 
 export default async function RoomsPage() {
-  const { success, data: rooms } = await getRooms();
+  const rooms = await getActiveRooms();
 
-  if (!success || !rooms) {
+  if (!rooms) {
     return (
       <div className="p-8 text-center text-red-400">
         Failed to load rooms
@@ -73,7 +73,7 @@ export default async function RoomsPage() {
                   <div className="flex items-center gap-4 text-xs text-zinc-500">
                     <div className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      <span>{room.participants.length} joined</span>
+                      <span>{room._count.participants} joined</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
